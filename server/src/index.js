@@ -117,6 +117,9 @@ app.use((req, res, next) => {
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
+  'https://frioo.in',           // Custom domain
+  'https://www.frioo.in',       // Custom domain with www
+  'https://frioo-shop.vercel.app',
   process.env.PRODUCTION_URL
 ].filter(Boolean);
 
