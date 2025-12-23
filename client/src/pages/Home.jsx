@@ -6,6 +6,7 @@ import StaggerText from '../components/animations/StaggerText';
 import Footer from '../components/layout/Footer';
 import { logger } from '../utils/logger';
 import SEO from '../components/SEO';
+import { API_BASE_URL } from '../config/constants';
 import previewVideo from '../assets/preview.mp4';
 import preview2Video from '../assets/preview2.mp4';
 
@@ -50,7 +51,7 @@ export default function Home() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const res = await fetch('/api/products');
+        const res = await fetch(`${API_BASE_URL}/api/products`);
         const response = await res.json();
         const data = response.data || {};
         setProducts(data.items || []);

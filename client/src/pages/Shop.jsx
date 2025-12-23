@@ -10,6 +10,7 @@ import { logger } from '../utils/logger';
 import { useCart } from '../context/CartContext';
 
 import SEO from '../components/SEO';
+import { API_BASE_URL } from '../config/constants';
 
 export default function Shop() {
   const { cart, addToCart } = useCart();
@@ -49,7 +50,7 @@ export default function Shop() {
   useEffect(() => {
     const fetchShopProducts = async () => {
       try {
-        const res = await fetch('/api/products');
+        const res = await fetch(`${API_BASE_URL}/api/products`);
         const response = await res.json();
         const data = response.data || {};
         setProducts(data.items || []);

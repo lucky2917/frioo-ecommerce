@@ -12,6 +12,7 @@ import ScrollReveal from '../components/animations/ScrollReveal';
 import StaggerText from '../components/animations/StaggerText';
 
 import { useCart } from '../context/CartContext';
+import { API_BASE_URL } from '../config/constants';
 
 // Mock Weight Options for Fresh Fruits
 const WEIGHT_OPTIONS = [
@@ -45,7 +46,7 @@ export default function ProductDetails() {
       setLoading(true);
       window.scrollTo(0, 0);
       try {
-        const res = await fetch('/api/products');
+        const res = await fetch(`${API_BASE_URL}/api/products`);
         const response = await res.json();
         const data = response.data || {};
         const items = data.items || [];

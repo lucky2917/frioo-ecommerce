@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { showToast } from '../../utils/toast';
 import { logger } from '../../utils/logger';
+import { API_BASE_URL } from '../../config/constants';
 
 const INITIAL_FORM = {
     id: null,
@@ -111,7 +112,7 @@ export default function AdminProducts() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("No active session");
 
-            const res = await fetch(`/api/admin/products/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${session.access_token}` }
             });
@@ -156,8 +157,8 @@ export default function AdminProducts() {
             };
 
             const url = formData.id
-                ? `/api/admin/products/${formData.id}`
-                : `/api/admin/products`;
+                ? `${API_BASE_URL}/api/admin/products/${formData.id}`
+                : `${API_BASE_URL}/api/admin/products`;
 
             const method = formData.id ? 'PATCH' : 'POST';
 
@@ -218,7 +219,7 @@ export default function AdminProducts() {
             setFormData(prev => ({ ...prev, uploadProgress: 10 }));
 
             // Upload to server
-            const res = await fetch('/api/upload', {
+            const res = await fetch(`${API_BASE_URL}/api/upload`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${session.access_token}`
