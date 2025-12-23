@@ -184,11 +184,11 @@ router.post('/',
                     items: JSON.stringify(items),
                     total_amount: serverCalculatedTotal, // Use server-verified total
                     order_type,
-                    delivery_address,
+                    address: delivery_address, // Changed from delivery_address to address
                     phone_number,
-                    distance_km: distance_km || 0,
+                    distance: distance_km || 0, // Changed from distance_km to distance
                     coupon_code: coupon_code || null,
-                    discount_amount: serverCalculatedDiscount, // Use server-verified discount
+                    discount: serverCalculatedDiscount, // Changed from discount_amount to discount
                     status: 'pending',
                     created_at: new Date().toISOString()
                 }])
