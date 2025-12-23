@@ -91,7 +91,7 @@ router.post('/',
             const productIds = items.map(item => item.id);
             const { data: products, error: productsError } = await supabaseAdmin
                 .from('products')
-                .select('id, price_cents')
+                .select('id, price') // Changed from price_cents to price
                 .in('id', productIds);
 
             if (productsError) {
@@ -108,8 +108,8 @@ router.post('/',
                     return sendError(res, `Product ${item.id} not found or unavailable`, 400);
                 }
 
-                // Calculate: (price in cents / 100) * quantity
-                const itemTotal = (product.price_cents / 100) * item.qty;
+                // Calculate: price * quantity (price is already in rupees, not cents)
+                const itemTotal = product.price * item.qty;
                 serverCalculatedSubtotal += itemTotal;
             }
 
