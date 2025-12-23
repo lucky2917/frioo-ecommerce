@@ -180,12 +180,12 @@ router.post('/',
                 .from('orders')
                 .insert([{
                     user_id,
-                    profile_id,
+                    // Removed profile_id - column doesn't exist in DB
                     items: JSON.stringify(items),
                     total_amount: serverCalculatedTotal, // Use server-verified total
                     order_type,
                     address: delivery_address, // Changed from delivery_address to address
-                    phone_number,
+                    // Removed phone_number - column doesn't exist in DB
                     distance: distance_km || 0, // Changed from distance_km to distance
                     coupon_code: coupon_code || null,
                     discount: serverCalculatedDiscount, // Changed from discount_amount to discount
