@@ -241,7 +241,14 @@ export default function Cart() {
 
     } catch (error) {
       logger.error('Order Placement Error:', error);
-      showToast(error.message || 'Failed to place order', 'error');
+      // Log the full error for debugging
+      if (error.response) {
+        logger.error('Error response:', error.response);
+      }
+      // Show user-friendly error message
+      const errorMessage = error.message || 'Failed to place order';
+      showToast(errorMessage, 'error');
+      console.error('Full error details:', error); // Also log to browser console for debugging
     } finally {
       setIsPlacingOrder(false);
     }
