@@ -34,7 +34,7 @@ const csrfProtection = (req, res, next) => {
         res.cookie('csrfToken', token, {
             httpOnly: false, // Must be accessible to JavaScript for form submission
             secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-            sameSite: 'strict', // Prevent CSRF by default
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Allow cross-origin in production
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
     }
