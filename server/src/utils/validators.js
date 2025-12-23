@@ -162,7 +162,7 @@ const orderValidators = () => [
     priceValidator('total_amount', 0, 1000000),
     orderTypeValidator(),
     addressValidator('delivery_address', false),
-    phoneValidator(),
+    body('phone_number').optional().trim(), // Make phone optional for orders
     distanceValidator(),
     body('coupon_code').optional().trim().toUpperCase(),
     body('discount_amount').optional().isFloat({ min: 0 }).withMessage('Discount amount must be non-negative')
