@@ -247,11 +247,12 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'Frioo API is running' });
 });
 
-// Apply CSRF validation to all API routes EXCEPT admin routes (POST/PUT/DELETE/PATCH)
+// Apply CSRF validation to all API routes EXCEPT admin routes and orders (POST/PUT/DELETE/PATCH)
 // Admin routes are protected by Bearer token authentication instead
+// Orders are protected by user authentication
 app.use('/api', (req, res, next) => {
-  // Skip CSRF for admin routes (they use JWT authentication)
-  if (req.path.startsWith('/admin/') || req.path.startsWith('/upload')) {
+  // Skip CSRF for admin routes, uploads, and orders (they use session/JWT authentication)
+  if (req.path.startsWith('/admin/') || req.path.startsWith('/upload') || req.path.startsWith('/orders')) {
     return next();
   }
   // Apply CSRF validation to all other API routes
