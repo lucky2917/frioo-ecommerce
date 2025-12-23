@@ -199,10 +199,19 @@ export default function Cart() {
       }
 
       // 1. Prepare Order Data for Backend API
+      // Clean cart items: remove UI-only fields (originalKey, image, variant, preferences)
+      // Backend only needs: id, title, price, qty
+      const cleanedItems = cartItems.map(item => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        qty: item.qty
+      }));
+
       const orderPayload = {
         user_id: user?.id,
         profile_id: user?.id, // Required by backend validation
-        items: cartItems,
+        items: cleanedItems, // Send cleaned items
         total_amount: finalTotal,
         order_type: orderType,
         delivery_address: orderType === 'delivery' ? 'User location' : null,
