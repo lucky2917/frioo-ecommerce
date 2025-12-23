@@ -1,0 +1,359 @@
+import React from 'react';
+
+export default function Contact() {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  });
+
+  const [submitted, setSubmitted] = React.useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // In production, you'd send this to your backend
+    // Form data is ready to be submitted
+    setSubmitted(true);
+    setTimeout(() => {
+      setSubmitted(false);
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    }, 3000);
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  return (
+    <div className="contact-page">
+      <div className="contact-container">
+        <div className="contact-header">
+          <h1>Get in Touch</h1>
+          <p className="subtitle">We'd love to hear from you</p>
+        </div>
+
+        <div className="contact-content">
+          <div className="contact-info">
+            <h2>Contact Information</h2>
+
+            <div className="info-item">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+              </svg>
+              <div>
+                <h3>Phone</h3>
+                <p>+91 9347043329</p>
+              </div>
+            </div>
+
+            <div className="info-item">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+              <div>
+                <h3>Email</h3>
+                <p>frioo.trust@gmail.com</p>
+              </div>
+            </div>
+
+            <div className="info-item">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="10" r="3" />
+                <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z" />
+              </svg>
+              <div>
+                <h3>Address</h3>
+                <p>Hyderabad, Telangana<br />India</p>
+              </div>
+            </div>
+
+            <div className="info-item">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <div>
+                <h3>Business Hours</h3>
+                <p>Monday - Sunday<br />7:00 AM - 10:00 PM</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="contact-form-wrapper">
+            <h2>Send us a Message</h2>
+            {submitted && (
+              <div className="success-message">
+                ✓ Thank you! We'll get back to you soon.
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="contact-form">
+              <div className="form-row">
+                <div className="form-field">
+                  <label>Name *</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    placeholder="Your name"
+                  />
+                </div>
+                <div className="form-field">
+                  <label>Email *</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    placeholder="your@email.com"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-field">
+                  <label>Phone</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="+91 1234567890"
+                  />
+                </div>
+                <div className="form-field">
+                  <label>Subject *</label>
+                  <input
+                    type="text"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    required
+                    placeholder="How can we help?"
+                  />
+                </div>
+              </div>
+
+              <div className="form-field">
+                <label>Message *</label>
+                <textarea
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  required
+                  rows="6"
+                  placeholder="Tell us more..."
+                />
+              </div>
+
+              <button type="submit" className="submit-button">
+                Send Message
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .contact-page {
+          min-height: 100vh;
+          padding: 120px 20px 60px;
+          background: linear-gradient(to bottom, #faf5ed 0%, #ffffff 100%);
+        }
+
+        .contact-container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        .contact-header {
+          text-align: center;
+          margin-bottom: 60px;
+        }
+
+        .contact-header h1 {
+          font-family: 'Playfair Display', serif;
+          font-size: 3rem;
+          color: #2d2d2d;
+          margin: 0 0 12px 0;
+        }
+
+        .subtitle {
+          font-size: 1.25rem;
+          color: #D4AF7A;
+          font-weight: 500;
+        }
+
+        .contact-content {
+          display: grid;
+          grid-template-columns: 1fr 1.5fr;
+          gap: 48px;
+        }
+
+        .contact-info {
+          background: white;
+          padding: 40px;
+          border-radius: 16px;
+          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+          height: fit-content;
+        }
+
+        .contact-info h2 {
+          font-family: 'Playfair Display', serif;
+          font-size: 1.75rem;
+          color: #2d2d2d;
+          margin: 0 0 32px 0;
+        }
+
+        .info-item {
+          display: flex;
+          gap: 20px;
+          margin-bottom: 32px;
+        }
+
+        .info-item:last-child {
+          margin-bottom: 0;
+        }
+
+        .info-item svg {
+          color: #D4AF7A;
+          flex-shrink: 0;
+        }
+
+        .info-item h3 {
+          font-size: 1.05rem;
+          font-weight: 600;
+          color: #2d2d2d;
+          margin: 0 0 8px 0;
+        }
+
+        .info-item p {
+          font-size: 0.95rem;
+          color: #666;
+          margin: 0;
+          line-height: 1.6;
+        }
+
+        .contact-form-wrapper {
+          background: white;
+          padding: 40px;
+          border-radius: 16px;
+          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .contact-form-wrapper h2 {
+          font-family: 'Playfair Display', serif;
+          font-size: 1.75rem;
+          color: #2d2d2d;
+          margin: 0 0 24px 0;
+        }
+
+        .success-message {
+          background: #4CAF50;
+          color: white;
+          padding: 16px;
+          border-radius: 8px;
+          margin-bottom: 24px;
+          text-align: center;
+          font-weight: 500;
+        }
+
+        .contact-form {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+        }
+
+        .form-field {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .form-field label {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: #2d2d2d;
+        }
+
+        .form-field input,
+        .form-field textarea {
+          padding: 12px 16px;
+          border: 2px solid #e5e5e5;
+          border-radius: 8px;
+          font-size: 0.95rem;
+          font-family: inherit;
+          transition: all 0.3s;
+          outline: none;
+        }
+
+        .form-field input:focus,
+        .form-field textarea:focus {
+          border-color: #D4AF7A;
+          box-shadow: 0 0 0 3px rgba(212, 175, 122, 0.1);
+        }
+
+        .form-field textarea {
+          resize: vertical;
+          min-height: 120px;
+        }
+
+        .submit-button {
+          background: #D4AF7A;
+          color: white;
+          padding: 16px 32px;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 1.05rem;
+          cursor: pointer;
+          transition: all 0.3s;
+          margin-top: 8px;
+        }
+
+        .submit-button:hover {
+          background: #c49a6a;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(212, 175, 122, 0.3);
+        }
+
+        @media (max-width: 968px) {
+          .contact-content {
+            grid-template-columns: 1fr;
+            gap: 32px;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .contact-page {
+            padding: 100px 16px 40px;
+          }
+
+          .contact-header h1 {
+            font-size: 2.25rem;
+          }
+
+          .contact-info,
+          .contact-form-wrapper {
+            padding: 24px;
+          }
+
+          .form-row {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}

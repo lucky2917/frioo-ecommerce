@@ -1,0 +1,190 @@
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
+import { logger } from '../utils/logger';
+
+const CartContext = createContext();
+
+export const useCart = () => useContext(CartContext);
+
+export const CartProvider = ({ children }) => {
+    // Initialize cart from localStorage IMMEDIATELY
+    const [cart, setCart] = useState(() => {
+        try {
+            const savedCart = localStorage.getItem('frioo_cart');
+            return savedCart ? JSON.parse(savedCart) : {};
+        } catch (err) {
+            logger.error('Failed to parse saved cart:', err);
+            return {};
+        }
+    });
+
+    const [notification, setNotification] = useState(null);
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [availableCoupons, setAvailableCoupons] = useState([]);
+
+    // --- FETCH COUPONS ---
+    useEffect(() => {
+        const fetchCoupons = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('coupons')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('min_order_value', { ascending: true }); // Show easier-to-reach ones first
+
+                if (!error && data) {
+                    setAvailableCoupons(data);
+                }
+            } catch (err) {
+                logger.error('Error fetching coupons:', err);
+            }
+        };
+        fetchCoupons();
+    }, []);
+
+    // --- CART PERSISTENCE ---
+    useEffect(() => {
+        localStorage.setItem('frioo_cart', JSON.stringify(cart));
+    }, [cart]);
+
+    // --- HELPERS ---
+    const showToast = (text) => {
+        setNotification(text);
+        setTimeout(() => setNotification(null), 3000);
+    };
+
+    const makeCartKey = (productId, variant, preferences = {}) => {
+        const sortedPrefs = {};
+        Object.keys(preferences).sort().forEach(key => {
+            const val = preferences[key];
+            if (Array.isArray(val)) {
+                sortedPrefs[key] = [...val].sort();
+            } else {
+                sortedPrefs[key] = val;
+            }
+        });
+        return `${productId}-${variant}-${JSON.stringify(sortedPrefs)}`;
+    };
+
+    // --- CART ACTIONS ---
+    const addToCart = (product, variant, finalPrice, preferences = {}) => {
+        const cartKey = makeCartKey(product.id, variant, preferences);
+
+        setCart(prev => {
+            const existing = prev[cartKey];
+            return {
+                ...prev,
+                [cartKey]: {
+                    id: product.id,
+                    title: product.title,
+                    variant: variant,
+                    price: finalPrice,
+                    qty: existing ? existing.qty + 1 : 1,
+                    image: product.images?.[0], // Ensure image is captured
+                    preferences: preferences
+                }
+            };
+        });
+
+        const hasPrefs = Object.keys(preferences).length > 0 &&
+            (preferences.exclusions?.length > 0 || preferences.removedIngredients?.length > 0 || preferences.note);
+
+        showToast(`${product.title} ${hasPrefs ? '(Customized)' : ''} added`);
+    };
+
+    const removeFromCart = (cartKey) => {
+        setCart(prev => {
+            if (!prev[cartKey]) return prev;
+
+            const newCart = { ...prev };
+            if (newCart[cartKey].qty > 1) {
+                newCart[cartKey] = {
+                    ...newCart[cartKey],
+                    qty: newCart[cartKey].qty - 1
+                };
+            } else {
+                delete newCart[cartKey];
+            }
+            return newCart;
+        });
+    };
+
+    const deleteFromCart = (cartKey) => {
+        setCart(prev => {
+            const newCart = { ...prev };
+            delete newCart[cartKey];
+            return newCart;
+        });
+        showToast('Item removed');
+    };
+
+    const clearCart = () => {
+        setCart({});
+        setAppliedCoupon(null);
+    };
+
+    const cartTotal = Object.values(cart).reduce((acc, item) => acc + (item.price * item.qty), 0);
+    const cartCount = Object.values(cart).reduce((acc, item) => acc + item.qty, 0);
+
+    // --- COUPON LOGIC ---
+    const verifyCoupon = async (code) => {
+        try {
+            const { data, error } = await supabase
+                .from('coupons')
+                .select('*')
+                .eq('code', code.toUpperCase())
+                .single();
+
+            if (error || !data) {
+                showToast('❌ Invalid Coupon');
+                return false;
+            }
+
+            if (data.is_active === false) {
+                showToast('❌ Coupon Expired');
+                return false;
+            }
+
+            // Check min order value against current total
+            const currentTotal = Object.values(cart).reduce((acc, item) => acc + item.price * item.qty, 0);
+
+            if (currentTotal < data.min_order_value) {
+                showToast(`⚠️ Add items worth ₹${data.min_order_value - currentTotal} more`);
+                return false;
+            }
+
+            setAppliedCoupon(data);
+            showToast(`✅ ${data.code} Applied!`);
+            return true;
+        } catch (err) {
+            logger.error('Coupon verification failed:', err);
+            return false;
+        }
+    };
+
+    const removeCoupon = () => {
+        setAppliedCoupon(null);
+        showToast('Coupon Removed');
+    };
+
+    return (
+        <CartContext.Provider value={{
+            cart,
+            cartCount,
+            cartTotal,
+            addToCart,
+            removeFromCart,
+            deleteFromCart,
+            clearCart,
+            notification,
+            showToast,
+            appliedCoupon,
+            verifyCoupon,
+            removeCoupon,
+            availableCoupons
+        }}>
+            {children}
+        </CartContext.Provider>
+    );
+};
