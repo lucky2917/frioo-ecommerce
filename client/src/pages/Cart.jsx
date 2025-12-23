@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabaseClient';
 import { logger } from '../utils/logger';
 import { sanitizeText } from '../utils/sanitize';
 import { showToast } from '../utils/toast';
+import { API_BASE_URL } from '../config/constants';
 import {
   SHOP_LOCATION,
   MAX_DELIVERY_RANGE_KM,
@@ -67,12 +68,31 @@ export default function Cart() {
   const [isChecking, setIsChecking] = useState(false);
   const [warningModal, setWarningModal] = useState({ show: false, distance: 0, lat: null, lng: null });
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [csrfToken, setCsrfToken] = useState('');
   const navigate = useNavigate();
   const { user } = useAuth();
 
   // Derived State
   const amountToMin = Math.max(0, MIN_CART_VALUE - finalTotal);
   const isBelowMin = orderType === 'delivery' && finalTotal < MIN_CART_VALUE;
+
+  // Fetch CSRF token on mount
+  React.useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/csrf-token`, {
+          credentials: 'include' // Important for cookies
+        });
+        const data = await res.json();
+        if (data.success && data.data?.csrfToken) {
+          setCsrfToken(data.data.csrfToken);
+        }
+      } catch (err) {
+        logger.error('Failed to fetch CSRF token:', err);
+      }
+    };
+    fetchCsrfToken();
+  }, []);
 
   const handleApplyCoupon = () => {
     if (!couponInput.trim()) return;
@@ -193,11 +213,12 @@ export default function Cart() {
       };
 
       // 2. Call Backend API (which has proper validation and auth checks)
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-      const response = await fetch(`${apiUrl}/api/orders`, {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
+        credentials: 'include', // Send cookies
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken // Include CSRF token
         },
         body: JSON.stringify(orderPayload)
       });
