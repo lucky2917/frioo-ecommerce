@@ -91,12 +91,14 @@ router.post('/',
             const productIds = items.map(item => item.id);
             const { data: products, error: productsError } = await supabaseAdmin
                 .from('products')
-                .select('id, price') // Changed from price_cents to price
+                .select('id, price_cents')
                 .in('id', productIds);
 
             if (productsError) {
-                console.error('Error fetching products:', productsError);
-                return sendError(res, 'Failed to verify product prices', 500);
+                console.error('Error fetching products for price verification:');
+                console.error('Error details:', JSON.stringify(productsError, null, 2));
+                console.error('Product IDs attempted:', productIds);
+                return sendError(res, `Failed to verify product prices: ${productsError.message || 'Unknown error'}`, 500);
             }
 
             // Step 2: Recalculate total on server using database prices
@@ -108,8 +110,8 @@ router.post('/',
                     return sendError(res, `Product ${item.id} not found or unavailable`, 400);
                 }
 
-                // Calculate: price * quantity (price is already in rupees, not cents)
-                const itemTotal = product.price * item.qty;
+                // Calculate: (price in cents / 100) * quantity
+                const itemTotal = (product.price_cents / 100) * item.qty;
                 serverCalculatedSubtotal += itemTotal;
             }
 
