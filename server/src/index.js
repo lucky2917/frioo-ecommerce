@@ -291,11 +291,18 @@ app.use((req, res) => {
 
 
 // ===== START SERVER =====
-const port = process.env.PORT || 4000;
-const server = app.listen(port, () => {
-  console.log(`🚀 Server running on port ${port}`);
-});
+const PORT = process.env.PORT || 4000;
 
+// Only start listening if not in serverless environment (Vercel)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    logger.info(`🚀 Frioo Backend running on port ${PORT}`);
+    logger.info(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+}
+
+// Export for Vercel serverless deployment
+module.exports = app;
 // ===== GRACEFUL SHUTDOWN =====
 // Handle process termination signals for zero-downtime deploys
 let isShuttingDown = false;
