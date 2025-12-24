@@ -191,7 +191,6 @@ router.post('/',
                     coupon_code: coupon_code || null,
                     discount: serverCalculatedDiscount, // Changed from discount_amount to discount
                     status: 'pending',
-                    notes: notes || null,
                     created_at: new Date().toISOString()
                 }])
                 .select()
