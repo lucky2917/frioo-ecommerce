@@ -16,4 +16,27 @@ if (!supabaseUrl || !supabaseKey) {
     );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// PRODUCTION FIX: Explicit session configuration
+// This ensures sessions persist correctly on frioo.in (production domain)
+// Without this, sessions may not be stored properly in localStorage
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+        // Store session in localStorage for persistence across page reloads
+        persistSession: true,
+
+        // Automatically refresh tokens before they expire (1 hour default)
+        autoRefreshToken: true,
+
+        // Detect session from URL (after OAuth redirect from Google)
+        detectSessionInUrl: true,
+
+        // Use localStorage explicitly (fixes production domain issues)
+        storage: window.localStorage,
+
+        // Use Supabase's default storage key (sb-{project-ref}-auth-token)
+        // This maintains backward compatibility with existing sessions
+
+        // Flow type for OAuth
+        flowType: 'pkce'
+    }
+});

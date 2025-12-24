@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const { requestLogger, performanceLogger } = require('./middleware/requestLogger');
 const { csrfProtection, validateCsrfToken, getCsrfToken } = require('./middleware/csrf');
 const { initSentry, requestHandler, tracingHandler, errorHandler } = require('./config/sentry');
+const logger = require('./utils/logger');
 
 const app = express();
 
@@ -297,9 +298,12 @@ app.use((req, res) => {
 // ===== START SERVER =====
 const PORT = process.env.PORT || 4000;
 
+// Store server instance for graceful shutdown
+let server = null;
+
 // Only start listening if not in serverless environment (Vercel)
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-  app.listen(PORT, () => {
+  server = app.listen(PORT, () => {
     logger.info(`🚀 Frioo Backend running on port ${PORT}`);
     logger.info(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   });
