@@ -260,45 +260,53 @@ export default function AdminOrders() {
                                     {/* ITEMS */}
                                     <div className="details-section">
                                         <div className="section-title">Order Items</div>
-                                        {Array.isArray(order.items) && order.items.map((item, idx) => (
-                                            <div key={idx} className="item-row">
-                                                <div className="item-main">
-                                                    <span className="item-qty">{item.qty}×</span>
-                                                    <div className="item-info">
-                                                        <div className="item-title-row">
-                                                            <span className="item-title">{item.title}</span>
-                                                            {item.isVirtual && <span className="ai-label">AI</span>}
-                                                        </div>
-                                                        <span className="item-variant">{item.variant}</span>
-                                                    </div>
-                                                    <span className="item-price">₹{(item.price * item.qty).toFixed(0)}</span>
-                                                </div>
+                                        {(() => {
+                                            let items = order.items;
+                                            if (typeof items === 'string') {
+                                                try { items = JSON.parse(items); } catch (e) { items = []; }
+                                            }
+                                            if (!Array.isArray(items)) items = [];
 
-                                                {/* Customizations */}
-                                                {item.preferences && (
-                                                    <div className="item-customizations">
-                                                        {item.preferences.exclusions?.length > 0 && (
-                                                            <div className="custom-row allergies">
-                                                                <span className="custom-label">Allergies:</span>
-                                                                <span className="custom-value">No {item.preferences.exclusions.join(', ')}</span>
+                                            return items.map((item, idx) => (
+                                                <div key={idx} className="item-row">
+                                                    <div className="item-main">
+                                                        <span className="item-qty">{item.qty}×</span>
+                                                        <div className="item-info">
+                                                            <div className="item-title-row">
+                                                                <span className="item-title">{item.title}</span>
+                                                                {item.isVirtual && <span className="ai-label">AI</span>}
                                                             </div>
-                                                        )}
-                                                        {item.preferences.removedIngredients?.length > 0 && (
-                                                            <div className="custom-row removed">
-                                                                <span className="custom-label">Removed:</span>
-                                                                <span className="custom-value">{item.preferences.removedIngredients.join(', ')}</span>
-                                                            </div>
-                                                        )}
-                                                        {item.preferences.note && (
-                                                            <div className="custom-row note">
-                                                                <span className="custom-label">Note:</span>
-                                                                <span className="custom-value">{item.preferences.note}</span>
-                                                            </div>
-                                                        )}
+                                                            <span className="item-variant">{item.variant}</span>
+                                                        </div>
+                                                        <span className="item-price">₹{(item.price * item.qty).toFixed(0)}</span>
                                                     </div>
-                                                )}
-                                            </div>
-                                        ))}
+
+                                                    {/* Customizations */}
+                                                    {item.preferences && (
+                                                        <div className="item-customizations">
+                                                            {item.preferences.exclusions?.length > 0 && (
+                                                                <div className="custom-row allergies">
+                                                                    <span className="custom-label">Allergies:</span>
+                                                                    <span className="custom-value">No {item.preferences.exclusions.join(', ')}</span>
+                                                                </div>
+                                                            )}
+                                                            {item.preferences.removedIngredients?.length > 0 && (
+                                                                <div className="custom-row removed">
+                                                                    <span className="custom-label">Removed:</span>
+                                                                    <span className="custom-value">{item.preferences.removedIngredients.join(', ')}</span>
+                                                                </div>
+                                                            )}
+                                                            {item.preferences.note && (
+                                                                <div className="custom-row note">
+                                                                    <span className="custom-label">Note:</span>
+                                                                    <span className="custom-value">{item.preferences.note}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ));
+                                        })()}
                                     </div>
 
                                     {/* ORDER NOTES */}

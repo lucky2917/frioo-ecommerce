@@ -109,26 +109,34 @@ export default function Orders() {
 
                 {/* CARD BODY - ITEMS */}
                 <div className="card-body">
-                  {Array.isArray(order.items) && order.items.map((item, i) => (
-                    <div key={i} className="order-item">
-                      <div className="item-qty">{item.qty}x</div>
-                      <div className="item-details">
-                        <span className="item-name">{item.title}</span>
-                        {item.variant && <span className="item-variant">Variant: {item.variant}</span>}
-                        {item.preferences && (
-                          <div className="item-prefs">
-                            {item.preferences.exclusions?.length > 0 && (
-                              <div className="pref-row">🚫 No {item.preferences.exclusions.join(', ')}</div>
-                            )}
-                            {item.preferences.removedIngredients?.length > 0 && (
-                              <div className="pref-row">🚫 No {item.preferences.removedIngredients.join(', ')}</div>
-                            )}
-                          </div>
-                        )}
+                  {(() => {
+                    let items = order.items;
+                    if (typeof items === 'string') {
+                      try { items = JSON.parse(items); } catch (e) { items = []; }
+                    }
+                    if (!Array.isArray(items)) items = [];
+
+                    return items.map((item, i) => (
+                      <div key={i} className="order-item">
+                        <div className="item-qty">{item.qty}x</div>
+                        <div className="item-details">
+                          <span className="item-name">{item.title}</span>
+                          {item.variant && <span className="item-variant">Variant: {item.variant}</span>}
+                          {item.preferences && (
+                            <div className="item-prefs">
+                              {item.preferences.exclusions?.length > 0 && (
+                                <div className="pref-row">🚫 No {item.preferences.exclusions.join(', ')}</div>
+                              )}
+                              {item.preferences.removedIngredients?.length > 0 && (
+                                <div className="pref-row">🚫 No {item.preferences.removedIngredients.join(', ')}</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="item-price">₹{item.price * item.qty}</div>
                       </div>
-                      <div className="item-price">₹{item.price * item.qty}</div>
-                    </div>
-                  ))}
+                    ));
+                  })()}
                   {order.notes && (
                     <div className="order-note-block">
                       <strong>Note:</strong> {order.notes}
