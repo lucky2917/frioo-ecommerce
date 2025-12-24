@@ -35,7 +35,8 @@ router.post('/',
                 phone_number,
                 distance_km,
                 coupon_code,
-                discount_amount
+                discount_amount,
+                notes // Add notes
             } = req.body;
 
             // CRITICAL: Check if user is authenticated before processing order
@@ -190,6 +191,7 @@ router.post('/',
                     coupon_code: coupon_code || null,
                     discount: serverCalculatedDiscount, // Changed from discount_amount to discount
                     status: 'pending',
+                    notes: notes || null,
                     created_at: new Date().toISOString()
                 }])
                 .select()

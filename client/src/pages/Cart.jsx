@@ -209,7 +209,10 @@ export default function Cart() {
         id: item.id,
         title: item.title,
         price: item.price,
-        qty: item.qty
+        qty: item.qty,
+        variant: item.variant,
+        image: item.image,
+        preferences: item.preferences
       }));
 
       const orderPayload = {
