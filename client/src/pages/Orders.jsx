@@ -10,10 +10,12 @@ import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 
 export default function Orders() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { addToCart } = useCart();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  if (authLoading) return <LoadingSpinner fullScreen />;
 
   useEffect(() => {
     const fetchOrders = async () => {

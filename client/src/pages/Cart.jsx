@@ -70,7 +70,11 @@ export default function Cart() {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [csrfToken, setCsrfToken] = useState('');
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+
+  // Prevent premature redirection or empty state
+  if (authLoading) return <div className="cart-page"><Navbar /><div style={{ padding: '100px', textAlign: 'center' }}>Loading...</div></div>;
+
 
   // Derived State
   const amountToMin = Math.max(0, MIN_CART_VALUE - finalTotal);

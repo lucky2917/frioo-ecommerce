@@ -9,7 +9,11 @@ import { Link } from 'react-router-dom';
 
 export default function Profile() {
   const { addToCart } = useCart();
-  const { profile, user } = useAuth();
+  const { profile, user, loading: authLoading } = useAuth();
+
+  // If we are still initializing auth, show a loader or nothing
+  // This prevents Profile from flashing "Welcome Friend" before profile loads
+  if (authLoading) return <div style={{ height: '100vh' }} />;
 
   // We can track which field is being edited, or just a global edit mode.
   // User asked for "pencil icon beside every field", implying granular control or just visual cues.
