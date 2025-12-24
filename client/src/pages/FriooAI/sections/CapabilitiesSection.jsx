@@ -196,8 +196,8 @@ function CapabilitiesSection() {
                                 transition={{ delay: i * 0.05, duration: 0.4 }}
                                 viewport={{ once: false }}
                                 style={{
-                                    left: `${Math.random() * 80 + 10}%`,
-                                    top: `${Math.random() * 60 + 20}%`
+                                    left: `${(i * 37) % 80 + 10}%`,
+                                    top: `${(i * 53) % 60 + 20}%`
                                 }}
                             />
                         ))}

@@ -8,14 +8,31 @@ import { showToast } from '../utils/toast';
 import { validatePhoneNumber, validateAddress, validateName, formatPhoneNumber } from '../utils/validation';
 
 export default function Onboarding() {
-  const { user, profile, fetchProfile } = useAuth();
+  const { user, profile, fetchProfile, loading } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    full_name: user?.user_metadata?.full_name || '',
+    full_name: '', // Initialize empty, set via effect
     phone_number: '',
     address: ''
   });
+
+  // Initialize form data when user is available
+  useEffect(() => {
+    if (user?.user_metadata?.full_name && !formData.full_name) {
+      setFormData(prev => ({ ...prev, full_name: user.user_metadata.full_name }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  // Redirect if not logged in (Fix for "white screen" on redirect failure)
+  useEffect(() => {
+    if (!loading && !user) {
+      // If auth finished and we have no user, something went wrong with the redirect
+      logger.warn('Onboarding accessed without user - redirecting to home');
+      navigate('/');
+    }
+  }, [user, loading, navigate]);
   const [loadingLocation, setLoadingLocation] = useState(false);
 
   // If user is already fully profiled (has phone), redirect to shop
@@ -24,6 +41,24 @@ export default function Onboarding() {
       navigate('/shop');
     }
   }, [profile?.phone_number, navigate]);
+
+  // Show loading state while auth initializes
+  if (loading || !user) {
+    return (
+      <div style={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'sans-serif',
+        color: '#666'
+      }}>
+        <h3>Verifying Login...</h3>
+        <p>Please wait while we secure your session.</p>
+      </div>
+    );
+  }
 
   // --- GEO LOCATION LOGIC ---
   const getLocation = () => {

@@ -1,4 +1,14 @@
 require('dotenv').config();
+
+// Validate required environment variables
+const requiredEnv = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
+const missingEnv = requiredEnv.filter(key => !process.env[key]);
+
+if (missingEnv.length > 0) {
+  console.error(`❌ CRITICAL: Missing required environment variables: ${missingEnv.join(', ')}`);
+  console.error('   Please check your .env file or Vercel project settings.');
+  process.exit(1);
+}
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
