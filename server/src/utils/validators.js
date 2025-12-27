@@ -159,7 +159,7 @@ const orderValidators = () => [
     body('user_id').optional().isUUID(4).withMessage('user_id must be a valid UUID'),
     body('profile_id').optional().isUUID(4).withMessage('profile_id must be a valid UUID'),
     orderItemsValidator(),
-    priceValidator('total_amount', 0, 1000000),
+    body('total_amount').isFloat({ min: 0, max: 1000000 }).withMessage('total_amount must be a number between 0 and 1000000'),
     orderTypeValidator(),
     addressValidator('delivery_address', false),
     body('phone_number').optional().trim(), // Make phone optional for orders
