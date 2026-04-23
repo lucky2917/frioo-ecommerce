@@ -19,11 +19,16 @@ export default function Footer() {
           {/* Company Info */}
           <div className="footer-col footer-about">
             <h3 className="footer-logo">Frioo.</h3>
-            <p className="footer-tagline">Fresh juices, vibrant flavors, healthy living.</p>
+            <p className="footer-tagline">Fresh fruits, juices & salads in Visakhapatnam.</p>
             <p className="footer-description">
-              Experience the perfect blend of taste and nutrition with our handcrafted juices,
-              made fresh daily from the finest ingredients.
+              Vizag's favourite destination for fresh fruits, pure juices, fruit milkshakes, and healthy salads.
+              Made fresh daily from farm-sourced ingredients. Delivering within 6km in Visakhapatnam.
             </p>
+            <address className="footer-address" style={{fontStyle: 'normal', color: '#B0B0B0', fontSize: '0.85rem', lineHeight: '1.5', marginBottom: '15px'}}>
+              Railway Quarters, Allipuram<br />
+              Visakhapatnam, AP 530004<br />
+              India
+            </address>
             <div className="footer-social">
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-link">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

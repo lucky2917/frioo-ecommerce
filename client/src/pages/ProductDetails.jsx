@@ -148,8 +148,27 @@ export default function ProductDetails() {
   return (
     <div className="pd-page">
       <SEO
-        title={product ? product.title : 'Product Details'}
-        description={product ? product.description : 'Fresh product details.'}
+        title={product ? `${product.title} — Fresh ${product.category} in Vizag` : 'Product Details'}
+        description={product ? `Order ${product.title} from Frioo in Visakhapatnam. ${product.description?.substring(0, 120)}. Fresh, 100% natural. Delivery in Vizag.` : 'Fresh product details from Frioo Vizag.'}
+        canonical={product ? `/product/${product.id}` : '/shop'}
+        keywords={product ? `${product.title} vizag, ${product.category} vizag, buy ${product.title} online vizag, fresh ${product.category} visakhapatnam` : ''}
+        structuredData={product ? {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": product.title,
+          "description": product.description,
+          "image": product.images?.[0],
+          "brand": { "@type": "Brand", "name": "Frioo" },
+          "offers": {
+            "@type": "Offer",
+            "price": (product.price_cents / 100).toFixed(2),
+            "priceCurrency": "INR",
+            "availability": "https://schema.org/InStock",
+            "seller": { "@type": "Organization", "name": "Frioo Vizag" },
+            "areaServed": { "@type": "City", "name": "Visakhapatnam" }
+          },
+          "category": product.category
+        } : undefined}
       />
       <Navbar />
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SEO from '../../components/SEO';
 
 export default function HelpFAQs() {
     const [openFAQ, setOpenFAQ] = useState(null);
@@ -82,8 +83,31 @@ export default function HelpFAQs() {
         setOpenFAQ(openFAQ === index ? null : index);
     };
 
+    // Generate FAQ structured data for rich results
+    const faqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqs.flatMap(category =>
+            category.questions.map(faq => ({
+                "@type": "Question",
+                "name": faq.q,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": faq.a
+                }
+            }))
+        )
+    };
+
     return (
         <div className="faq-page">
+            <SEO
+                title="Help & FAQs — Frioo Fresh Fruit Delivery Vizag"
+                description="Find answers to common questions about Frioo's fresh fruit delivery in Visakhapatnam. Orders, delivery hours, payment methods, returns & more. Delivering within 6km radius in Vizag."
+                canonical="/faq"
+                keywords="frioo faq, frioo vizag delivery, fruit delivery questions vizag, frioo payment methods, frioo return policy, fresh juice delivery hours vizag"
+                structuredData={faqSchema}
+            />
             <div className="faq-container">
                 <div className="faq-header">
                     <h1>Help & FAQs</h1>

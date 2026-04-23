@@ -1,8 +1,14 @@
 import React from 'react';
+import SEO from '../../components/SEO';
 
 export default function Terms() {
   return (
     <div className="legal-page">
+      <SEO
+        title="Terms of Service"
+        description="Frioo's terms of service for ordering fresh fruits, juices and salads in Visakhapatnam. Read our terms for orders, pricing, and service usage."
+        canonical="/terms"
+      />
       <div className="legal-container">
         <h1>Terms of Service</h1>
         <p className="updated">Last updated: December 22, 2025</p>

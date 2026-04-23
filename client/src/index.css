@@ -399,6 +399,20 @@ a:hover {
   gap: 20px;
 }
 
+/* SEO: Visually hidden H1 — accessible to crawlers & screen readers */
+.seo-h1 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  font-size: 1px;
+}
+
 /* =========================================
    HOME PAGE STYLES (Moved from Home.jsx)
    ========================================= */

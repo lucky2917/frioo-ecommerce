@@ -1,0 +1,19 @@
+{
+  "name": "Frioo — Fresh Fruits & Juices Vizag",
+  "short_name": "Frioo",
+  "description": "Order fresh fruits, pure juices, milkshakes & salads in Visakhapatnam. 100% natural, delivered fresh.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF5ED",
+  "theme_color": "#D4AF7A",
+  "orientation": "portrait-primary",
+  "categories": ["food", "shopping", "health"],
+  "lang": "en-IN",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

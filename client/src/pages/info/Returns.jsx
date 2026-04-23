@@ -1,8 +1,14 @@
 import React from 'react';
+import SEO from '../../components/SEO';
 
 export default function Returns() {
   return (
     <div className="legal-page">
+      <SEO
+        title="Returns & Refunds Policy"
+        description="Frioo's returns and refunds policy for fresh fruit and juice orders in Visakhapatnam. Learn about refund eligibility, process, and order cancellation."
+        canonical="/returns"
+      />
       <div className="legal-container">
         <h1>Returns & Refunds Policy</h1>
         <p className="updated">Last updated: December 22, 2025</p>

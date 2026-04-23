@@ -25,9 +25,9 @@ const supabaseAdmin = createClient(
   {
     db: {
       schema: 'public',
-      // Connection pooling to prevent performance issues under load
+     
       poolSettings: {
-        max: 10,                      // Maximum 10 concurrent connections
+        max: 10,                      
         idleTimeoutMillis: 30000,     // 30 seconds idle timeout
         connectionTimeoutMillis: 2000 // 2 seconds connection timeout
       }

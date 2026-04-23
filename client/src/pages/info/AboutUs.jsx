@@ -1,42 +1,49 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import SEO from '../../components/SEO';
 
 export default function AboutUs() {
     return (
         <div className="info-page">
+            <SEO
+                title="About Frioo — Vizag's Favourite Fresh Fruit & Juice Destination"
+                description="Learn about Frioo, Visakhapatnam's most-loved fresh fruit and juice brand. Born in Vizag, we deliver 100% natural fruits, juices, milkshakes & salads daily. Our story, mission & values."
+                canonical="/about"
+                keywords="about frioo vizag, frioo visakhapatnam, fruit shop vizag story, best juice shop vizag about, fresh fruit brand vizag"
+            />
             <div className="info-container">
                 <div className="info-header">
-                    <h1>About Frioo</h1>
-                    <p className="subtitle">Fresh juices, vibrant flavors, healthy living</p>
+                    <h1>About Frioo — Vizag's Fresh Fruit Destination</h1>
+                    <p className="subtitle">Fresh fruits, vibrant flavors, healthy living in Visakhapatnam</p>
                 </div>
 
                 <div className="info-content">
                     <section className="info-section">
-                        <h2>Our Story</h2>
+                        <h2>Our Story in Vizag</h2>
                         <p>
-                            Frioo was born from a simple vision: to make healthy living accessible, delicious, and convenient.
-                            We believe that fresh, nutritious food should be a part of everyone's daily routine, not a luxury.
+                            Frioo was born in the heart of Visakhapatnam with a simple vision: to make healthy living accessible, delicious, and convenient for every family in Vizag.
+                            We believe that fresh, nutritious fruits and juices should be a part of everyone's daily routine in Vizag, not a luxury.
                         </p>
                         <p>
-                            What started as a small juice bar has grown into a trusted source for fresh juices, fruit shakes,
-                            salads, and premium fruits. Every product we offer is crafted with care, using only the finest ingredients.
-                        </p>
-                    </section>
-
-                    <section className="info-section">
-                        <h2>Our Mission</h2>
-                        <p>
-                            To deliver the perfect blend of taste and nutrition through handcrafted products made fresh daily.
-                            We're committed to sourcing the best ingredients and creating products that fuel healthy, vibrant lives.
+                            What started as a small juice bar in Allipuram, Visakhapatnam has grown into Vizag's most trusted source for fresh juices, fruit shakes,
+                            salads, and premium fruits. Every product we offer is crafted with care, using only the finest locally-sourced ingredients from Andhra Pradesh.
                         </p>
                     </section>
 
                     <section className="info-section">
-                        <h2>What We Offer</h2>
+                        <h2>Our Mission in Visakhapatnam</h2>
+                        <p>
+                            To deliver the perfect blend of taste and nutrition to every household in Vizag through handcrafted products made fresh daily.
+                            We're committed to sourcing the best fruits from Andhra Pradesh farms and creating products that fuel healthy, vibrant lives across Visakhapatnam.
+                        </p>
+                    </section>
+
+                    <section className="info-section">
+                        <h2>What We Offer in Vizag</h2>
                         <div className="offerings-grid">
                             <div className="offering-card">
-                                <h3>Pure Fruit Juices</h3>
-                                <p>100% fresh, no additives, no preservatives. Just pure fruit goodness.</p>
+                                <h3>Pure Fruit Juices in Vizag</h3>
+                                <p>100% fresh, no additives, no preservatives. Just pure fruit goodness delivered in Visakhapatnam.</p>
                             </div>
                             <div className="offering-card">
                                 <h3>Fruit Milkshakes</h3>

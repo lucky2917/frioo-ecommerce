@@ -83,9 +83,42 @@ export default function Home() {
 
 
 
+  // Structured Data for Home Page
+  const homeSchema = {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    "name": "Frioo — Fresh Fruits & Juices in Vizag",
+    "description": "Best fresh fruits, pure juices, fruit milkshakes, and healthy salads delivered in Visakhapatnam (Vizag). 100% natural, farm-fresh, no preservatives.",
+    "url": "https://frioo.in",
+    "telephone": "+91-9347043329",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Railway Quarters, Allipuram",
+      "addressLocality": "Visakhapatnam",
+      "addressRegion": "Andhra Pradesh",
+      "postalCode": "530004",
+      "addressCountry": "IN"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 17.721086639920603,
+      "longitude": 83.29694119604164
+    }
+  };
+
   return (
     <div className="home-page">
+      <SEO
+        title="Fresh Fruits, Juices & Salads Delivered in Vizag"
+        description="Order the best fresh fruits, pure juices, fruit milkshakes & healthy salads in Visakhapatnam (Vizag). 100% natural, no preservatives. Farm-fresh delivery daily. Shop Frioo now!"
+        canonical="/"
+        keywords="fresh fruits vizag, best fruits in vizag, fruit delivery visakhapatnam, fresh juice vizag, buy fruits online vizag, best juice shop vizag, fruit milkshake vizag, healthy salad vizag"
+        structuredData={homeSchema}
+      />
       <Navbar />
+
+      {/* SEO H1 — visually hidden but read by crawlers */}
+      <h1 className="seo-h1">Frioo — Best Fresh Fruits, Juices & Salads Delivery in Vizag, Visakhapatnam</h1>
 
       {/* ===== HERO VIDEO ===== */}
       <div className="hero-carousel">
@@ -109,11 +142,11 @@ export default function Home() {
       </div>
 
       {/* ===== FRESHLY MADE FAVORITES ===== */}
-      <section className="featured-section">
+      <section className="featured-section" aria-label="Featured fresh juices and fruits in Vizag">
         <div className="section-container">
           <ScrollReveal>
             <StaggerText text="FRESHLY MADE FAVORITES" className="section-title" />
-            <p className="section-subtitle">Our most-loved juices, freshly made daily with the finest ingredients.</p>
+            <p className="section-subtitle">Our most-loved fresh juices in Vizag, freshly made daily with the finest fruits from local farms.</p>
           </ScrollReveal>
 
           <div className="products-scroll-wrapper">
@@ -187,14 +220,14 @@ export default function Home() {
       </section>
 
       {/* ===== FROM OUR KITCHEN TO YOU (Categories) ===== */}
-      <section className="categories-section">
+      <section className="categories-section" aria-label="Fresh fruit categories available in Vizag">
         <div className="section-container">
           <ScrollReveal direction="up">
             <div className="section-header-center">
-              <span className="section-badge">Treat Yourself</span>
-              <h2 className="section-title-center">FROM OUR KITCHEN TO YOU</h2>
+              <span className="section-badge">Treat Yourself in Vizag</span>
+              <h2 className="section-title-center">FROM OUR KITCHEN TO YOU IN VIZAG</h2>
               <p className="section-subtitle-center">
-                At our shop, every sip is a labor of love. From our kitchen to you is our promise to deliver the freshest, most delicious juices, straight from our blender to your table.
+                At our Visakhapatnam store, every sip is a labor of love. From our kitchen to you is our promise to deliver the freshest, most delicious fruits and juices in Vizag, straight from our blender to your table.
               </p>
             </div>
           </ScrollReveal>
@@ -300,7 +333,7 @@ export default function Home() {
       </section>
 
       {/* ===== STORY SECTION ===== */}
-      <section className="story-section">
+      <section className="story-section" aria-label="Our story - Frioo Vizag">
         <video
           className="story-video"
           autoPlay
@@ -312,10 +345,10 @@ export default function Home() {
         </video>
         <div className="story-overlay"></div>
         <div className="story-content">
-          <div className="story-badge">ESTD. 2024</div>
-          <h2 className="story-title">ONE DREAM. ONE BLENDER. ENDLESS FRESHNESS.</h2>
+          <div className="story-badge">ESTD. 2024 • VIZAG</div>
+          <h2 className="story-title">ONE DREAM. ONE BLENDER. ENDLESS FRESHNESS IN VIZAG.</h2>
           <p className="story-text">
-            Our story began with a simple dream and a deep love for the craft of fresh juicing. We believed that the best drinks in life are made from scratch—with patience, passion, and a sprinkle of creativity. What started in a humble kitchen has grown into a vibrant favorite, where every blend, smoothie, and juice still carries the same care and dedication.
+            Born in Visakhapatnam, our story began with a simple dream and a deep love for the craft of fresh juicing. We believed that the best fruits and drinks in Vizag should be made from scratch—with patience, passion, and a sprinkle of creativity. What started in a humble kitchen in Allipuram has grown into Vizag's most-loved fruit destination, where every blend, smoothie, and juice still carries the same care and dedication.
           </p>
         </div>
       </section>

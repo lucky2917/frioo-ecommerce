@@ -1,8 +1,14 @@
 import React from 'react';
+import SEO from '../../components/SEO';
 
 export default function PrivacyPolicy() {
   return (
     <div className="legal-page">
+      <SEO
+        title="Privacy Policy"
+        description="Frioo's privacy policy. Learn how we collect, use, and protect your personal information when you shop for fresh fruits and juices in Visakhapatnam."
+        canonical="/privacy"
+      />
       <div className="legal-container">
         <h1>Privacy Policy</h1>
         <p className="updated">Last updated: December 22, 2025</p>

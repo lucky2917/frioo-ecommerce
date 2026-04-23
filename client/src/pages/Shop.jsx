@@ -100,7 +100,12 @@ export default function Shop() {
 
   return (
     <div className="shop-page">
-      <SEO title="Shop Fresh" description="Browse our collection of fresh juices, shakes, and salads." />
+      <SEO
+        title="Buy Fresh Fruits, Juices & Salads Online in Vizag"
+        description="Shop the freshest fruits, pure juices, fruit milkshakes & healthy salads in Visakhapatnam. Order online for delivery in Vizag within 6km. 100% natural, no preservatives."
+        canonical="/shop"
+        keywords="buy fruits online vizag, fresh juice shop vizag, fruit delivery visakhapatnam, order fruits online vizag, fresh salad vizag, fruit milkshake order vizag"
+      />
       <Navbar />
 
       {/* MOBILE HEADER & TOOLBAR (Visible Mobile Only) */}

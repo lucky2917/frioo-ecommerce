@@ -1,31 +1,59 @@
-# Robots.txt - SEO Configuration for Frioo E-Commerce
+# ==============================================
+# Robots.txt — Frioo E-Commerce (frioo.in)
+# Fresh Fruits, Juices & Salads in Vizag
+# ==============================================
 
-# Allow all search engines to crawl the site
+# Allow all search engines to crawl public pages
 User-agent: *
 Allow: /
+Allow: /shop
+Allow: /about
+Allow: /contact
+Allow: /stores
+Allow: /faq
+Allow: /ai-nutritionist
+Allow: /privacy
+Allow: /terms
+Allow: /shipping
+Allow: /returns
 
-# Disallow admin and sensitive routes from search engines
+# Block admin, cart, and API routes from indexing
 Disallow: /admin
 Disallow: /admin/*
 Disallow: /api/*
-Disallow: /checkout
 Disallow: /cart
-
-# Crawl delay (optional - helps prevent server overload)
-# Crawl-delay: 1
+Disallow: /checkout
+Disallow: /profile
+Disallow: /orders
+Disallow: /onboarding
 
 # Sitemap location
-Sitemap: https://your-domain.com/sitemap.xml
+Sitemap: https://frioo.in/sitemap.xml
 
-# Specific rules for common bots
+# Google-specific
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
+# Bing
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 2
 
-# Block AI scrapers if desired (optional)
-# User-agent: GPTBot
-# Disallow: /
-# User-agent: ChatGPT-User
-# Disallow: /
+# Yandex
+User-agent: Yandex
+Allow: /
+Crawl-delay: 2
+
+# Block AI scrapers from content scraping
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /

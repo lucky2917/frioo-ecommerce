@@ -1,15 +1,22 @@
 import React from 'react';
+import SEO from '../../components/SEO';
 
 export default function ShippingPolicy() {
   return (
     <div className="legal-page">
+      <SEO
+        title="Shipping & Delivery Policy — Fruit Delivery in Vizag"
+        description="Frioo's shipping and delivery policy for Visakhapatnam. Free delivery on orders above ₹299. 30-60 min delivery within 6km radius in Vizag. Open 7AM-10PM daily."
+        canonical="/shipping"
+        keywords="frioo delivery vizag, fruit delivery charges vizag, frioo shipping visakhapatnam, free delivery fruits vizag"
+      />
       <div className="legal-container">
         <h1>Shipping & Delivery Policy</h1>
         <p className="updated">Last updated: December 22, 2025</p>
 
         <section>
           <h2>1. Delivery Areas</h2>
-          <p>We currently deliver within Hyderabad city limits. Check your delivery area at checkout.</p>
+          <p>We currently deliver within a 6km radius of our Allipuram store in Visakhapatnam (Vizag). Check your delivery area at checkout.</p>
         </section>
 
         <section>

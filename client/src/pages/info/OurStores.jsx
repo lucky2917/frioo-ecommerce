@@ -1,4 +1,5 @@
 import React from 'react';
+import SEO from '../../components/SEO';
 
 export default function OurStores() {
   const store = {
@@ -18,6 +19,12 @@ export default function OurStores() {
 
   return (
     <div className="stores-page">
+      <SEO
+        title="Frioo Store in Visakhapatnam — Visit Our Fresh Fruit Shop in Vizag"
+        description="Visit Frioo's flagship store in Allipuram, Visakhapatnam. Fresh fruits, juices, milkshakes & salads. Open 7AM-10PM daily. Get directions to the best fruit shop in Vizag."
+        canonical="/stores"
+        keywords="frioo store vizag, frioo visakhapatnam location, fruit shop allipuram vizag, juice shop near me vizag, frioo store address, fresh fruit shop visakhapatnam"
+      />
       <div className="stores-container">
         {/* Hero Header */}
         <div className="stores-hero">

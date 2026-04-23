@@ -1,96 +1,129 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   
-  <!-- Homepage -->
+  <!-- Homepage — Highest Priority -->
   <url>
-    <loc>https://your-domain.com/</loc>
-    <lastmod>2025-12-23</lastmod>
+    <loc>https://frioo.in/</loc>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   
-  <!-- Shop -->
+  <!-- Shop — Core Revenue Page -->
   <url>
-    <loc>https://your-domain.com/shop</loc>
-    <lastmod>2025-12-23</lastmod>
+    <loc>https://frioo.in/shop</loc>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <priority>0.95</priority>
+  </url>
+  
+  <!-- Shop Categories — High Intent Pages -->
+  <url>
+    <loc>https://frioo.in/shop?category=juices</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  
+  <url>
+    <loc>https://frioo.in/shop?category=shakes</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  
+  <url>
+    <loc>https://frioo.in/shop?category=salads</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+  
+  <url>
+    <loc>https://frioo.in/shop?category=fruits</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  
+  <url>
+    <loc>https://frioo.in/shop?category=deals</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <!-- AI Nutritionist — Unique Feature -->
+  <url>
+    <loc>https://frioo.in/ai-nutritionist</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
   </url>
   
   <!-- About Us -->
   <url>
-    <loc>https://your-domain.com/about</loc>
-    <lastmod>2025-12-23</lastmod>
+    <loc>https://frioo.in/about</loc>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.70</priority>
   </url>
   
   <!-- Contact -->
   <url>
-    <loc>https://your-domain.com/contact</loc>
-    <lastmod>2025-12-23</lastmod>
+    <loc>https://frioo.in/contact</loc>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.65</priority>
   </url>
   
-  <!-- Our Stores -->
+  <!-- Our Stores — Local SEO Critical -->
   <url>
-    <loc>https://your-domain.com/stores</loc>
-    <lastmod>2025-12-23</lastmod>
+    <loc>https://frioo.in/stores</loc>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.75</priority>
   </url>
   
-  <!-- Help & FAQs -->
+  <!-- Help & FAQs — FAQ Schema Eligible -->
   <url>
-    <loc>https://your-domain.com/help</loc>
-    <lastmod>2025-12-23</lastmod>
+    <loc>https://frioo.in/faq</loc>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.55</priority>
   </url>
   
   <!-- Privacy Policy -->
   <url>
-    <loc>https://your-domain.com/privacy</loc>
-    <lastmod>2025-12-23</lastmod>
+    <loc>https://frioo.in/privacy</loc>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.30</priority>
   </url>
   
   <!-- Terms of Service -->
   <url>
-    <loc>https://your-domain.com/terms</loc>
-    <lastmod>2025-12-23</lastmod>
+    <loc>https://frioo.in/terms</loc>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.30</priority>
   </url>
   
   <!-- Shipping Policy -->
   <url>
-    <loc>https://your-domain.com/shipping</loc>
-    <lastmod>2025-12-23</lastmod>
+    <loc>https://frioo.in/shipping</loc>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.40</priority>
   </url>
   
   <!-- Returns & Refunds -->
   <url>
-    <loc>https://your-domain.com/returns</loc>
-    <lastmod>2025-12-23</lastmod>
+    <loc>https://frioo.in/returns</loc>
+    <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.40</priority>
   </url>
-  
-  <!-- FriooAI -->
-  <url>
-    <loc>https://your-domain.com/frioo-ai</loc>
-    <lastmod>2025-12-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <!-- NOTE: Update lastmod dates when pages are updated -->
-  <!-- NOTE: Add product pages dynamically if implementing dynamic sitemap -->
-  <!-- Generate dynamic sitemap with: https://www.npmjs.com/package/sitemap -->
-  
+
 </urlset>

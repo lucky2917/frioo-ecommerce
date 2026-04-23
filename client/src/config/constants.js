@@ -1,10 +1,10 @@
 // Application Configuration Constants
 // All magic numbers extracted to a single source of truth
 
-// ===== SHOP LOCATION =====
+// ===== SHOP LOCATION (Allipuram, Visakhapatnam) =====
 export const SHOP_LOCATION = {
-    lat: 31.25523,
-    lng: 75.69744
+    lat: 17.721086639920603,
+    lng: 83.29694119604164
 };
 
 // ===== DELIVERY SETTINGS =====

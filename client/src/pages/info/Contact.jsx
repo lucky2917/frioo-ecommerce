@@ -1,4 +1,5 @@
 import React from 'react';
+import SEO from '../../components/SEO';
 
 export default function Contact() {
   const [formData, setFormData] = React.useState({
@@ -28,10 +29,36 @@ export default function Contact() {
 
   return (
     <div className="contact-page">
+      <SEO
+        title="Contact Frioo Vizag — Get in Touch for Fresh Fruit Delivery"
+        description="Contact Frioo in Visakhapatnam for fresh fruit delivery, juice orders, or any queries. Call +91 9347043329 or email frioo.trust@gmail.com. Visit our store in Allipuram, Vizag."
+        canonical="/contact"
+        keywords="contact frioo vizag, frioo phone number, frioo visakhapatnam address, fruit delivery contact vizag, fresh juice order vizag"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          "name": "Contact Frioo Vizag",
+          "url": "https://frioo.in/contact",
+          "mainEntity": {
+            "@type": "LocalBusiness",
+            "name": "Frioo - Fresh Fruits & Juices Vizag",
+            "telephone": "+91-9347043329",
+            "email": "frioo.trust@gmail.com",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Railway Quarters, Allipuram",
+              "addressLocality": "Visakhapatnam",
+              "addressRegion": "Andhra Pradesh",
+              "postalCode": "530004",
+              "addressCountry": "IN"
+            }
+          }
+        }}
+      />
       <div className="contact-container">
         <div className="contact-header">
-          <h1>Get in Touch</h1>
-          <p className="subtitle">We'd love to hear from you</p>
+          <h1>Contact Frioo Vizag</h1>
+          <p className="subtitle">We'd love to hear from you in Visakhapatnam</p>
         </div>
 
         <div className="contact-content">
@@ -66,7 +93,7 @@ export default function Contact() {
               </svg>
               <div>
                 <h3>Address</h3>
-                <p>Hyderabad, Telangana<br />India</p>
+                <p>Railway Quarters, Allipuram<br />Visakhapatnam, Andhra Pradesh 530004<br />India</p>
               </div>
             </div>
 

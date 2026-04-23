@@ -1,27 +1,106 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
-const SEO = ({ title, description }) => {
+/**
+ * SEO Component — Comprehensive head management for Frioo
+ * Handles: title, description, OG, Twitter, canonical, JSON-LD structured data
+ * 
+ * @param {string} title - Page title (appended with " | Frioo — Fresh Fruits & Juices Vizag")
+ * @param {string} description - Meta description (150-160 chars ideal)
+ * @param {string} canonical - Canonical URL path (e.g. "/shop")
+ * @param {string} ogImage - Open Graph image URL
+ * @param {string} ogType - OG type (default: "website")
+ * @param {object} structuredData - JSON-LD structured data object
+ * @param {string} keywords - Additional keywords
+ */
+const SEO = ({
+    title,
+    description,
+    canonical,
+    ogImage,
+    ogType = 'website',
+    structuredData,
+    keywords
+}) => {
+    const SITE_NAME = 'Frioo';
+    const DEFAULT_TITLE = 'Frioo — Fresh Fruits, Juices & Salads Delivered in Vizag | Best Fruits in Visakhapatnam';
+    const DEFAULT_DESC = 'Order the freshest fruits, pure juices, fruit milkshakes & healthy salads in Visakhapatnam (Vizag). 100% natural, no preservatives. Free delivery within 6km. Shop now!';
+    const DEFAULT_IMAGE = 'https://frioo.in/og-image.jpg';
+    const BASE_URL = 'https://frioo.in';
+    const DEFAULT_KEYWORDS = 'fresh fruits vizag, best fruits in vizag, fruit delivery vizag, fresh juice vizag, buy fruits online vizag, frioo vizag, visakhapatnam fruits';
+
     useEffect(() => {
-        // 1. Update Title
-        document.title = title ? `${title} | Frioo` : 'Frioo - Fresh Juice & Shakes';
+        // === TITLE ===
+        document.title = title
+            ? `${title} | ${SITE_NAME} — Fresh Fruits & Juices Vizag`
+            : DEFAULT_TITLE;
 
-        // 2. Update Description
-        const metaDesc = document.querySelector('meta[name="description"]');
-        if (metaDesc) {
-            metaDesc.setAttribute('content', description || 'Experience the freshest juices, shakes, and salads made daily. Delivered to your doorstep.');
+        // === Helper to set/create meta tags ===
+        const setMeta = (attr, attrValue, content) => {
+            let el = document.querySelector(`meta[${attr}="${attrValue}"]`);
+            if (el) {
+                el.setAttribute('content', content);
+            } else {
+                el = document.createElement('meta');
+                el.setAttribute(attr, attrValue);
+                el.setAttribute('content', content);
+                document.head.appendChild(el);
+            }
+        };
+
+        // === DESCRIPTION ===
+        const desc = description || DEFAULT_DESC;
+        setMeta('name', 'description', desc);
+
+        // === KEYWORDS ===
+        setMeta('name', 'keywords', keywords ? `${keywords}, ${DEFAULT_KEYWORDS}` : DEFAULT_KEYWORDS);
+
+        // === CANONICAL ===
+        const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : BASE_URL;
+        let canonicalEl = document.querySelector('link[rel="canonical"]');
+        if (canonicalEl) {
+            canonicalEl.setAttribute('href', canonicalUrl);
         } else {
-            const newMeta = document.createElement('meta');
-            newMeta.name = 'description';
-            newMeta.content = description || 'Experience the freshest juices, shakes, and salads made daily. Delivered to your doorstep.';
-            document.head.appendChild(newMeta);
+            canonicalEl = document.createElement('link');
+            canonicalEl.setAttribute('rel', 'canonical');
+            canonicalEl.setAttribute('href', canonicalUrl);
+            document.head.appendChild(canonicalEl);
         }
 
-        // Cleanup: Reset title when unmounting component (optional, but good for SPAs)
+        // === OPEN GRAPH ===
+        const ogTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Best Fresh Fruits & Juices in Vizag`;
+        setMeta('property', 'og:title', ogTitle);
+        setMeta('property', 'og:description', desc);
+        setMeta('property', 'og:url', canonicalUrl);
+        setMeta('property', 'og:image', ogImage || DEFAULT_IMAGE);
+        setMeta('property', 'og:type', ogType);
+        setMeta('property', 'og:site_name', SITE_NAME);
+        setMeta('property', 'og:locale', 'en_IN');
+
+        // === TWITTER ===
+        setMeta('name', 'twitter:title', ogTitle);
+        setMeta('name', 'twitter:description', desc);
+        setMeta('name', 'twitter:image', ogImage || DEFAULT_IMAGE);
+        setMeta('name', 'twitter:card', 'summary_large_image');
+
+        // === STRUCTURED DATA (JSON-LD) ===
+        // Remove previous page-specific structured data
+        const existingScript = document.querySelector('script[data-seo-page]');
+        if (existingScript) existingScript.remove();
+
+        if (structuredData) {
+            const script = document.createElement('script');
+            script.type = 'application/ld+json';
+            script.setAttribute('data-seo-page', 'true');
+            script.textContent = JSON.stringify(structuredData);
+            document.head.appendChild(script);
+        }
+
+        // Cleanup on unmount
         return () => {
-            // document.title = 'Frioo - Fresh Juice & Shakes'; 
-            // Commented out to prevent flickering between route transitions
+            const pageScript = document.querySelector('script[data-seo-page]');
+            if (pageScript) pageScript.remove();
         };
-    }, [title, description]);
+    }, [title, description, canonical, ogImage, ogType, structuredData, keywords]);
 
     return null; // This component renders nothing in the UI
 };
