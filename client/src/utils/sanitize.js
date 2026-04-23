@@ -19,6 +19,8 @@ export const sanitizeHTML = (dirty) => {
     });
 };
 
+export const sanitizeText = (text) => sanitize(text);
+
 export const sanitizeObject = (obj, fields) => {
     const sanitized = { ...obj };
     fields.forEach(field => {
