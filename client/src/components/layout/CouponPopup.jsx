@@ -11,12 +11,25 @@ export default function CouponPopup() {
         }
     }, []);
 
+    useEffect(() => {
+        if (!document.getElementById('coupon-popup-styles')) {
+            const style = document.createElement('style');
+            style.id = 'coupon-popup-styles';
+            style.innerHTML = `
+                @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+                .animate-pop { animation: pop 0.3s ease-out; }
+                .coupon-close-btn:hover, .coupon-start-btn:hover { transform: translateY(-1px); }
+            `;
+            document.head.appendChild(style);
+        }
+    }, []);
+
     if (!show) return null;
 
     return (
         <div style={styles.overlay}>
             <div style={styles.card} className="animate-pop">
-                <button onClick={() => setShow(false)} style={styles.close}>&times;</button>
+                <button className="coupon-close-btn" onClick={() => setShow(false)} style={styles.close}>&times;</button>
                 <div style={{ fontSize: '3rem' }}>📍</div>
                 <h2 style={styles.title}>Welcome to Frioo!</h2>
                 <p style={styles.text}>
@@ -30,7 +43,7 @@ export default function CouponPopup() {
                             <p style={styles.serviceText}>Within 6 km radius</p>
                         </div>
                     </div>
-                    <div style={styles.serviceItem}>
+                    <div style={{ ...styles.serviceItem, marginBottom: 0 }}>
                         <span style={styles.icon}>🏪</span>
                         <div>
                             <strong>Pickup Available</strong>
@@ -38,7 +51,7 @@ export default function CouponPopup() {
                         </div>
                     </div>
                 </div>
-                <button onClick={() => setShow(false)} style={styles.btn}>Start Shopping</button>
+                <button className="coupon-start-btn" onClick={() => setShow(false)} style={styles.btn}>Start Shopping</button>
             </div>
         </div>
     );
@@ -51,24 +64,8 @@ const styles = {
     title: { fontFamily: 'Playfair Display', fontSize: '1.75rem', margin: '10px 0', color: '#1a1a1a' },
     text: { color: '#666', marginBottom: '25px', fontSize: '0.95rem', lineHeight: '1.5' },
     serviceBox: { background: '#f8fafc', padding: '20px', borderRadius: '12px', marginBottom: '25px', textAlign: 'left' },
-    serviceItem: { display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '15px', '&:last-child': { marginBottom: 0 } },
+    serviceItem: { display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '15px' },
     icon: { fontSize: '1.75rem', flexShrink: 0 },
     serviceText: { margin: '4px 0 0', fontSize: '0.85rem', color: '#64748b' },
     btn: { width: '100%', background: '#1a1a1a', color: 'white', border: 'none', padding: '15px', borderRadius: '50px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', transition: 'transform 0.2s' }
 };
-
-// Add hover effect
-const styleSheet = document.createElement("style");
-styleSheet.innerText = `
-    @keyframes pop { 
-        from { transform: scale(0.9); opacity: 0; } 
-        to { transform: scale(1); opacity: 1; } 
-    } 
-    .animate-pop { 
-        animation: pop 0.3s ease-out; 
-    }
-    button:hover {
-        transform: translateY(-1px);
-    }
-`;
-document.head.appendChild(styleSheet);

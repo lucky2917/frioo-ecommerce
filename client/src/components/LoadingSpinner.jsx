@@ -1,20 +1,11 @@
 import React from 'react';
 
-/**
- * Reusable Loading Spinner Component
- * Shows a spinning loader with optional message
- */
 const LoadingSpinner = ({
     size = 'medium',
     message = 'Loading...',
     fullScreen = false
 }) => {
-    const sizes = {
-        small: '20px',
-        medium: '40px',
-        large: '60px'
-    };
-
+    const sizes = { small: '20px', medium: '40px', large: '60px' };
     const spinnerSize = sizes[size] || sizes.medium;
 
     const spinnerStyle = {
@@ -27,38 +18,19 @@ const LoadingSpinner = ({
     };
 
     const containerStyle = fullScreen ? {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'rgba(255, 255, 255, 0.95)',
-        zIndex: 9999,
-        gap: '20px'
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', background: 'rgba(255, 255, 255, 0.95)',
+        zIndex: 9999, gap: '20px'
     } : {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '40px 20px',
-        gap: '15px'
-    };
-
-    const messageStyle = {
-        fontSize: '0.95rem',
-        color: '#666',
-        fontWeight: '500',
-        marginTop: '10px'
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', padding: '40px 20px', gap: '15px'
     };
 
     return (
         <div style={containerStyle}>
             <div style={spinnerStyle}></div>
-            {message && <p style={messageStyle}>{message}</p>}
+            {message && <p style={{ fontSize: '0.95rem', color: '#666', fontWeight: '500', marginTop: '10px' }}>{message}</p>}
         </div>
     );
 };

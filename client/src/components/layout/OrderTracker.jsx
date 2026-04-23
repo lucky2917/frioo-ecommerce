@@ -14,10 +14,8 @@ export default function OrderTracker() {
       setActiveOrder(order);
     } else {
       const deliveryTime = new Date(order.updated_at || order.created_at).getTime();
-      const now = new Date().getTime();
-      const diffMins = (now - deliveryTime) / 60000;
-      if (diffMins < 30) setActiveOrder(order);
-      else setActiveOrder(null);
+      const diffMins = (Date.now() - deliveryTime) / 60000;
+      setActiveOrder(diffMins < 30 ? order : null);
     }
   };
 
@@ -47,8 +45,6 @@ export default function OrderTracker() {
 
     return () => supabase.removeChannel(channel);
   }, [user]);
-
-
 
   if (!activeOrder) return null;
 
@@ -102,7 +98,6 @@ export default function OrderTracker() {
               </div>
             </div>
 
-            {/* UPDATED PHONE NUMBER HERE */}
             <button
               onClick={() => window.open(`https://wa.me/919010900688?text=Help with Order #${activeOrder.id}`, '_blank')}
               style={styles.helpBtn}

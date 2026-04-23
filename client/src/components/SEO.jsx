@@ -1,17 +1,5 @@
 import { useEffect } from 'react';
 
-/**
- * SEO Component — Comprehensive head management for Frioo
- * Handles: title, description, OG, Twitter, canonical, JSON-LD structured data
- * 
- * @param {string} title - Page title (appended with " | Frioo — Fresh Fruits & Juices Vizag")
- * @param {string} description - Meta description (150-160 chars ideal)
- * @param {string} canonical - Canonical URL path (e.g. "/shop")
- * @param {string} ogImage - Open Graph image URL
- * @param {string} ogType - OG type (default: "website")
- * @param {object} structuredData - JSON-LD structured data object
- * @param {string} keywords - Additional keywords
- */
 const SEO = ({
     title,
     description,
@@ -29,12 +17,10 @@ const SEO = ({
     const DEFAULT_KEYWORDS = 'fresh fruits vizag, best fruits in vizag, fruit delivery vizag, fresh juice vizag, buy fruits online vizag, frioo vizag, visakhapatnam fruits';
 
     useEffect(() => {
-        // === TITLE ===
         document.title = title
             ? `${title} | ${SITE_NAME} — Fresh Fruits & Juices Vizag`
             : DEFAULT_TITLE;
 
-        // === Helper to set/create meta tags ===
         const setMeta = (attr, attrValue, content) => {
             let el = document.querySelector(`meta[${attr}="${attrValue}"]`);
             if (el) {
@@ -47,14 +33,10 @@ const SEO = ({
             }
         };
 
-        // === DESCRIPTION ===
         const desc = description || DEFAULT_DESC;
         setMeta('name', 'description', desc);
-
-        // === KEYWORDS ===
         setMeta('name', 'keywords', keywords ? `${keywords}, ${DEFAULT_KEYWORDS}` : DEFAULT_KEYWORDS);
 
-        // === CANONICAL ===
         const canonicalUrl = canonical ? `${BASE_URL}${canonical}` : BASE_URL;
         let canonicalEl = document.querySelector('link[rel="canonical"]');
         if (canonicalEl) {
@@ -66,7 +48,6 @@ const SEO = ({
             document.head.appendChild(canonicalEl);
         }
 
-        // === OPEN GRAPH ===
         const ogTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Best Fresh Fruits & Juices in Vizag`;
         setMeta('property', 'og:title', ogTitle);
         setMeta('property', 'og:description', desc);
@@ -76,16 +57,12 @@ const SEO = ({
         setMeta('property', 'og:site_name', SITE_NAME);
         setMeta('property', 'og:locale', 'en_IN');
 
-        // === TWITTER ===
         setMeta('name', 'twitter:title', ogTitle);
         setMeta('name', 'twitter:description', desc);
         setMeta('name', 'twitter:image', ogImage || DEFAULT_IMAGE);
         setMeta('name', 'twitter:card', 'summary_large_image');
 
-        // === STRUCTURED DATA (JSON-LD) ===
-        // Remove previous page-specific structured data
-        const existingScript = document.querySelector('script[data-seo-page]');
-        if (existingScript) existingScript.remove();
+        document.querySelector('script[data-seo-page]')?.remove();
 
         if (structuredData) {
             const script = document.createElement('script');
@@ -95,14 +72,12 @@ const SEO = ({
             document.head.appendChild(script);
         }
 
-        // Cleanup on unmount
         return () => {
-            const pageScript = document.querySelector('script[data-seo-page]');
-            if (pageScript) pageScript.remove();
+            document.querySelector('script[data-seo-page]')?.remove();
         };
     }, [title, description, canonical, ogImage, ogType, structuredData, keywords]);
 
-    return null; // This component renders nothing in the UI
+    return null;
 };
 
 export default SEO;

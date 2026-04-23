@@ -8,7 +8,6 @@ const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
-    // Initialize cart from localStorage IMMEDIATELY
     const [cart, setCart] = useState(() => {
         try {
             const savedCart = localStorage.getItem('frioo_cart');
@@ -23,7 +22,6 @@ export const CartProvider = ({ children }) => {
     const [appliedCoupon, setAppliedCoupon] = useState(null);
     const [availableCoupons, setAvailableCoupons] = useState([]);
 
-    // --- FETCH COUPONS ---
     useEffect(() => {
         const fetchCoupons = async () => {
             try {
@@ -31,7 +29,7 @@ export const CartProvider = ({ children }) => {
                     .from('coupons')
                     .select('*')
                     .eq('is_active', true)
-                    .order('min_order_value', { ascending: true }); // Show easier-to-reach ones first
+                    .order('min_order_value', { ascending: true });
 
                 if (!error && data) {
                     setAvailableCoupons(data);
@@ -43,12 +41,10 @@ export const CartProvider = ({ children }) => {
         fetchCoupons();
     }, []);
 
-    // --- CART PERSISTENCE ---
     useEffect(() => {
         localStorage.setItem('frioo_cart', JSON.stringify(cart));
     }, [cart]);
 
-    // --- HELPERS ---
     const showToast = (text) => {
         setNotification(text);
         setTimeout(() => setNotification(null), 3000);
@@ -58,16 +54,11 @@ export const CartProvider = ({ children }) => {
         const sortedPrefs = {};
         Object.keys(preferences).sort().forEach(key => {
             const val = preferences[key];
-            if (Array.isArray(val)) {
-                sortedPrefs[key] = [...val].sort();
-            } else {
-                sortedPrefs[key] = val;
-            }
+            sortedPrefs[key] = Array.isArray(val) ? [...val].sort() : val;
         });
         return `${productId}-${variant}-${JSON.stringify(sortedPrefs)}`;
     };
 
-    // --- CART ACTIONS ---
     const addToCart = (product, variant, finalPrice, preferences = {}) => {
         const cartKey = makeCartKey(product.id, variant, preferences);
 
@@ -81,7 +72,7 @@ export const CartProvider = ({ children }) => {
                     variant: variant,
                     price: finalPrice,
                     qty: existing ? existing.qty + 1 : 1,
-                    image: product.images?.[0], // Ensure image is captured
+                    image: product.images?.[0],
                     preferences: preferences
                 }
             };
@@ -96,13 +87,9 @@ export const CartProvider = ({ children }) => {
     const removeFromCart = (cartKey) => {
         setCart(prev => {
             if (!prev[cartKey]) return prev;
-
             const newCart = { ...prev };
             if (newCart[cartKey].qty > 1) {
-                newCart[cartKey] = {
-                    ...newCart[cartKey],
-                    qty: newCart[cartKey].qty - 1
-                };
+                newCart[cartKey] = { ...newCart[cartKey], qty: newCart[cartKey].qty - 1 };
             } else {
                 delete newCart[cartKey];
             }
@@ -127,7 +114,6 @@ export const CartProvider = ({ children }) => {
     const cartTotal = Object.values(cart).reduce((acc, item) => acc + (item.price * item.qty), 0);
     const cartCount = Object.values(cart).reduce((acc, item) => acc + item.qty, 0);
 
-    // --- COUPON LOGIC ---
     const verifyCoupon = async (code) => {
         try {
             const { data, error } = await supabase
@@ -146,7 +132,6 @@ export const CartProvider = ({ children }) => {
                 return false;
             }
 
-            // Check min order value against current total
             const currentTotal = Object.values(cart).reduce((acc, item) => acc + item.price * item.qty, 0);
 
             if (currentTotal < data.min_order_value) {

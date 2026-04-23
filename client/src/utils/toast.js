@@ -1,38 +1,16 @@
-// Enhanced toast notification utility
-// Provides success, error, info, and warning toast messages
-
 let toastTimeoutId = null;
 
-/**
- * Shows a toast notification with different types
- * @param {string} message - The message to display
- * @param {string} type - 'success' | 'error' | 'info' | 'warning'
- * @param {number} duration - Duration in ms (default 3000)
- */
 export const showToast = (message, type = 'info', duration = 3000) => {
-    // Clear any existing toast
     if (toastTimeoutId) {
         clearTimeout(toastTimeoutId);
-        const existingToast = document.getElementById('app-toast');
-        if (existingToast) {
-            existingToast.remove();
-        }
+        document.getElementById('app-toast')?.remove();
     }
 
-    // Create toast element
     const toast = document.createElement('div');
     toast.id = 'app-toast';
     toast.className = `toast toast-${type}`;
 
-    // Icon based on type
-    const icons = {
-        success: '✅',
-        error: '❌',
-        warning: '⚠️',
-        info: 'ℹ️'
-    };
-
-    // Colors based on type
+    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
     const colors = {
         success: { bg: '#10b981', text: '#fff' },
         error: { bg: '#ef4444', text: '#fff' },
@@ -49,7 +27,6 @@ export const showToast = (message, type = 'info', duration = 3000) => {
     </div>
   `;
 
-    // Styles
     Object.assign(toast.style, {
         position: 'fixed',
         top: '20px',
@@ -65,17 +42,14 @@ export const showToast = (message, type = 'info', duration = 3000) => {
         maxWidth: '400px'
     });
 
-    // Add to body
     document.body.appendChild(toast);
 
-    // Auto remove
     toastTimeoutId = setTimeout(() => {
         toast.style.animation = 'slideOutRight 0.3s ease';
         setTimeout(() => toast.remove(), 300);
     }, duration);
 };
 
-// Add animation styles if not already present
 if (typeof document !== 'undefined' && !document.getElementById('toast-animations')) {
     const style = document.createElement('style');
     style.id = 'toast-animations';

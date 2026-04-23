@@ -1,51 +1,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-/**
- * StaggerText - Framer-Quality Text Stagger Animation
- * 
- * Smooth word-by-word reveals with professional timing.
- * No blur effects for better performance.
- */
 export default function StaggerText({
     text,
     className = '',
     delay = 0,
-    stagger = 0.04 // Slightly tighter for better rhythm
+    stagger = 0.04
 }) {
     const words = text.split(" ");
-
-    // Framer's expo out for smooth deceleration
     const customEase = [0.16, 1, 0.3, 1];
 
     const container = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
-            transition: {
-                staggerChildren: stagger,
-                delayChildren: delay
-            }
+            transition: { staggerChildren: stagger, delayChildren: delay }
         }
     };
 
     const child = {
-        visible: {
-            opacity: 1,
-            y: 0,
-            transition: {
-                duration: 0.5,
-                ease: customEase
-            }
-        },
-        hidden: {
-            opacity: 0,
-            y: 15, // Smaller movement for subtlety
-            transition: {
-                duration: 0.5,
-                ease: customEase
-            }
-        }
+        visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: customEase } },
+        hidden: { opacity: 0, y: 15, transition: { duration: 0.5, ease: customEase } }
     };
 
     return (
@@ -54,10 +29,7 @@ export default function StaggerText({
             variants={container}
             initial="hidden"
             whileInView="visible"
-            viewport={{
-                once: true, // ✅ NO GLITCHES
-                amount: 0.3
-            }}
+            viewport={{ once: true, amount: 0.3 }}
         >
             {words.map((word, index) => (
                 <motion.span
