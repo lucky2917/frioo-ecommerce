@@ -1,12 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-/**
- * ScrollReveal - Framer-Quality Scroll Animation Component
- * 
- * Optimized for smooth, glitch-free animations with professional easing.
- * No heavy blur effects, no retriggering glitches.
- */
 export default function ScrollReveal({
     children,
     direction = 'up', // 'up', 'left', 'right'
@@ -14,7 +8,6 @@ export default function ScrollReveal({
     duration = 0.6,
     className = ''
 }) {
-    // Framer's signature easing curve (expo out)
     const customEase = [0.16, 1, 0.3, 1];
 
     const variants = {

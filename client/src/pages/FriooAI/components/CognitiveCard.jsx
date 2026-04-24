@@ -2,13 +2,9 @@ import { motion } from 'framer-motion';
 import { useEffect } from 'react';
 import CountUp from './CountUp';
 
-/**
- * CognitiveCard - Neural processing stats with animated bar graph
- */
 function CognitiveCard({ replayKey, onReplay }) {
     const barHeights = [0.6, 0.85, 0.4, 0.95, 0.7, 0.3, 0.8, 0.55, 0.9, 0.75, 0.45, 0.85];
 
-    // Trigger replay on mount (when card becomes active)
     useEffect(() => {
         onReplay?.();
     }, []);

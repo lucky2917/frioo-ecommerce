@@ -5,7 +5,6 @@ import { useAuth } from '../../context/AuthContext';
 export default function AdminRoute({ children }) {
   const { user, profile, loading } = useAuth();
 
-  // 1. Wait for Auth & Profile to load completely
   if (loading) {
     return (
       <div style={styles.loadingContainer}>
@@ -15,12 +14,10 @@ export default function AdminRoute({ children }) {
     );
   }
 
-  // 2. THE LOCK: Check if User exists AND Role is 'admin'
   if (!user || profile?.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
 
-  // 3. Access Granted
   return children;
 }
 

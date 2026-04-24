@@ -18,7 +18,6 @@ import ScrollReveal from '../components/animations/ScrollReveal';
 import StaggerText from '../components/animations/StaggerText';
 import SEO from '../components/SEO';
 
-// Helper function to calculate distance
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // Radius of Earth in kilometers
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -35,7 +34,6 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 export default function Cart() {
   const { cart, addToCart, removeFromCart, deleteFromCart, clearCart, appliedCoupon, verifyCoupon, removeCoupon, availableCoupons } = useCart();
 
-  // --- CART LOGIC ---
   const cartItems = Object.entries(cart || {}).map(([key, value]) => ({
     ...value,
     originalKey: key
@@ -43,7 +41,6 @@ export default function Cart() {
 
   const subTotal = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
 
-  // Coupon
   const discountAmount = appliedCoupon
     ? (appliedCoupon.discount_type === 'percentage'
       ? (subTotal * appliedCoupon.value / 100)
@@ -52,12 +49,10 @@ export default function Cart() {
 
   const finalTotal = Math.max(0, subTotal - discountAmount);
 
-  // --- LOCAL STATE ---
   const [couponInput, setCouponInput] = useState('');
   const [orderType, setOrderType] = useState('delivery'); // 'delivery' or 'takeaway'
   const [showCouponModal, setShowCouponModal] = useState(false);
 
-  // EDIT CUSTOMIZATION STATE
   const [editingItem, setEditingItem] = useState(null); // The cart item being edited
   const [editProduct, setEditProduct] = useState(null); // The full product details for the item
   const [editLoading, setEditLoading] = useState(false);
@@ -72,15 +67,12 @@ export default function Cart() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
 
-  // Prevent premature redirection or empty state
   if (authLoading) return <div className="cart-page"><Navbar /><div style={{ padding: '100px', textAlign: 'center' }}>Loading...</div></div>;
 
 
-  // Derived State
   const amountToMin = Math.max(0, MIN_CART_VALUE - finalTotal);
   const isBelowMin = orderType === 'delivery' && finalTotal < MIN_CART_VALUE;
 
-  // Fetch CSRF token on mount
   React.useEffect(() => {
     const fetchCsrfToken = async () => {
       try {
@@ -105,7 +97,6 @@ export default function Cart() {
     setShowCouponModal(false);
   };
 
-  // --- EDIT LOGIC ---
   const handleEditClick = async (item) => {
     setEditingItem(item);
     setEditLoading(true);
@@ -114,10 +105,6 @@ export default function Cart() {
     setEditNote(item.preferences?.note || '');
 
     try {
-      // Fetch full product details to get available options (ingredients/exclusions)
-      // Since we don't have a direct API for one product easily accessible without param, 
-      // we might need to query Supabase directly or reuse the /api/products endpoint. 
-      // Direct Supabase is faster and cleaner for ID lookup.
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -144,21 +131,9 @@ export default function Cart() {
       note: editNote.trim() ? sanitizeText(editNote.trim()) : undefined
     };
 
-    // 1. Remove old item (fully)
     deleteFromCart(editingItem.originalKey);
 
-    // 2. Add new item with updated preferences (qty remains same)
-    // We need to add it 'qty' times because addToCart adds 1 at a time? 
-    // Wait, addToCart logic in Context increments. 
-    // But here we might want to preserve the EXACT quantity the user had.
-    // The Context `addToCart` adds ONE. So we loop? 
-    // Or we rely on the fact that if it merges, it merges. 
-    // Ideally we should have `updateItem` but we don't.
-    // Let's add it in a loop to match previous qty.
 
-    // Actually, `addToCart` takes `product, variant, price, prefs`.
-    // It finds key. If key exists, `qty + 1`. 
-    // Loop is safer to restore QTY.
     for (let i = 0; i < editingItem.qty; i++) {
       addToCart(editProduct, editingItem.variant, editingItem.price, newPreferences);
     }
@@ -181,7 +156,6 @@ export default function Cart() {
     setWarningModal({ show: false, distance: 0 });
 
     try {
-      // SECURITY: Check if user already has an active order
       const { data: activeOrders, error: checkError } = await supabase
         .from('orders')
         .select('id, status, created_at')
@@ -202,9 +176,6 @@ export default function Cart() {
         return;
       }
 
-      // 1. Prepare Order Data for Backend API
-      // Clean cart items: remove UI-only fields (originalKey, image, variant, preferences)
-      // Backend only needs: id, title, price, qty
       const cleanedItems = cartItems.map(item => ({
         id: item.id,
         title: item.title,
@@ -228,7 +199,6 @@ export default function Cart() {
         discount_amount: appliedCoupon ? discountAmount : 0
       };
 
-      // 2. Call Backend API (which has proper validation and auth checks)
       const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
         credentials: 'include', // Send cookies
@@ -241,9 +211,7 @@ export default function Cart() {
 
       const result = await response.json();
 
-      // 3. Handle response
       if (!response.ok) {
-        // Handle authentication errors specifically
         if (result.error?.requiresAuth || response.status === 401) {
           showToast('⚠️ Please login to place an order', 'error');
           return;
@@ -257,11 +225,9 @@ export default function Cart() {
 
     } catch (error) {
       logger.error('Order Placement Error:', error);
-      // Log the full error for debugging
       if (error.response) {
         logger.error('Error response:', error.response);
       }
-      // Show user-friendly error message
       const errorMessage = error.message || 'Failed to place order';
       showToast(errorMessage, 'error');
       console.error('Full error details:', error); // Also log to browser console for debugging
@@ -273,7 +239,6 @@ export default function Cart() {
   const handlePreCheckout = async () => {
     if (cartItems.length === 0) return;
 
-    // CRITICAL: Check authentication BEFORE attempting order placement
     if (!user || !user.id) {
       showToast('⚠️ Please login to place an order', 'error');
       return;
@@ -339,7 +304,6 @@ export default function Cart() {
           </div>
         ) : (
           <div className="cart-layout-split">
-            {/* ITEM LIST */}
             <div className="cart-items-section">
               <div className="cart-table-header">
                 <span>Product</span>
@@ -410,7 +374,6 @@ export default function Cart() {
               </Link>
             </div>
 
-            {/* SUMMARY */}
             <div className="cart-summary-section">
               <div className="order-summary-card">
                 <h3 className="os-title">Order Summary</h3>
@@ -448,7 +411,6 @@ export default function Cart() {
         )}
       </div>
 
-      {/* WARNING MODAL */}
       {warningModal.show && (
         <div className="modal-overlay" onClick={() => setWarningModal({ show: false, distance: 0, lat: null, lng: null })}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -462,7 +424,6 @@ export default function Cart() {
         </div>
       )}
 
-      {/* COUPON MODAL */}
       {showCouponModal && (
         <div className="modal-overlay" onClick={() => setShowCouponModal(false)}>
           <div className="modal-content coupon-modal" onClick={e => e.stopPropagation()}>
@@ -495,7 +456,6 @@ export default function Cart() {
         </div>
       )}
 
-      {/* EDIT CUSTOMIZATION MODAL */}
       {editingItem && (
         <div className="modal-overlay" onClick={() => setEditingItem(null)}>
           <div className="modal-content edit-modal" onClick={e => e.stopPropagation()}>
@@ -507,7 +467,6 @@ export default function Cart() {
               {editLoading ? <p>Loading options...</p> : (
                 editProduct ? (
                   <>
-                    {/* REMOVE INGREDIENTS */}
                     {editProduct.nutrition?.ingredients?.length > 0 && (
                       <div className="em-section">
                         <label>Customize Ingredients</label>
@@ -525,7 +484,6 @@ export default function Cart() {
                       </div>
                     )}
 
-                    {/* EXCLUSIONS */}
                     {editProduct.nutrition?.exclusions?.length > 0 && (
                       <div className="em-section">
                         <label>Allergies & Exclusions</label>
@@ -543,7 +501,6 @@ export default function Cart() {
                       </div>
                     )}
 
-                    {/* NOTES */}
                     <div className="em-section">
                       <label>Special Instructions</label>
                       <textarea
@@ -574,7 +531,6 @@ export default function Cart() {
       </div>
 
       <style>{`
-        /* --- COPY PREVIOUS CSS HERE --- */
         .cart-page { background-color: #ffffff; min-height: 100vh; color: #1a1a1a; font-family: 'Manrope', sans-serif; padding-bottom: 80px; }
         .cart-container { max-width: 1200px; margin: 0 auto; padding: 140px 40px 80px; }
         .cart-header-modern { margin-bottom: 60px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
@@ -676,7 +632,6 @@ export default function Cart() {
         .cm-apply-btn { background: #111; color: white; border: none; padding: 8px 16px; font-size: 0.75rem; font-weight: 700; cursor: pointer; border-radius: 4px; }
         .cm-locked { font-size: 0.75rem; color: #999; font-weight: 600; background: #eee; padding: 5px 10px; border-radius: 4px; }
         
-        /* --- EDIT MODAL STYLES --- */
         .edit-modal { max-width: 500px; width: 90%; padding: 0; overflow: hidden; border-radius: 12px; }
         .em-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
         .em-section { margin-bottom: 25px; }

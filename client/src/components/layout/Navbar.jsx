@@ -10,7 +10,6 @@ export default function Navbar() {
   const { cartCount } = useCart(); // [NEW] Use global cart count
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // SEARCH STATE
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -22,7 +21,6 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Database Search with Debouncing
   useEffect(() => {
     if (searchQuery.trim().length < 2) {
       setSearchResults([]);
@@ -32,7 +30,6 @@ export default function Navbar() {
 
     setIsSearching(true);
 
-    // Debounce: wait 300ms after user stops typing
     const debounceTimer = setTimeout(async () => {
       try {
         const { data, error } = await supabase
@@ -54,26 +51,20 @@ export default function Navbar() {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
-  // TRACKING STATE
   const [activeOrder, setActiveOrder] = useState(null);
   const [showTrackerModal, setShowTrackerModal] = useState(false);
 
-  // Close mobile menu on route change
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMobileMenuOpen(false);
   }, [location]);
 
-  // Scroll detection for mobile search bar
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down - hide search
         setShowMobileSearch(false);
       } else {
-        // Scrolling up - show search
         setShowMobileSearch(true);
       }
 
@@ -98,7 +89,6 @@ export default function Navbar() {
     }
   };
 
-  // --- LIVE ORDER LISTENER ---
   useEffect(() => {
     if (!user) return;
 
@@ -146,7 +136,6 @@ export default function Navbar() {
   return (
     <>
       <header className="navbar-wrapper">
-        {/* TOP ANNOUNCEMENT BAR - Show order tracker OR service area info */}
         {activeOrder ? (
           <div className="tracker-bar" onClick={() => setShowTrackerModal(true)}>
             <div className="tracker-content">
@@ -164,10 +153,8 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* MAIN NAVBAR ROW */}
         <div className="main-navbar">
           <div className="navbar-container">
-            {/* MOBILE MENU TOGGLE */}
             <button
               className="mobile-menu-toggle"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -187,12 +174,10 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* LOGO */}
             <Link to="/" className="logo-link">
               <h1 className="logo">Frioo.</h1>
             </Link>
 
-            {/* DESKTOP SEARCH */}
 
             <div className="search-wrapper desktop-only">
               <form className="search-form" onSubmit={handleSearch}>
@@ -216,7 +201,6 @@ export default function Navbar() {
                 />
               </form>
 
-              {/* INSTANT SEARCH DROPDOWN */}
               {showSearchResults && (
                 <div className="search-dropdown">
                   {isSearching ? (
@@ -241,7 +225,6 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* RIGHT ACTIONS */}
             <div className="nav-actions">
               {user ? (
                 <div className="user-menu desktop-only">
@@ -278,7 +261,6 @@ export default function Navbar() {
                 </button>
               )}
 
-              {/* Mobile User Icon */}
               <button className="icon-btn mobile-only" onClick={user ? () => navigate('/orders') : signInWithGoogle}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -300,7 +282,6 @@ export default function Navbar() {
             </div>
           </div >
 
-          {/* MOBILE SEARCH BAR */}
           <form className={`mobile-search-bar mobile-only ${showMobileSearch ? 'visible' : 'hidden'}`} onSubmit={handleSearch}>
             <input
               type="text"
@@ -318,7 +299,6 @@ export default function Navbar() {
           </form >
         </div >
 
-        {/* SECONDARY NAVIGATION BAR - Desktop Only */}
         <div className="secondary-nav desktop-only">
           <div className="secondary-container">
             <nav className="centered-nav">
@@ -338,7 +318,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* MOBILE MENU PANEL */}
         <div className={`mobile-menu-panel ${isMobileMenuOpen ? 'open' : ''}`}>
           <div className="mobile-menu-header">
             <h2 className="mobile-menu-title">Menu</h2>
@@ -346,7 +325,6 @@ export default function Navbar() {
           </div>
 
           <div className="mobile-menu-content">
-            {/* Main Links */}
             <nav className="mobile-nav-group">
               <Link to="/shop?category=deals" className="mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Daily Deals 🔥</Link>
               <Link to="/shop?category=juices" className="mobile-link" onClick={() => setIsMobileMenuOpen(false)}>Pure Juices</Link>
@@ -364,7 +342,6 @@ export default function Navbar() {
               <Link to="/contact" className="mobile-link-small" onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
             </nav>
 
-            {/* Social Icons */}
             <div className="mobile-footer">
               <a href="#" className="social-icon" aria-label="Facebook">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
@@ -376,7 +353,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu Overlay */}
         {
           isMobileMenuOpen && (
             <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>
@@ -384,7 +360,6 @@ export default function Navbar() {
         }
       </header >
 
-      {/* TRACKER MODAL */}
       {
         showTrackerModal && activeOrder && (
           <div className="modal-overlay" onClick={() => setShowTrackerModal(false)}>
@@ -420,7 +395,6 @@ export default function Navbar() {
           background: white;
         }
 
-        /* ===== ANNOUNCEMENT BAR ===== */
         .announcement-bar,
         .tracker-bar {
           background: #2D2D2D;
@@ -466,7 +440,6 @@ export default function Navbar() {
           margin-left: 8px;
         }
 
-        /* SERVICE AREA BAR */
         .service-area-bar {
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: white;
@@ -484,7 +457,6 @@ export default function Navbar() {
           gap: 8px;
         }
 
-        /* ===== VISIBILITY HELPERS ===== */
         .desktop-only {
           display: flex;
         }
@@ -493,7 +465,6 @@ export default function Navbar() {
           display: none !important;
         }
 
-        /* ===== MAIN NAVBAR ===== */
         .main-navbar {
           background: #FAF5ED;
           border-bottom: 1px solid #E5E5E5;
@@ -519,7 +490,6 @@ export default function Navbar() {
           color: #4A7C9D;
         }
 
-        /* LOGO */
         .logo-link {
           text-decoration: none;
         }
@@ -533,7 +503,6 @@ export default function Navbar() {
           white-space: nowrap;
         }
 
-        /* SEARCH FORM */
         .search-wrapper {
           flex: 1;
           max-width: 500px;
@@ -579,7 +548,6 @@ export default function Navbar() {
         
         .search-input::placeholder { color: #aaa; }
 
-        /* SEARCH DROPDOWN */
         .search-dropdown {
           position: absolute;
           top: 120%;
@@ -670,7 +638,6 @@ export default function Navbar() {
           100% { transform: rotate(360deg); }
         }
 
-        /* MOBILE SEARCH */
         .mobile-search-bar {
           padding: 12px 20px;
           border-top: 1px solid #E5E5E5;
@@ -715,7 +682,6 @@ export default function Navbar() {
           cursor: pointer;
         }
 
-        /* RIGHT ACTIONS */
         .nav-actions {
           display: flex;
           align-items: center;
@@ -777,7 +743,6 @@ export default function Navbar() {
           font-size: 0.9rem;
         }
 
-        /* USER MENU */
         .user-menu {
           position: relative;
         }
@@ -814,7 +779,6 @@ export default function Navbar() {
           background: #F5F5F5;
         }
 
-        /* ===== SECONDARY NAVIGATION ===== */
         .secondary-nav {
           background: white;
           border-bottom: 1px solid #EAEAEA;
@@ -836,7 +800,6 @@ export default function Navbar() {
           gap: 40px; /* Generous spacing */
         }
 
-        /* --- SHOP LINKS --- */
         .nav-link-shop {
           text-decoration: none;
           color: #444;
@@ -852,7 +815,6 @@ export default function Navbar() {
           color: #111;
         }
         
-        /* Gold Underline Effect */
         .nav-link-shop::after {
           content: '';
           position: absolute;
@@ -870,7 +832,6 @@ export default function Navbar() {
           transform-origin: left;
         }
 
-        /* Daily Deals Special */
         .deals-link {
           color: #D4AF7A;
           font-weight: 700;
@@ -879,7 +840,6 @@ export default function Navbar() {
           color: #bf955e;
         }
 
-        /* --- UTILITY LINKS (Info) --- */
         .nav-link-utility {
           text-decoration: none;
           color: #666;
@@ -894,7 +854,6 @@ export default function Navbar() {
           color: #D4AF7A; 
         }
 
-        /* SEPARATOR */
         .nav-separator-line {
           width: 1px;
           height: 18px;
@@ -915,7 +874,6 @@ export default function Navbar() {
           background: #D32F2F;
         }
         
-        /* ===== MOBILE MENU PANEL ===== */
         .mobile-menu-panel {
           position: fixed;
           top: 0;
@@ -990,7 +948,6 @@ export default function Navbar() {
           color: #111;
         }
         
-        /* Gold Underline for Mobile too */
         .mobile-link::after {
           content: '';
           position: absolute;
@@ -1045,7 +1002,6 @@ export default function Navbar() {
         
         .social-icon:hover { color: #111; }
 
-        /* OVERLAY */
         .mobile-menu-overlay {
           position: fixed;
           top: 0;
@@ -1057,7 +1013,6 @@ export default function Navbar() {
           backdrop-filter: blur(2px);
         }
 
-        /* ===== MODAL ===== */
         .modal-overlay {
           position: fixed;
           inset: 0;
@@ -1125,7 +1080,6 @@ export default function Navbar() {
           font-weight: 600;
         }
 
-        /* ===== USER AVATAR ===== */
         .avatar-btn {
           background: none;
           border: none;
@@ -1176,7 +1130,6 @@ export default function Navbar() {
           background: #FFEBEE;
         }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
           .desktop-only {
             display: none !important;

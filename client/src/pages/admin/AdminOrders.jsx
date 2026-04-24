@@ -41,7 +41,6 @@ export default function AdminOrders() {
         }
     }, []);
 
-    // Realtime Updates
     useEffect(() => {
         fetchOrders();
         const channel = supabase
@@ -71,7 +70,6 @@ export default function AdminOrders() {
         }
     };
 
-    // Category filtering
     const getFilteredByCategory = () => {
         if (categoryFilter === 'active') {
             return orders.filter(o => !['delivered', 'cancelled'].includes(o.status));
@@ -81,7 +79,6 @@ export default function AdminOrders() {
         return orders;
     };
 
-    // Combined filtering
     const filteredOrders = getFilteredByCategory().filter(order => {
         const matchesSearch = searchTerm === '' ||
             order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -94,7 +91,6 @@ export default function AdminOrders() {
         return matchesSearch && matchesStatus && matchesType;
     });
 
-    // Metrics
     const activeOrders = orders.filter(o => !['delivered', 'cancelled'].includes(o.status));
     const completedOrders = orders.filter(o => ['delivered', 'cancelled'].includes(o.status));
 
@@ -112,7 +108,6 @@ export default function AdminOrders() {
 
     return (
         <div className="admin-orders-page">
-            {/* HEADER */}
             <div className="orders-header">
                 <div className="header-top">
                     <div>
@@ -121,7 +116,6 @@ export default function AdminOrders() {
                     </div>
                 </div>
 
-                {/* CATEGORY TABS */}
                 <div className="category-tabs">
                     <button
                         className={`category-tab ${categoryFilter === 'active' ? 'active' : ''}`}
@@ -146,7 +140,6 @@ export default function AdminOrders() {
                     </button>
                 </div>
 
-                {/* METRICS */}
                 <div className="metrics-grid">
                     <div className="metric-card">
                         <div className="metric-label">Total Orders</div>
@@ -170,7 +163,6 @@ export default function AdminOrders() {
                     </div>
                 </div>
 
-                {/* FILTERS */}
                 <div className="filters-bar">
                     <input
                         type="text"
@@ -197,14 +189,12 @@ export default function AdminOrders() {
                 </div>
             </div>
 
-            {/* ORDERS GRID */}
             <div className="orders-grid">
                 {filteredOrders.map(order => {
                     const isExpanded = expandedOrders.has(order.id);
 
                     return (
                         <div key={order.id} className={`order-card status-${order.status}`}>
-                            {/* CARD HEADER - Always Visible */}
                             <div className="card-header-compact">
                                 <div className="compact-left">
                                     <div className="order-id-row">
@@ -239,10 +229,8 @@ export default function AdminOrders() {
                                 </div>
                             </div>
 
-                            {/* EXPANDABLE DETAILS */}
                             {isExpanded && (
                                 <div className="order-details">
-                                    {/* Full Header */}
                                     <div className="details-section">
                                         <div className="section-title">Order Details</div>
                                         <div className="detail-row">
@@ -257,7 +245,6 @@ export default function AdminOrders() {
                                         </div>
                                     </div>
 
-                                    {/* ITEMS */}
                                     <div className="details-section">
                                         <div className="section-title">Order Items</div>
                                         {(() => {
@@ -281,7 +268,6 @@ export default function AdminOrders() {
                                                         <span className="item-price">₹{(item.price * item.qty).toFixed(0)}</span>
                                                     </div>
 
-                                                    {/* Customizations */}
                                                     {item.preferences && (
                                                         <div className="item-customizations">
                                                             {item.preferences.exclusions?.length > 0 && (
@@ -309,7 +295,6 @@ export default function AdminOrders() {
                                         })()}
                                     </div>
 
-                                    {/* ORDER NOTES */}
                                     {order.notes && (
                                         <div className="details-section">
                                             <div className="order-notes-section">
@@ -319,7 +304,6 @@ export default function AdminOrders() {
                                         </div>
                                     )}
 
-                                    {/* DELIVERY INFO */}
                                     {order.order_type === 'delivery' && order.distance && (
                                         <div className="details-section">
                                             <div className="delivery-section">
@@ -347,7 +331,6 @@ export default function AdminOrders() {
                                         </div>
                                     )}
 
-                                    {/* STATUS UPDATE */}
                                     <div className="details-section">
                                         <div className="section-title">Update Status</div>
                                         <select
@@ -379,7 +362,6 @@ export default function AdminOrders() {
             </div>
 
             <style>{`
-                /* BASE STYLES */
                 .admin-orders-page {
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                     padding-bottom: 40px;
@@ -394,7 +376,6 @@ export default function AdminOrders() {
                     font-size: 1.1rem;
                 }
 
-                /* HEADER SECTION */
                 .orders-header {
                     margin-bottom: 32px;
                 }
@@ -417,7 +398,6 @@ export default function AdminOrders() {
                     margin: 0;
                 }
 
-                /* CATEGORY TABS */
                 .category-tabs {
                     display: flex;
                     gap: 8px;
@@ -465,7 +445,6 @@ export default function AdminOrders() {
                     color: #1e40af;
                 }
 
-                /* METRICS GRID */
                 .metrics-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -515,7 +494,6 @@ export default function AdminOrders() {
                 .metric-value.confirmed { color: #2563eb; }
                 .metric-value.preparing { color: #ca8a04; }
 
-                /* FILTERS BAR */
                 .filters-bar {
                     display: flex;
                     gap: 12px;
@@ -552,7 +530,6 @@ export default function AdminOrders() {
                     border-color: #94a3b8;
                 }
 
-                /* ORDERS GRID */
                 .orders-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
@@ -560,7 +537,6 @@ export default function AdminOrders() {
                     margin-top: 24px;
                 }
 
-                /* ORDER CARD */
                 .order-card {
                     background: white;
                     border-radius: 12px;
@@ -584,7 +560,6 @@ export default function AdminOrders() {
                 .order-card.status-delivered { border-left-color: #65a30d; }
                 .order-card.status-cancelled { border-left-color: #dc2626; }
 
-                /* COMPACT CARD HEADER */
                 .card-header-compact {
                     display: flex;
                     justify-content: space-between;
@@ -700,7 +675,6 @@ export default function AdminOrders() {
                     color: #334155;
                 }
 
-                /* EXPANDABLE DETAILS */
                 .order-details {
                     margin-top: 16px;
                     padding-top: 16px;
@@ -755,7 +729,6 @@ export default function AdminOrders() {
                     text-decoration: underline;
                 }
 
-                /* CARD HEADER (OLD - Keep for backwards compat) */
                 .card-header {
                     display: flex;
                     justify-content: space-between;
@@ -818,7 +791,6 @@ export default function AdminOrders() {
                     text-transform: capitalize;
                 }
 
-                /* CUSTOMER SECTION */
                 .customer-section {
                     display: flex;
                     align-items: center;
@@ -862,7 +834,6 @@ export default function AdminOrders() {
                     text-decoration: underline;
                 }
 
-                /* ITEMS SECTION */
                 .items-section {
                     margin-bottom: 16px;
                 }
@@ -943,7 +914,6 @@ export default function AdminOrders() {
                     flex-shrink: 0;
                 }
 
-                /* CUSTOMIZATIONS */
                 .item-customizations {
                     background: white;
                     padding: 10px;
@@ -986,7 +956,6 @@ export default function AdminOrders() {
                 .custom-row.note .custom-label { color: #0369a1; }
                 .custom-row.note .custom-value { color: #0c4a6e; }
 
-                /* ORDER NOTES */
                 .order-notes-section {
                     background: #fffbeb;
                     padding: 12px;
@@ -1008,7 +977,6 @@ export default function AdminOrders() {
                     color: #713f12;
                 }
 
-                /* DELIVERY SECTION */
                 .delivery-section {
                 background: #eff6ff;
                     padding: 12px;
@@ -1046,7 +1014,6 @@ export default function AdminOrders() {
                     box-shadow: 0 4px 8px rgba(59, 130, 246, 0.25);
                 }
 
-                /* FOOTER */
                 .card-footer {
                     display: flex;
                     justify-content: space-between;
@@ -1096,7 +1063,6 @@ export default function AdminOrders() {
                     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
                 }
 
-                /* EMPTY STATE */
                 .empty-state {
                     grid-column: 1 / -1;
                     text-align: center;
@@ -1118,7 +1084,6 @@ export default function AdminOrders() {
                     color: #94a3b8;
                 }
 
-                /* RESPONSIVE */
                 @media (max-width: 768px) {
                     .orders-grid {
                         grid-template-columns: 1fr;

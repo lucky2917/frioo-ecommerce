@@ -1,19 +1,13 @@
 import { useState, useEffect } from 'react';
 
-/**
- * IdentityMorph - Animated text component for "FRIOO AI"
- * Features blinking cursor that morphs into "::ONLINE" status
- */
 function IdentityMorph({ onComplete }) {
     const [suffix, setSuffix] = useState('_');
 
     useEffect(() => {
-        // Blinking cursor phase
         const blinkInterval = setInterval(() => {
             setSuffix(prev => prev === '_' ? ' ' : '_');
         }, 500);
 
-        // Morph to ::ONLINE after 3 seconds
         const morphTimeout = setTimeout(() => {
             clearInterval(blinkInterval);
             setSuffix('::ONLINE');

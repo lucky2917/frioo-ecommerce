@@ -1,9 +1,5 @@
 import React from 'react';
 
-/**
- * Reusable Loading Spinner Component
- * Shows a spinning loader with optional message
- */
 const LoadingSpinner = ({
     size = 'medium',
     message = 'Loading...',

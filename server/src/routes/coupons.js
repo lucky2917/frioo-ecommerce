@@ -5,10 +5,6 @@ const { supabaseAdmin } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 const { sendSuccess, sendError, sendValidationError, sendNotFound } = require('../utils/responses');
 
-// PUBLIC ROUTES (no auth required)
-// These must be defined BEFORE the requireAdmin middleware is applied
-
-// --- COUPON VALIDATION (PUBLIC) ---
 router.post('/validate',
     [
         body('code').isString().trim().isLength({ min: 3, max: 20 }),
@@ -57,11 +53,8 @@ router.post('/validate',
     }
 );
 
-// ADMIN ROUTES (require authentication)
-// Apply requireAdmin middleware to all routes below this point
 router.use(requireAdmin);
 
-// --- 1. LIST ALL COUPONS (ADMIN) ---
 router.get('/', async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
@@ -77,7 +70,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-// --- 2. CREATE COUPON ---
 router.post('/',
     [
         body('code').isString().trim().isLength({ min: 3, max: 20 }),
@@ -113,7 +105,6 @@ router.post('/',
             return sendSuccess(res, { coupon: data }, 201);
         } catch (err) {
             console.error('Error creating coupon:', err);
-            // Check for unique constraint violation
             if (err.code === '23505') {
                 return sendError(res, 'Coupon code already exists', 409);
             }
@@ -122,11 +113,10 @@ router.post('/',
     }
 );
 
-// --- 3. TOGGLE ACTIVE STATUS ---
 router.patch('/:id/toggle', async (req, res) => {
     try {
         const { id } = req.params;
-        const { is_active } = req.body; // Expect boolean
+        const { is_active } = req.body;
 
         const { data, error } = await supabaseAdmin
             .from('coupons')
@@ -143,7 +133,6 @@ router.patch('/:id/toggle', async (req, res) => {
     }
 });
 
-// --- 4. DELETE COUPON ---
 router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;

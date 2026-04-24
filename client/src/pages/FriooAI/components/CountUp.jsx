@@ -1,9 +1,5 @@
 import { useState, useEffect } from 'react';
 
-/**
- * CountUp - Animated number counter with easing
- * Smoothly counts from 0 to target value
- */
 function CountUp({ target, duration = 2, decimals = 1 }) {
     const [count, setCount] = useState(0);
 
@@ -14,7 +10,6 @@ function CountUp({ target, duration = 2, decimals = 1 }) {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / (duration * 1000), 1);
 
-            // Exponential ease-out
             const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
             setCount(ease * target);
 

@@ -1,4 +1,3 @@
-// Patisserie-Style Product Card with Video & Customization
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import OptimizedImage from '../OptimizedImage';
@@ -10,12 +9,10 @@ export default function ProductCard({ product, onAdd }) {
   const [isHovered, setIsHovered] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
 
-  // Customization State
   const [showCustomize, setShowCustomize] = useState(false);
   const [selectedExclusions, setSelectedExclusions] = useState([]);
   const [removedIngredients, setRemovedIngredients] = useState([]);
 
-  // Weight / Variant Logic
   const isWeightBased = product.category === 'Fresh Fruit' && product.unit === 'kg';
   const WEIGHT_OPTIONS = [
     { label: '250g', multiplier: 0.25 },
@@ -26,7 +23,6 @@ export default function ProductCard({ product, onAdd }) {
 
   const hasOptions = (product.nutrition?.exclusions?.length > 0 || product.nutrition?.ingredients?.length > 0);
 
-  // Price Calculation
   let finalPrice, variantLabel;
   if (isWeightBased) {
     finalPrice = (product.price_cents / 100) * selectedWeight.multiplier;
@@ -40,7 +36,6 @@ export default function ProductCard({ product, onAdd }) {
 
   const imageSrc = product.images?.[0] || FALLBACK_IMAGE;
 
-  // Handlers
   const handleActionClick = () => {
     if (hasOptions || isWeightBased) {
       setShowCustomize(true);
@@ -56,7 +51,6 @@ export default function ProductCard({ product, onAdd }) {
     };
     onAdd(product, variantLabel, finalPrice, preferences);
     setShowCustomize(false);
-    // Reset
     setSelectedExclusions([]);
     setRemovedIngredients([]);
     setSelectedWeight(WEIGHT_OPTIONS[2]);
@@ -77,7 +71,6 @@ export default function ProductCard({ product, onAdd }) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* IMAGE AREA */}
         <div className="card-image-wrapper">
           <Link to={`/product/${product.id}`} className="card-image-link">
             <OptimizedImage
@@ -88,7 +81,6 @@ export default function ProductCard({ product, onAdd }) {
             {product.featured && <span className="badge-pop">Popular</span>}
           </Link>
 
-          {/* PLAY BUTTON (Visible on Hover) */}
           {product.video_url && (
             <button
               className={`play-btn ${isHovered ? 'visible' : ''}`}
@@ -103,7 +95,6 @@ export default function ProductCard({ product, onAdd }) {
           )}
         </div>
 
-        {/* CONTENT AREA */}
         <div className="card-content">
           <div className="card-price">{displayPrice}</div>
 
@@ -123,7 +114,6 @@ export default function ProductCard({ product, onAdd }) {
         </div>
       </div>
 
-      {/* CUSTOMIZATION MODAL (Clean Centered or Bottom Sheet) */}
       {showCustomize && (
         <div className="cust-overlay">
           <div className="cust-modal">
@@ -133,7 +123,6 @@ export default function ProductCard({ product, onAdd }) {
             </div>
 
             <div className="cust-body">
-              {/* Weight Selector */}
               {isWeightBased && (
                 <div className="cust-section">
                   <label>Select Quantity</label>
@@ -152,7 +141,6 @@ export default function ProductCard({ product, onAdd }) {
                 </div>
               )}
 
-              {/* Ingredients / Exclusions */}
               {product.nutrition?.exclusions?.length > 0 && (
                 <div className="cust-section">
                   <label>Exclusions (No extra cost)</label>
@@ -200,7 +188,6 @@ export default function ProductCard({ product, onAdd }) {
       {showVideo && <VideoModal videoUrl={product.video_url} onClose={() => setShowVideo(false)} />}
 
       <style jsx>{`
-        /* CARD STYLES */
         .patisserie-card {
            display: flex;
            flex-direction: column;
@@ -246,7 +233,6 @@ export default function ProductCard({ product, onAdd }) {
           z-index: 2;
         }
 
-        /* PLAY BUTTON */
         .play-btn {
           position: absolute;
           bottom: 15px;
@@ -280,7 +266,6 @@ export default function ProductCard({ product, onAdd }) {
           transform: translateY(0);
         }
 
-        /* CONTENT */
         .card-content {
           display: flex;
           flex-direction: column;
@@ -330,7 +315,6 @@ export default function ProductCard({ product, onAdd }) {
         }
         .action-btn:hover { background: #1a1a1a; }
 
-        /* CUSTOMIZE MODAL */
         .cust-overlay {
           position: fixed;
           inset: 0;
@@ -360,7 +344,6 @@ export default function ProductCard({ product, onAdd }) {
           transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Framer's expo out */
           cursor: pointer;
           position: relative;
-          /* GPU acceleration for smooth transforms */
           will-change: transform;
           transform: translateZ(0);
         }

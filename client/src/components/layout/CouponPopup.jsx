@@ -57,7 +57,6 @@ const styles = {
     btn: { width: '100%', background: '#1a1a1a', color: 'white', border: 'none', padding: '15px', borderRadius: '50px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', transition: 'transform 0.2s' }
 };
 
-// Add hover effect
 const styleSheet = document.createElement("style");
 styleSheet.innerText = `
     @keyframes pop { 

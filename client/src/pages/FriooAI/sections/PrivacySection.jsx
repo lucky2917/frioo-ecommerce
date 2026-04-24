@@ -1,10 +1,5 @@
-// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
-/**
- * PrivacySection - Data privacy badge
- * Highlights zero data retention policy
- */
 function PrivacySection() {
     return (
         <section className="v5-sec privacy-sec">

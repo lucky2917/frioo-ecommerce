@@ -1,9 +1,4 @@
-/**
- * FRIOO AI - ADVANCED NUTRITION ENGINE
- * "Human-Level Intelligence, Machine Precision"
- */
 
-// ------------------ 1. FRUIT DATABASE ------------------
 const FRUITS = {
     apple: { id: "apple", tier: "low", hydration: 6, fiber: 7, gi: 5, antioxidant: 6, digestion: 7, title: "Apple", price: 20 },
     banana: { id: "banana", tier: "low", hydration: 5, fiber: 6, gi: 7, antioxidant: 5, digestion: 8, title: "Banana", price: 10 },
@@ -24,9 +19,7 @@ const FRUITS = {
     grapes_aus: { id: "grapes_aus", tier: "high", hydration: 5, fiber: 4, gi: 7, antioxidant: 8, digestion: 6, title: "Australian Grapes", price: 110 }
 };
 
-// ------------------ 2. USER SIGNALS ------------------
 function computeUserSignals(user) {
-    // Normalize inputs
     const weight = Number(user.weight) || 70;
     const height = Number(user.height) || 170;
     const sleep = Number(user.sleep) || 7;
@@ -40,7 +33,6 @@ function computeUserSignals(user) {
     return { bmi, hydrationNeed, sleepDebt, stressLoad };
 }
 
-// ------------------ 3. FRUIT SCORING ------------------
 function scoreFruit(fruit, signals, goal) {
     let score = 0;
 
@@ -56,19 +48,15 @@ function scoreFruit(fruit, signals, goal) {
     return score;
 }
 
-// ------------------ 4. SALAD BUILDER ------------------
 function buildBestSalad(allowedFruits, scores, min = 4, max = 7) {
     let best = null;
 
-    // Run 6 simulations to find optimal combination
     for (let i = 0; i < 6; i++) {
         const count = Math.floor(Math.random() * (max - min + 1)) + min;
-        // Fisher-Yates shuffle approximation for random selection
         const selected = [...allowedFruits].sort(() => 0.5 - Math.random()).slice(0, count);
 
         const total = selected.reduce((sum, f) => sum + (scores[f] || 0), 0);
 
-        // Calculate price estimate
         const totalPrice = selected.reduce((sum, f) => sum + FRUITS[f].price, 0);
 
         if (!best || total > best.score) {
@@ -83,19 +71,10 @@ function buildBestSalad(allowedFruits, scores, min = 4, max = 7) {
     return best || { fruits: [], score: 0, price: 0 };
 }
 
-// ------------------ 5. MAIN ENGINE ------------------
 export function runFriooAI(user) {
     const signals = computeUserSignals(user);
     const allergies = (user.allergies || []).map(a => a.toLowerCase()); // Ensure lower case match
 
-    // Filter Safe Fruits (Zero Tolerance)
-    // Matching by ID/Key logic. 
-    // IMPORTANT: Mapped provided allergy list strings to lower case. 
-    // User might send ["Nuts", "Dairy"] but FRUITS keys are specific.
-    // Assuming 'allergies' contains fruit names if relevant, or broader categories. 
-    // Since FRUITS are mostly safe from common allergies (Dairy/Gluten/Soy/Nuts are NOT fruits), 
-    // unless specific fruit allergies are passed.
-    // For safety, checking if key string is in allergies.
     const safeFruits = Object.keys(FRUITS).filter(f => !allergies.includes(f));
 
     const scores = {};
@@ -107,14 +86,10 @@ export function runFriooAI(user) {
     const mid = safeFruits.filter(f => FRUITS[f].tier !== "high"); // Low + Mid
     const high = safeFruits; // All
 
-    // Generate 3 Salads (Solid)
-    // Basic: 4-5 fruits, Medium: 5-6 fruits, Premium: 5-6 fruits
     const saladLow = buildBestSalad(low, scores, 4, 5);
     const saladMid = buildBestSalad(mid, scores, 5, 6);
     const saladHigh = buildBestSalad(high, scores, 5, 6);
 
-    // Generate 3 Juices (Liquid)
-    // Basic: 2-3 juices, Medium: 2-3 juices, Premium: 3-4 juices
     const juiceLow = buildBestSalad(low, scores, 2, 3);
     const juiceMid = buildBestSalad(mid, scores, 2, 3);
     const juiceHigh = buildBestSalad(high, scores, 3, 4);

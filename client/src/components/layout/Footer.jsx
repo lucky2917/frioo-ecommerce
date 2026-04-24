@@ -16,7 +16,6 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer-main">
         <div className="footer-container">
-          {/* Company Info */}
           <div className="footer-col footer-about">
             <h3 className="footer-logo">Frioo.</h3>
             <p className="footer-tagline">Fresh fruits, juices & salads in Visakhapatnam.</p>
@@ -56,7 +55,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
           <div className="footer-col">
             <h4 className="footer-heading">Quick Links</h4>
             <ul className="footer-links">
@@ -68,7 +66,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Customer Service */}
           <div className="footer-col">
             <h4 className="footer-heading">Customer Service</h4>
             <ul className="footer-links">
@@ -80,7 +77,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Newsletter */}
           <div className="footer-col footer-newsletter">
             <h4 className="footer-heading">Stay Fresh</h4>
             <p className="newsletter-text">Subscribe to get special offers, free giveaways, and updates.</p>
@@ -114,7 +110,6 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Bottom Bar */}
       <div className="footer-bottom">
         <div className="footer-container">
           <div className="footer-bottom-content">
@@ -159,7 +154,6 @@ export default function Footer() {
           flex-direction: column;
         }
 
-        /* Logo & About */
         .footer-logo {
           font-family: Georgia, serif;
           font-size: 2rem;
@@ -182,7 +176,6 @@ export default function Footer() {
           margin: 0 0 20px 0;
         }
 
-        /* Social Links */
         .footer-social {
           display: flex;
           gap: 12px;
@@ -207,7 +200,6 @@ export default function Footer() {
           transform: translateY(-2px);
         }
 
-        /* Headings */
         .footer-heading {
           font-size: 1rem;
           font-weight: 700;
@@ -229,7 +221,6 @@ export default function Footer() {
           background: #D4AF7A;
         }
 
-        /* Links */
         .footer-links {
           list-style: none;
           padding: 0;
@@ -252,7 +243,6 @@ export default function Footer() {
           padding-left: 5px;
         }
 
-        /* Newsletter */
         .newsletter-text {
           color: #B0B0B0;
           font-size: 0.9rem;
@@ -305,7 +295,6 @@ export default function Footer() {
           transform: translateY(-1px);
         }
 
-        /* Contact Info */
         .footer-contact {
           display: flex;
           flex-direction: column;
@@ -326,7 +315,6 @@ export default function Footer() {
           flex-shrink: 0;
         }
 
-        /* Bottom Bar */
         .footer-bottom {
           padding: 30px 0;
           background: rgba(0, 0, 0, 0.5);
@@ -375,7 +363,6 @@ export default function Footer() {
           color: #555;
         }
 
-        /* Responsive */
         @media (max-width: 1024px) {
           .footer-container {
             grid-template-columns: 1fr 1fr;

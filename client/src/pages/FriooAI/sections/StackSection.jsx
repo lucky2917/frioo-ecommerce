@@ -1,13 +1,8 @@
-// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import CognitiveCard from '../components/CognitiveCard';
 import PerformanceCard from '../components/PerformanceCard';
 import KnowledgeCard from '../components/KnowledgeCard';
 
-/**
- * StackSection - Cards with AnimatePresence for exclusive visibility
- * Only one card rendered at a time - true architectural separation
- */
 function StackSection({ activeCard, replayObj, setReplayObj }) {
     const transitionConfig = {
         duration: 0.6,

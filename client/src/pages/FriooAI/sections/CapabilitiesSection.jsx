@@ -2,16 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import CountUp from '../components/CountUp';
 
-/**
- * CapabilitiesSection - Sticky AI core + scrolling capability list
- * Professional data visualizations and benchmarks
- */
 function CapabilitiesSection() {
     const [activeCapability, setActiveCapability] = useState(0);
-    const capabilityRefs = [useRef(null), useRef(null), useRef(null)];
+    const ref0 = useRef(null);
+    const ref1 = useRef(null);
+    const ref2 = useRef(null);
 
-    // IntersectionObserver for capability tracking
     useEffect(() => {
+        const capabilityRefs = [ref0, ref1, ref2];
         const observers = capabilityRefs.map((ref, index) => {
             if (!ref.current) return null;
 
@@ -33,7 +31,6 @@ function CapabilitiesSection() {
         };
     }, []);
 
-    // Capability 1: Accuracy Graph Data
     const accuracyData = [
         { category: 'Macro', value: 99.4 },
         { category: 'Micro', value: 98.7 },
@@ -41,14 +38,12 @@ function CapabilitiesSection() {
         { category: 'Inter.', value: 97.8 }
     ];
 
-    // Capability 2: Benchmark Comparison
     const benchmarks = [
         { name: 'FriooAI', score: 99.4, color: '#00f0ff' },
         { name: 'GenericAI', score: 87.2, color: '#666' },
         { name: 'NutriBase', score: 82.8, color: '#444' }
     ];
 
-    // Capability 3: Knowledge Base Stats
     const knowledgeStats = [
         { label: 'Compounds', value: 12.4, suffix: 'M', delay: 0 },
         { label: 'Regions', value: 195, suffix: '', delay: 0.2 },
@@ -57,7 +52,6 @@ function CapabilitiesSection() {
 
     return (
         <section className="capabilities-section">
-            {/* Sticky AI Core Indicator */}
             <div className="ai-core-sticky">
                 <div className="robot-viewport">
                     <div className="capability-indicator">
@@ -67,11 +61,9 @@ function CapabilitiesSection() {
                 </div>
             </div>
 
-            {/* Scrolling Capability List */}
             <div className="capability-list">
-                {/* CAPABILITY 1: Cognitive Reasoning */}
                 <div
-                    ref={capabilityRefs[0]}
+                    ref={ref0}
                     className={`capability-block ${activeCapability === 0 ? 'active' : ''}`}
                 >
                     <div className="capability-number">SYS_01 // COGNITIVE_ENGINE</div>
@@ -81,7 +73,6 @@ function CapabilitiesSection() {
                         Multi-dimensional analysis of biometric signals, lifestyle patterns, and dietary constraints in a single inference pass.
                     </p>
 
-                    {/* Accuracy Graph */}
                     <div className="accuracy-graph">
                         {accuracyData.map((item, idx) => (
                             <div key={idx} className="accuracy-bar">
@@ -109,9 +100,8 @@ function CapabilitiesSection() {
                     </div>
                 </div>
 
-                {/* CAPABILITY 2: Comparative Intelligence */}
                 <div
-                    ref={capabilityRefs[1]}
+                    ref={ref1}
                     className={`capability-block ${activeCapability === 1 ? 'active' : ''}`}
                 >
                     <div className="capability-number">SYS_02 // PERFORMANCE_ENGINE</div>
@@ -121,7 +111,6 @@ function CapabilitiesSection() {
                         Real-time comparative analysis against industry-leading models and static nutrition databases.
                     </p>
 
-                    {/* Benchmark Comparison */}
                     <div className="benchmark-chart">
                         {benchmarks.map((bench, idx) => (
                             <div key={idx} className="benchmark-row">
@@ -153,9 +142,8 @@ function CapabilitiesSection() {
                     </div>
                 </div>
 
-                {/* CAPABILITY 3: Global Knowledge Base */}
                 <div
-                    ref={capabilityRefs[2]}
+                    ref={ref2}
                     className={`capability-block ${activeCapability === 2 ? 'active' : ''}`}
                 >
                     <div className="capability-number">SYS_03 // KNOWLEDGE_BASE</div>
@@ -165,7 +153,6 @@ function CapabilitiesSection() {
                         Continuously updated nutrition intelligence graph spanning regions, cuisines, and compound interactions.
                     </p>
 
-                    {/* Knowledge Stats Grid */}
                     <div className="knowledge-grid">
                         {knowledgeStats.map((stat, idx) => (
                             <motion.div
@@ -185,7 +172,6 @@ function CapabilitiesSection() {
                         ))}
                     </div>
 
-                    {/* Network visualization placeholder */}
                     <div className="network-viz">
                         {[...Array(12)].map((_, i) => (
                             <motion.div

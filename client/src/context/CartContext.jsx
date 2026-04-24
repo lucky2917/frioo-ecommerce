@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { logger } from '../utils/logger';
@@ -8,7 +7,6 @@ const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
-    // Initialize cart from localStorage IMMEDIATELY
     const [cart, setCart] = useState(() => {
         try {
             const savedCart = localStorage.getItem('frioo_cart');
@@ -23,7 +21,6 @@ export const CartProvider = ({ children }) => {
     const [appliedCoupon, setAppliedCoupon] = useState(null);
     const [availableCoupons, setAvailableCoupons] = useState([]);
 
-    // --- FETCH COUPONS ---
     useEffect(() => {
         const fetchCoupons = async () => {
             try {
@@ -43,12 +40,10 @@ export const CartProvider = ({ children }) => {
         fetchCoupons();
     }, []);
 
-    // --- CART PERSISTENCE ---
     useEffect(() => {
         localStorage.setItem('frioo_cart', JSON.stringify(cart));
     }, [cart]);
 
-    // --- HELPERS ---
     const showToast = (text) => {
         setNotification(text);
         setTimeout(() => setNotification(null), 3000);
@@ -67,7 +62,6 @@ export const CartProvider = ({ children }) => {
         return `${productId}-${variant}-${JSON.stringify(sortedPrefs)}`;
     };
 
-    // --- CART ACTIONS ---
     const addToCart = (product, variant, finalPrice, preferences = {}) => {
         const cartKey = makeCartKey(product.id, variant, preferences);
 
@@ -127,7 +121,6 @@ export const CartProvider = ({ children }) => {
     const cartTotal = Object.values(cart).reduce((acc, item) => acc + (item.price * item.qty), 0);
     const cartCount = Object.values(cart).reduce((acc, item) => acc + item.qty, 0);
 
-    // --- COUPON LOGIC ---
     const verifyCoupon = async (code) => {
         try {
             const { data, error } = await supabase
@@ -146,7 +139,6 @@ export const CartProvider = ({ children }) => {
                 return false;
             }
 
-            // Check min order value against current total
             const currentTotal = Object.values(cart).reduce((acc, item) => acc + item.price * item.qty, 0);
 
             if (currentTotal < data.min_order_value) {

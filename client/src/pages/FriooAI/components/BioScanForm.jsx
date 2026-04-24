@@ -1,11 +1,6 @@
 import { useState } from 'react';
-// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 
-/**
- * BioScanForm - Multi-step form wizard
- * Clean, focused steps for better UX on mobile and desktop
- */
 function BioScanForm({ formData, updateForm, toggleAllergy, runAnalysis, loading }) {
     const [currentStep, setCurrentStep] = useState(0);
 
@@ -46,7 +41,6 @@ function BioScanForm({ formData, updateForm, toggleAllergy, runAnalysis, loading
 
     return (
         <div className="bioscan-form">
-            {/* Progress Bar */}
             <div className="form-progress">
                 <div className="progress-steps">
                     {steps.map((step, idx) => (
@@ -69,7 +63,6 @@ function BioScanForm({ formData, updateForm, toggleAllergy, runAnalysis, loading
                 </div>
             </div>
 
-            {/* Form Steps */}
             <AnimatePresence mode="wait">
                 <motion.div
                     key={currentStep}
@@ -81,7 +74,6 @@ function BioScanForm({ formData, updateForm, toggleAllergy, runAnalysis, loading
                 >
                     <h3 className="step-title">{steps[currentStep].title}</h3>
 
-                    {/* Step 0: Basic Profile */}
                     {currentStep === 0 && (
                         <div className="form-grid">
                             <div className="form-field">
@@ -126,7 +118,6 @@ function BioScanForm({ formData, updateForm, toggleAllergy, runAnalysis, loading
                         </div>
                     )}
 
-                    {/* Step 1: Activity & Goals */}
                     {currentStep === 1 && (
                         <div className="form-grid">
                             <div className="form-field full-width">
@@ -160,7 +151,6 @@ function BioScanForm({ formData, updateForm, toggleAllergy, runAnalysis, loading
                         </div>
                     )}
 
-                    {/* Step 2: Dietary Preferences */}
                     {currentStep === 2 && (
                         <div className="form-grid">
                             <div className="form-field full-width">
@@ -197,7 +187,6 @@ function BioScanForm({ formData, updateForm, toggleAllergy, runAnalysis, loading
                 </motion.div>
             </AnimatePresence>
 
-            {/* Navigation Buttons */}
             <div className="form-actions">
                 {currentStep > 0 && (
                     <button

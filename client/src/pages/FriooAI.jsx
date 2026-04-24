@@ -5,13 +5,11 @@ import { ScrollControls, Environment } from '@react-three/drei';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import './FriooAI/FriooAI.css';
 
-// Data/Context
 import { runFriooAI } from '../utils/friooAI';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { showToast } from '../utils/toast';
 
-// Extracted Components
 import ScrollBridge from './FriooAI/components/ScrollBridge';
 import RobotScene from './FriooAI/components/RobotScene';
 import HeroSection from './FriooAI/sections/HeroSection';
@@ -20,16 +18,13 @@ import PrivacySection from './FriooAI/sections/PrivacySection';
 import BioScanForm from './FriooAI/components/BioScanForm';
 import IdentityMorph from './FriooAI/components/IdentityMorph';
 
-// --- OVERLAY COMPONENT ---
 
 
-// --- OVERLAY ---
 
 function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, setCtaHovered, replayObj, setReplayObj, scrollControl }) {
     const { loading, results, formData, resultTab, resultTier, introComplete, ctaHovered } = viewState;
     const { updateForm, toggleAllergy, runAnalysis, handleOrder, setResultTab, setResultTier, scrollToSection } = formActions;
 
-    // Failsafe
     useEffect(() => { const t = setTimeout(() => setIntroComplete(true), 3500); return () => clearTimeout(t); }, [setIntroComplete]);
 
     const [graphW, setGraphW] = useState('0%');
@@ -37,7 +32,6 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
 
 
     const getCurrentPlan = () => {
-        // Safe null checks to prevent crash
         if (!results) return null;
         if (!results.results) return null;
 
@@ -51,7 +45,6 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
 
     return (
         <div className="v5-overlay-content">
-            {/* HERO SECTION */}
             <HeroSection
                 introComplete={introComplete}
                 setIntroComplete={setIntroComplete}
@@ -59,10 +52,8 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
                 scrollToSection={scrollToSection}
             />
 
-            {/* CAPABILITIES SECTION */}
             <CapabilitiesSection />
 
-            {/* ACTION */}
             <section className="v5-sec action-sec">
                 <div className="terminal-wrap">
                     <motion.div className="glass-terminal" initial={{ y: 50, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }}>
@@ -72,27 +63,23 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
                                 <motion.div key="loading" className="gt-state loading"><div className="scan-anim"></div><div className="scan-text">PROCESSING BIO-DATA...</div></motion.div>
                             ) : results ? (
                                 <motion.div key="results" className="gt-state results">
-                                    {/* Enhanced Results Display */}
                                     <div className="res-metrics-grid">
                                         <div className="metric-card"><span className="metric-label">BMI INDEX</span><span className="metric-value">{results.metrics?.bmi?.toFixed(1) || '--'}</span></div>
                                         <div className="metric-card"><span className="metric-label">HYDRATION</span><span className="metric-value">{results.metrics?.hydrationNeed > 0 ? 'LOW' : 'GOOD'}</span></div>
                                         <div className="metric-card"><span className="metric-label">SLEEP SCORE</span><span className="metric-value">{results.metrics?.sleepDebt > 0 ? 'DEFICIT' : 'OPTIMAL'}</span></div>
                                     </div>
 
-                                    {/* Tab Switcher */}
                                     <div className="result-tabs">
                                         <button className={`tab-btn ${resultTab === 'salads' ? 'active' : ''}`} onClick={() => setResultTab('salads')}>SALAD BOWLS</button>
                                         <button className={`tab-btn ${resultTab === 'juices' ? 'active' : ''}`} onClick={() => setResultTab('juices')}>JUICE BLENDS</button>
                                     </div>
 
-                                    {/* Tier Selector */}
                                     <div className="tier-selector">
                                         <button className={`tier-pill ${resultTier === 'low' ? 'active' : ''}`} onClick={() => setResultTier('low')}>ESSENTIAL</button>
                                         <button className={`tier-pill ${resultTier === 'mid' ? 'active' : ''}`} onClick={() => setResultTier('mid')}>BALANCED</button>
                                         <button className={`tier-pill ${resultTier === 'high' ? 'active' : ''}`} onClick={() => setResultTier('high')}>PREMIUM</button>
                                     </div>
 
-                                    {/* Active Plan Display */}
                                     {activePlan && (
                                         <div className="plan-card-pro">
                                             <div className="plan-header">
@@ -131,11 +118,9 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
                 </div>
             </section>
 
-            {/* FOOTER */}
             <footer className="frioo-footer">
                 <div className="footer-container">
                     <div className="footer-main">
-                        {/* Brand Column */}
                         <div className="footer-col brand-col">
                             <div className="footer-logo">FRIOO AI</div>
                             <p className="footer-tagline">Advanced nutrition intelligence powered by AI. Personalized meal plans decoded for your unique biology.</p>
@@ -158,7 +143,6 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
                             </div>
                         </div>
 
-                        {/* Products Column */}
                         <div className="footer-col">
                             <h4 className="footer-heading">Products</h4>
                             <ul className="footer-links">
@@ -170,7 +154,6 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
                             </ul>
                         </div>
 
-                        {/* Resources Column */}
                         <div className="footer-col">
                             <h4 className="footer-heading">Resources</h4>
                             <ul className="footer-links">
@@ -182,7 +165,6 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
                             </ul>
                         </div>
 
-                        {/* Company Column */}
                         <div className="footer-col">
                             <h4 className="footer-heading">Company</h4>
                             <ul className="footer-links">
@@ -194,7 +176,6 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
                             </ul>
                         </div>
 
-                        {/* Legal Column */}
                         <div className="footer-col">
                             <h4 className="footer-heading">Legal</h4>
                             <ul className="footer-links">
@@ -207,7 +188,6 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
                         </div>
                     </div>
 
-                    {/* Newsletter Section */}
                     <div className="footer-newsletter">
                         <h4 className="newsletter-heading">Stay Updated</h4>
                         <p className="newsletter-desc">Get the latest nutrition insights and exclusive offers.</p>
@@ -217,7 +197,6 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
                         </form>
                     </div>
 
-                    {/* Bottom Bar */}
                     <div className="footer-bottom">
                         <p>© 2024 Frioo. All rights reserved.</p>
                         <div className="footer-payment">
@@ -241,11 +220,9 @@ export default function FriooAI() {
     const { addToCart } = useCart(); // Auth not strictly needed for UI 
     const [introComplete, setIntroComplete] = useState(false);
 
-    // UI Interactions
     const [ctaHovered, setCtaHovered] = useState(false);
     const [replayObj, setReplayObj] = useState({ c1: 0 }); // For triggering card animations
 
-    // Data State
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState(null);
     const [resultTab, setResultTab] = useState('salads');
@@ -266,7 +243,6 @@ export default function FriooAI() {
 
     const scrollToSection = (idx) => scrollControl?.el?.scrollTo({ top: scrollControl.el.clientHeight * idx, behavior: 'smooth' });
 
-    // Sync HTML scroll with Canvas ScrollControls
     useEffect(() => {
         const rootEl = document.querySelector('.frioo-v5-root');
         if (!rootEl || !scrollControl?.el) return;
@@ -284,13 +260,11 @@ export default function FriooAI() {
 
     return (
         <div className="frioo-v5-root">
-            {/* TOP BAR */}
             <div className="top-bar">
                 <div className="nav-logo">FRIOO AI</div>
                 <button className="exit-btn" onClick={() => navigate('/')}>EXIT</button>
             </div>
 
-            {/* 3D CANVAS - Robot Scene Only */}
             <Canvas shadows dpr={[1, 2]} camera={{ fov: 30, position: [0, 0, 8] }} className="v5-canvas">
                 <ambientLight intensity={2.0} />
                 <directionalLight position={[5, 8, 5]} intensity={2} castShadow />
@@ -304,7 +278,6 @@ export default function FriooAI() {
                 </React.Suspense>
             </Canvas>
 
-            {/* HTML OVERLAY - Separate from Canvas */}
             <Overlay
                 viewState={{ loading, results, formData, resultTab, resultTier, introComplete, ctaHovered }}
                 formActions={{ updateForm, toggleAllergy, runAnalysis, handleOrder, setResultTab, setResultTier, scrollToSection }}

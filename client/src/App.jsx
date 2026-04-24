@@ -4,7 +4,6 @@ import { AuthProvider } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 
-// --- LAZY-LOADED PAGE IMPORTS (Code Splitting) ---
 import { CartProvider, useCart } from './context/CartContext';
 
 const Home = lazy(() => import('./pages/Home'));
@@ -18,7 +17,6 @@ const FriooAI = lazy(() => import('./pages/FriooAI')); // [NEW] AI Module
 
 const NotFound = lazy(() => import('./pages/NotFound'));
 
-// Admin Pages
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const AdminRoute = lazy(() => import('./components/admin/AdminRoute'));
 const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
@@ -26,7 +24,6 @@ const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
 const AdminCoupons = lazy(() => import('./pages/admin/AdminCoupons'));
 
-// Info Pages
 const AboutUs = lazy(() => import('./pages/info/AboutUs'));
 const Contact = lazy(() => import('./pages/info/Contact'));
 const HelpFAQs = lazy(() => import('./pages/info/HelpFAQs'));
@@ -36,10 +33,8 @@ const Terms = lazy(() => import('./pages/info/Terms'));
 const ShippingPolicy = lazy(() => import('./pages/info/ShippingPolicy'));
 const Returns = lazy(() => import('./pages/info/Returns'));
 
-// --- COMPONENT IMPORTS ---
 import CouponPopup from './components/layout/CouponPopup';
 
-// --- TOAST NOTIFICATION COMPONENT ---
 const Notification = ({ msg }) => {
   if (!msg) return null;
   return (
@@ -60,10 +55,8 @@ const AppInner = () => {
 
   return (
     <>
-      {/* Global Notification */}
       <Notification msg={notification} />
 
-      {/* First Visit Popup */}
       <CouponPopup />
 
       <ErrorBoundary>
@@ -74,19 +67,16 @@ const AppInner = () => {
           </div>
         }>
           <Routes>
-            {/* --- PUBLIC STORE ROUTES --- */}
             <Route path="/" element={<Home />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/ai-nutritionist" element={<FriooAI />} />
 
-            {/* --- USER ACCOUNT ROUTES --- */}
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/orders" element={<Orders />} />
 
-            {/* --- ADMIN PANEL ROUTES --- */}
             <Route path="/admin" element={
               <AdminRoute>
                 <AdminLayout />
@@ -99,7 +89,6 @@ const AppInner = () => {
               <Route path="coupons" element={<AdminCoupons />} />
             </Route>
 
-            {/* --- INFO PAGES --- */}
             <Route path="/about" element={<AboutUs />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<HelpFAQs />} />
@@ -109,7 +98,6 @@ const AppInner = () => {
             <Route path="/shipping" element={<ShippingPolicy />} />
             <Route path="/returns" element={<Returns />} />
 
-            {/* --- CATCH ALL --- */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

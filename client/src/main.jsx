@@ -4,7 +4,6 @@ import './index.css';
 import App from './App.jsx';
 import { initSentry } from './config/sentry';
 
-// Initialize Sentry error tracking BEFORE React renders
 initSentry();
 
 createRoot(document.getElementById('root')).render(

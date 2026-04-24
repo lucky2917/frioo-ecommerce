@@ -14,8 +14,6 @@ export default function Contact() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // In production, you'd send this to your backend
-    // Form data is ready to be submitted
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);

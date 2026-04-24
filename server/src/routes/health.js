@@ -1,17 +1,7 @@
-/**
- * Health Check Route
- * Kubernetes-compatible liveness and readiness probes
- */
-
 const express = require('express');
 const router = express.Router();
 const { supabaseAdmin } = require('../db');
 
-/**
- * Liveness Probe - Is the application alive?
- * Returns 200 if server process is running
- * Used by: Kubernetes, Docker, monitoring systems
- */
 router.get('/health', (req, res) => {
     res.status(200).json({
         status: 'ok',
@@ -22,12 +12,6 @@ router.get('/health', (req, res) => {
     });
 });
 
-/**
- * Readiness Probe - Is the application ready to serve traffic?
- * Checks critical dependencies (database, etc.)
- * Returns 200 only if all systems operational
- * Used by: Load balancers, Kubernetes readiness checks
- */
 router.get('/health/ready', async (req, res) => {
     const checks = {
         server: 'ok',
@@ -36,7 +20,6 @@ router.get('/health/ready', async (req, res) => {
     };
 
     try {
-        // Check database connectivity
         const { data, error } = await supabaseAdmin
             .from('products')
             .select('id')
@@ -55,7 +38,6 @@ router.get('/health/ready', async (req, res) => {
 
         checks.database = 'ok';
 
-        // All checks passed
         return res.status(200).json({
             status: 'ready',
             checks,
@@ -74,10 +56,6 @@ router.get('/health/ready', async (req, res) => {
     }
 });
 
-/**
- * Detailed Status (Optional - for debugging)
- * More verbose health information
- */
 router.get('/health/status', (req, res) => {
     const status = {
         service: 'frioo-api',

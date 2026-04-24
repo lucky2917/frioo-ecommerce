@@ -1,8 +1,5 @@
 import React from 'react';
 
-/**
- * KnowledgeCard - Global nutrition database stats
- */
 function KnowledgeCard() {
     return (
         <div className="v4-card knowledge">

@@ -6,25 +6,20 @@ const { requireAdmin } = require('../middleware/auth');
 const { phoneValidator } = require('../utils/validators');
 const { sendError, sendValidationError, sendSuccess } = require('../utils/responses');
 
-// Apply admin auth middleware to all routes in this router
 router.use(requireAdmin);
 
-// --- ADMIN: GET ALL ORDERS (with pagination) ---
 router.get('/orders', async (req, res) => {
     try {
-        // Pagination parameters
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 50; // 50 orders per page
         const offset = (page - 1) * limit;
 
-        // Get total count for pagination metadata
         const { count, error: countError } = await supabaseAdmin
             .from('orders')
             .select('*', { count: 'exact', head: true });
 
         if (countError) throw countError;
 
-        // Get paginated orders with profile data
         const { data, error } = await supabaseAdmin
             .from('orders')
             .select(`
@@ -57,7 +52,6 @@ router.get('/orders', async (req, res) => {
     }
 });
 
-// --- ADMIN: UPDATE ORDER STATUS ---
 router.patch('/orders/:orderId',
     [
         body('status').isIn(['pending', 'confirmed', 'preparing', 'ready', 'out-for-delivery', 'delivered', 'cancelled'])
@@ -89,7 +83,6 @@ router.patch('/orders/:orderId',
 
 );
 
-// --- ADMIN: USER MANAGEMENT ---
 router.get('/users', async (req, res) => {
     try {
         const { data, error } = await supabaseAdmin
@@ -108,11 +101,9 @@ router.get('/users', async (req, res) => {
 router.delete('/users/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        // Delete from auth.users (requires service role key with auth.admin)
         const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id);
         if (authError) throw authError;
 
-        // Delete from public.profiles (should cascade ideally, but explicit delete is safe)
         const { error: dbError } = await supabaseAdmin.from('profiles').delete().eq('id', id);
         if (dbError) throw dbError;
 
@@ -123,8 +114,6 @@ router.delete('/users/:id', async (req, res) => {
     }
 });
 
-// --- ADMIN: PRODUCT MANAGEMENT ---
-// Helper function to generate slug from title
 const generateSlug = (title) => {
     return title
         .toLowerCase()
@@ -181,7 +170,6 @@ router.patch('/products/:id',
                 }
             }
 
-            // If title is being updated, regenerate slug
             if (updates.title) {
                 updates.slug = generateSlug(updates.title);
             }
@@ -214,11 +202,9 @@ router.delete('/products/:id', async (req, res) => {
     }
 });
 
-// Update User (Profile) - with phone validation
 router.patch('/users/:id',
     phoneValidator(), // Validate Indian phone number format
     async (req, res) => {
-        // Check validation results
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return sendValidationError(res, errors);

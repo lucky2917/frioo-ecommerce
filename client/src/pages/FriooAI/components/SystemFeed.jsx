@@ -7,10 +7,6 @@ const fullLog = [
     ":: EXEC_PROTOCOL(v9.2): 100%"
 ];
 
-/**
- * SystemFeed - Terminal-style boot sequence with syntax highlighting
- * Displays a series of system initialization messages with color-coded syntax
- */
 function SystemFeed() {
     const [lines, setLines] = useState([]);
 
@@ -28,11 +24,9 @@ function SystemFeed() {
         return () => timers.forEach(clearTimeout);
     }, []);
 
-    // Syntax highlighter for terminal output
     const colorize = (text) => {
         let html = text;
 
-        // Color coding for different terminal elements
         html = html.replace(
             /^(> root@frioo_core:~\$)/,
             '<span style="color:#50fa7b">root</span><span style="color:#fff">@</span><span style="color:#50fa7b">frioo_core</span><span style="color:#fff">:</span><span style="color:#8be9fd">~</span><span style="color:#fff">$</span>'

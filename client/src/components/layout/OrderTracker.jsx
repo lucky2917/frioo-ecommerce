@@ -102,7 +102,6 @@ export default function OrderTracker() {
               </div>
             </div>
 
-            {/* UPDATED PHONE NUMBER HERE */}
             <button
               onClick={() => window.open(`https://wa.me/919010900688?text=Help with Order #${activeOrder.id}`, '_blank')}
               style={styles.helpBtn}

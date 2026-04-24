@@ -13,7 +13,6 @@ export default function AdminLayout() {
 
     const isActive = (path) => location.pathname.includes(path);
 
-    // Close sidebar when clicking outside on mobile
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (isMobileOpen && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
@@ -28,7 +27,6 @@ export default function AdminLayout() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isMobileOpen]);
 
-    // Close sidebar on route change
     useEffect(() => {
         setIsMobileOpen(false);
     }, [location.pathname]);
@@ -103,7 +101,6 @@ export default function AdminLayout() {
 
     return (
         <div className="admin-layout">
-            {/* MOBILE HEADER */}
             <header className="mobile-header">
                 <div className="logo-area">Frioo Admin</div>
                 <button className="menu-toggle" onClick={() => setIsMobileOpen(!isMobileOpen)}>
@@ -119,7 +116,6 @@ export default function AdminLayout() {
                 </button>
             </header>
 
-            {/* SIDEBAR */}
             <aside ref={sidebarRef} className={`admin-sidebar ${isMobileOpen ? 'open' : ''} ${isDesktopCollapsed ? 'collapsed' : ''}`}>
                 <div className="sidebar-header">
                     <h2 className="brand-logo">Frioo Admin</h2>
@@ -129,9 +125,7 @@ export default function AdminLayout() {
                 </nav>
             </aside>
 
-            {/* MAIN CONTENT */}
             <main className={`admin-content ${isDesktopCollapsed ? 'expanded' : ''}`}>
-                {/* Desktop Toggle Button */}
                 <button
                     className="desktop-toggle-btn"
                     onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
@@ -150,7 +144,6 @@ export default function AdminLayout() {
                 <Outlet />
             </main>
 
-            {/* OVERLAY */}
             {isMobileOpen && <div className="sidebar-overlay" onClick={() => setIsMobileOpen(false)}></div>}
 
             <style>{`
@@ -161,7 +154,6 @@ export default function AdminLayout() {
                     font-family: 'Inter', sans-serif;
                 }
 
-                /* SIDEBAR STYLES */
                 .admin-sidebar {
                     width: 280px;
                     background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
@@ -315,7 +307,6 @@ export default function AdminLayout() {
                     color: #ef4444;
                 }
 
-                /* MAIN CONTENT */
                 .admin-content {
                     flex: 1;
                     margin-left: 280px;
@@ -331,7 +322,6 @@ export default function AdminLayout() {
                     margin-left: 80px;
                 }
 
-                /* Desktop Toggle Button */
                 .desktop-toggle-btn {
                     position: fixed;
                     top: 24px;
@@ -366,13 +356,11 @@ export default function AdminLayout() {
                     color: #475569;
                 }
 
-                /* Better base styles for admin pages */
                 .admin-content .admin-page {
                     max-width: 1600px;
                     margin: 0 auto;
                 }
 
-                /* MOBILE STYLES */
                 .mobile-header { display: none; }
                 
                 @media (max-width: 1024px) {

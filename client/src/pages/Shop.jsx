@@ -17,11 +17,9 @@ export default function Shop() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Filter & Layout States
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortOption, setSortOption] = useState("recommended");
 
-  // Derive active tab directly from URL (Single Source of Truth)
   const categoryParam = searchParams.get('category');
   const searchParam = searchParams.get('search'); // [NEW] Get search query
 
@@ -32,7 +30,6 @@ export default function Shop() {
   if (categoryParam === 'fruits') activeTab = "Fresh Fruits";
   if (categoryParam === 'deals') activeTab = "Daily Deals";
 
-  // If searching, activeTab is effectively "Search"
   const isSearchMode = !!searchParam;
 
   const handleTabChange = (tab) => {
@@ -46,7 +43,6 @@ export default function Shop() {
     setSearchParams({ category: map[tab] }); // Clears search param implicitly
   };
 
-  // Load all products at once
   useEffect(() => {
     const fetchShopProducts = async () => {
       try {
@@ -68,7 +64,6 @@ export default function Shop() {
   const processedProducts = useMemo(() => {
     let result = [...products];
 
-    // [NEW] SEARCH FILTER
     if (isSearchMode) {
       const q = searchParam.toLowerCase();
       result = result.filter(p =>
@@ -76,7 +71,6 @@ export default function Shop() {
         p.category.toLowerCase().includes(q)
       );
     } else {
-      // TAB FILTER (Standard)
       result = result.filter(p => {
         switch (activeTab) {
           case "Pure Juices": return p.category === 'Pure Fruit Juice';
@@ -89,7 +83,6 @@ export default function Shop() {
       });
     }
 
-    // Sort
     if (sortOption === 'price-asc') result.sort((a, b) => a.price_cents - b.price_cents);
     if (sortOption === 'price-desc') result.sort((a, b) => b.price_cents - a.price_cents);
     if (sortOption === 'alpha-asc') result.sort((a, b) => a.title.localeCompare(b.title));
@@ -108,9 +101,7 @@ export default function Shop() {
       />
       <Navbar />
 
-      {/* MOBILE HEADER & TOOLBAR (Visible Mobile Only) */}
       <div className="visible-mobile shop-toolbar-container-mobile">
-        {/* ROW 1: Heading & Description */}
         <ScrollReveal>
           <div className="mobile-header-content">
             <StaggerText
@@ -123,8 +114,6 @@ export default function Shop() {
           </div>
         </ScrollReveal>
 
-        {/* ... (mobile cats and sort remain similar, can wrap in ScrollReveal) ... */}
-        {/* ROW 2: CATEGORY SWITCHER */}
         <ScrollReveal delay={0.1}>
           <div className="mobile-category-scroll">
             {['Pure Juices', 'Fruit Shakes', 'Salads', 'Fresh Fruits', 'Daily Deals'].map((cat) => (
@@ -139,7 +128,6 @@ export default function Shop() {
           </div>
         </ScrollReveal>
 
-        {/* ROW 3: FILTER & SORT */}
         <div className="mobile-sort-wrapper">
           <span className="sort-label">Sort by:</span>
           <select
@@ -155,7 +143,6 @@ export default function Shop() {
       </div>
 
 
-      {/* DESKTOP HEADER (Hidden Mobile) */}
       <section className="shop-header hidden-mobile">
         <StaggerText
           text={isSearchMode ? `Search Results: "${searchParam}"` : 'Fresh Collection'}
@@ -172,12 +159,10 @@ export default function Shop() {
         </ScrollReveal>
       </section>
 
-      {/* DESKTOP TOOLBAR (Hidden Mobile) */}
       <div className="shop-toolbar-container hidden-mobile">
         <ScrollReveal direction="up" delay={0.4}>
           <div className="shop-toolbar">
             <div className="toolbar-left">
-              {/* If searching, user can clear search by clicking a category */}
               {isSearchMode && (
                 <button onClick={() => handleTabChange('Pure Juices')} className="filter-toggle-btn">
                   ← Back to Categories
@@ -202,11 +187,9 @@ export default function Shop() {
         </ScrollReveal>
       </div>
 
-      {/* MAIN CONTENT (Sidebar + Grid) */}
       <div className="shop-main-layout">
         <div className="layout-inner">
 
-          {/* PRODUCT GRID */}
           <main className="grid-wrapper">
             {loading ? (
               <div className="loading-area"><LoadingSpinner /></div>
@@ -244,7 +227,6 @@ export default function Shop() {
           padding-top: var(--navbar-height-mobile); /* Responsive navbar clearance */
         }
 
-        /* HEADER */
         .shop-header {
           text-align: center;
           padding: 60px 20px 40px;
@@ -264,7 +246,6 @@ export default function Shop() {
           font-size: 1.05rem;
         }
 
-        /* TOOLBAR */
         .shop-toolbar-container {
           border-top: 1px solid #eee;
           border-bottom: 1px solid #eee;
@@ -314,7 +295,6 @@ export default function Shop() {
           padding-left: 20px;
         }
 
-        /* LAYOUT */
         .shop-main-layout {
           max-width: 1400px;
           margin: 0 auto;
@@ -346,21 +326,17 @@ export default function Shop() {
           gap: 40px 30px; /* Vertical gap bigger */
         }
 
-        /* RESPONSIVE UTILS */
         .hidden-mobile { display: block; }
         .visible-mobile { display: none; }
 
-        /* MOBILE STYLES */
         @media (max-width: 900px) {
           .hidden-mobile { display: none !important; }
           .visible-mobile { display: block !important; }
           
-          /* HEADER SPACING FIX - Increased for Tall Navbar */
           .shop-page {
             padding-top: var(--navbar-height-desktop); /* Desktop navbar with secondary nav */ 
           }
 
-          /* MOBILE TOOLBAR CONTAINER */
           .shop-toolbar-container-mobile {
              background: white;
              padding: 15px 20px;
@@ -421,7 +397,6 @@ export default function Shop() {
              padding-top: 15px;
            }
 
-          /* Mobile Filter Button */
           .mobile-inline-filter-btn {
             background: none;
             border: none;
@@ -435,7 +410,6 @@ export default function Shop() {
             padding: 0;
           }
 
-          /* Mobile Sort */
           .mobile-sort-wrapper {
              display: flex;
              align-items: center;
@@ -445,7 +419,6 @@ export default function Shop() {
 
           .shop-main-layout { padding: 0 15px 40px; }
           
-          /* GRID FIXES - FORCE 2 COLUMNS */
           .product-grid { 
             display: grid;
             grid-template-columns: repeat(2, 1fr) !important; 
@@ -457,7 +430,6 @@ export default function Shop() {
            .product-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
 
-        /* Load More Styles */
         .load-more-wrapper {
           display: flex;
           flex-direction: column;

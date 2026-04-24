@@ -18,16 +18,13 @@ class ErrorBoundary extends React.Component {
     }
 
     componentDidCatch(error, errorInfo) {
-        // Log to console with stack trace
         logger.error('Error Boundary caught an error:', {
             error: error.toString(),
             componentStack: errorInfo.componentStack
         });
 
-        // Store errorInfo for display in dev mode
         this.setState({ errorInfo });
 
-        // Send to Sentry for production error tracking
         Sentry.captureException(error, {
             contexts: {
                 react: {
@@ -43,7 +40,6 @@ class ErrorBoundary extends React.Component {
     handleReset = () => {
         const { retryCount } = this.state;
 
-        // Prevent infinite retry loops
         if (retryCount >= 3) {
             window.location.href = '/';
             return;
@@ -66,12 +62,10 @@ class ErrorBoundary extends React.Component {
         const { fallback, name = 'Application' } = this.props;
 
         if (hasError) {
-            // Use custom fallback if provided
             if (fallback) {
                 return fallback({ error, reset: this.handleReset, goHome: this.handleGoHome });
             }
 
-            // Default fallback UI
             return (
                 <div style={styles.container}>
                     <div style={styles.card}>
@@ -83,7 +77,6 @@ class ErrorBoundary extends React.Component {
                             }
                         </p>
 
-                        {/* Development-only error details */}
                         {import.meta.env.MODE === 'development' && error && (
                             <details style={styles.errorDetailsContainer}>
                                 <summary style={styles.errorSummary}>Error Details (Dev Only)</summary>

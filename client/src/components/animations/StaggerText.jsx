@@ -1,12 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-/**
- * StaggerText - Framer-Quality Text Stagger Animation
- * 
- * Smooth word-by-word reveals with professional timing.
- * No blur effects for better performance.
- */
 export default function StaggerText({
     text,
     className = '',
@@ -15,7 +9,6 @@ export default function StaggerText({
 }) {
     const words = text.split(" ");
 
-    // Framer's expo out for smooth deceleration
     const customEase = [0.16, 1, 0.3, 1];
 
     const container = {

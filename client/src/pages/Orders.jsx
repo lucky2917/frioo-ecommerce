@@ -93,7 +93,6 @@ export default function Orders() {
             {orders.map(order => (
               <div key={order.id} className="order-card fade-in">
 
-                {/* CARD HEADER */}
                 <div className="card-header">
                   <div className="ch-left">
                     <span className="order-id">Order #{order.id}</span>
@@ -107,7 +106,6 @@ export default function Orders() {
                   </div>
                 </div>
 
-                {/* CARD BODY - ITEMS */}
                 <div className="card-body">
                   {(() => {
                     let items = order.items;
@@ -144,7 +142,6 @@ export default function Orders() {
                   )}
                 </div>
 
-                {/* CARD FOOTER */}
                 <div className="card-footer">
                   <button className="btn-reorder" onClick={() => handleReorder(order.items)}>
                     Reorder All Items
@@ -170,7 +167,6 @@ export default function Orders() {
             padding: 120px 20px 20px;
         }
 
-        /* --- HEADER --- */
         .page-header {
             text-align: center;
             margin-bottom: 50px;
@@ -187,7 +183,6 @@ export default function Orders() {
             font-size: 1.1rem;
         }
 
-        /* --- CARDS --- */
         .orders-list {
             display: flex;
             flex-direction: column;
@@ -206,7 +201,6 @@ export default function Orders() {
             box-shadow: 0 10px 30px rgba(0,0,0,0.06);
         }
 
-        /* --- CARD HEADER --- */
         .card-header {
             padding: 20px 25px;
             background: #fffdf9;
@@ -241,7 +235,6 @@ export default function Orders() {
             color: #3E2723;
         }
         
-        /* --- STATUS PILLS --- */
         .status-badge {
             padding: 6px 14px;
             border-radius: 20px;
@@ -255,7 +248,6 @@ export default function Orders() {
         .status-orange { background: #fff3e0; color: #ef6c00; }
         .status-red { background: #ffebee; color: #c62828; }
 
-        /* --- CARD BODY --- */
         .card-body {
             padding: 20px 25px;
       }
@@ -289,7 +281,6 @@ export default function Orders() {
             color: #555;
         }
 
-        /* --- CARD FOOTER --- */
         .item-prefs { margin-top: 4px; font-size: 0.8rem; }
         .pref-row { color: #d32f2f; font-weight: 500; }
         
@@ -330,7 +321,6 @@ export default function Orders() {
         }
         .link-help:hover { color: #555; }
 
-        /* --- EMPTY STATE --- */
         .empty-state {
             text-align: center;
             padding: 80px 20px;
@@ -347,21 +337,18 @@ export default function Orders() {
             font-weight: 600;
         }
 
-        /* --- LOADING --- */
         .loading-state {
             display: flex;
             justify-content: center;
             padding: 50px;
         }
 
-        /* --- ANIMATION --- */
         .fade-in { animation: fadeIn 0.4s ease forwards; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- MEDIA QUERIES --- */
         @media (max-width: 600px) {
             .card-header {
                 flex-direction: column;

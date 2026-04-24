@@ -56,7 +56,6 @@ export default function AdminProducts() {
         ? products
         : products.filter(p => p.category === activeTab);
 
-    // Calculate metrics
     const metrics = {
         total: products.length,
         featured: products.filter(p => p.featured).length,
@@ -173,7 +172,6 @@ export default function AdminProducts() {
 
             const data = await res.json();
             if (!data.success) {
-                // Extract error message properly (data.error could be object or string)
                 const errorMsg = typeof data.error === 'object'
                     ? (data.error.message || JSON.stringify(data.error))
                     : (data.error || 'Operation failed');
@@ -193,14 +191,12 @@ export default function AdminProducts() {
     const handleFileUpload = async (file) => {
         if (!file) return;
 
-        // Validate file type
         const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
         if (!validTypes.includes(file.type)) {
             showToast('Invalid file type. Please upload JPG, PNG, or WebP images only.', 'error');
             return;
         }
 
-        // Validate file size (5MB max)
         const maxSize = 5 * 1024 * 1024; // 5MB
         if (file.size > maxSize) {
             showToast('File too large. Maximum size is 5MB.', 'error');
@@ -211,14 +207,11 @@ export default function AdminProducts() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("No active session");
 
-            // Create FormData
             const formDataUpload = new FormData();
             formDataUpload.append('file', file);
 
-            // Simulate progress (since we can't track actual upload progress easily)
             setFormData(prev => ({ ...prev, uploadProgress: 10 }));
 
-            // Upload to server
             const res = await fetch(`${API_BASE_URL}/api/upload`, {
                 method: 'POST',
                 headers: {
@@ -235,7 +228,6 @@ export default function AdminProducts() {
                 throw new Error(result.error || 'Upload failed');
             }
 
-            // Set the uploaded image URL
             setFormData(prev => ({
                 ...prev,
                 image_url: result.url,
@@ -255,7 +247,6 @@ export default function AdminProducts() {
 
     return (
         <div className="inventory-page">
-            {/* HEADER */}
             <div className="inventory-header">
                 <div>
                     <h1 className="page-title">Product Inventory</h1>
@@ -267,7 +258,6 @@ export default function AdminProducts() {
                 </button>
             </div>
 
-            {/* METRICS */}
             <div className="metrics-row">
                 <div className="metric-card">
                     <div className="metric-label">Total Products</div>
@@ -285,7 +275,6 @@ export default function AdminProducts() {
                 ))}
             </div>
 
-            {/* CATEGORY TABS */}
             <div className="category-tabs">
                 {CATEGORIES.map(cat => (
                     <button
@@ -301,7 +290,6 @@ export default function AdminProducts() {
                 ))}
             </div>
 
-            {/* PRODUCTS GRID */}
             <div className="products-grid">
                 {filteredProducts.map(product => (
                     <div key={product.id} className={`product-card ${product.featured ? 'featured' : ''}`}>
@@ -347,7 +335,6 @@ export default function AdminProducts() {
                 )}
             </div>
 
-            {/* MODAL */}
             {isModalOpen && (
                 <div className="modal-overlay" onClick={(e) => e.target.className === 'modal-overlay' && setIsModalOpen(false)}>
                     <div className="modal-container">
@@ -411,7 +398,6 @@ export default function AdminProducts() {
                                 <div className="form-field full">
                                     <label>Product Image</label>
 
-                                    {/* Toggle between URL and Upload */}
                                     <div className="upload-tabs">
                                         <button
                                             type="button"
@@ -429,7 +415,6 @@ export default function AdminProducts() {
                                         </button>
                                     </div>
 
-                                    {/* URL Input */}
                                     {(!formData.uploadMethod || formData.uploadMethod === 'url') && (
                                         <input
                                             type="url"
@@ -440,7 +425,6 @@ export default function AdminProducts() {
                                         />
                                     )}
 
-                                    {/* File Upload */}
                                     {formData.uploadMethod === 'upload' && (
                                         <div
                                             className={`file-upload-zone ${formData.uploadDragging ? 'dragging' : ''}`}
@@ -478,7 +462,6 @@ export default function AdminProducts() {
                                         </div>
                                     )}
 
-                                    {/* Image Preview */}
                                     {formData.image_url && (
                                         <div className="image-preview">
                                             <img src={formData.image_url} alt="Preview" onError={e => e.target.src = '/placeholder.png'} />
@@ -503,7 +486,6 @@ export default function AdminProducts() {
                                     />
                                 </div>
 
-                                {/* NUTRITION FIELDS */}
                                 <div className="form-field full" style={{ marginTop: '10px' }}>
                                     <label style={{ marginBottom: '12px', display: 'block', fontSize: '0.95rem', fontWeight: '700', color: '#0f172a' }}>Nutritional Information (per 100g/ml)</label>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
@@ -593,7 +575,6 @@ export default function AdminProducts() {
                     padding-bottom: 60px;
                 }
 
-                /* HEADER */
                 .inventory-header {
                     display: flex;
                     justify-content: space-between;
@@ -641,7 +622,6 @@ export default function AdminProducts() {
                     font-weight: 700;
                 }
 
-                /* METRICS */
                 .metrics-row {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -687,7 +667,6 @@ export default function AdminProducts() {
                     color: #0f172a;
                 }
 
-                /* CATEGORY TABS */
                 .category-tabs {
                     display: flex;
                     gap: 8px;
@@ -737,7 +716,6 @@ export default function AdminProducts() {
                     color: white;
                 }
 
-                /* PRODUCTS GRID */
                 .products-grid {
                     display: grid;
                     grid-template-columns: repeat(4, 1fr);
@@ -888,7 +866,6 @@ export default function AdminProducts() {
                     background: #fee2e2;
                 }
 
-                /* EMPTY STATE */
                 .empty-state {
                     grid-column: 1 / -1;
                     text-align: center;
@@ -910,7 +887,6 @@ export default function AdminProducts() {
                     color: #94a3b8;
                 }
 
-                /* MODAL */
                 .modal-overlay {
                     position: fixed;
                     inset: 0;
@@ -1053,7 +1029,6 @@ export default function AdminProducts() {
                     transform: scale(1.1);
                 }
 
-                /* UPLOAD TABS */
                 .upload-tabs {
                     display: flex;
                     gap: 8px;
@@ -1086,7 +1061,6 @@ export default function AdminProducts() {
                     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
                 }
 
-                /* FILE UPLOAD ZONE */
                 .file-upload-zone {
                     border: 2px dashed #cbd5e1;
                     border-radius: 12px;
@@ -1134,7 +1108,6 @@ export default function AdminProducts() {
                     margin: 0;
                 }
 
-                /* UPLOAD PROGRESS */
                 .upload-spinner {
                     width: 40px;
                     height: 40px;
@@ -1218,7 +1191,6 @@ export default function AdminProducts() {
                     font-size: 1.1rem;
                 }
 
-                /* RESPONSIVE */
                 @media (max-width: 768px) {
                     .inventory-header {
                         flex-direction: column;

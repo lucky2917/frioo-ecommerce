@@ -1,5 +1,3 @@
-// Development-safe logger utility
-// Prevents console statements in production builds
 
 import * as Sentry from '@sentry/react';
 
@@ -22,7 +20,6 @@ export const logger = {
         if (isDev) {
             console.error(message, ...args);
         }
-        // Send to Sentry in production for error tracking
         if (import.meta.env.PROD) {
             Sentry.captureException(new Error(message), {
                 extra: { args }

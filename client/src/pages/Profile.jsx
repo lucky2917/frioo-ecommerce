@@ -11,14 +11,8 @@ export default function Profile() {
   const { addToCart } = useCart();
   const { profile, user, loading: authLoading } = useAuth();
 
-  // If we are still initializing auth, show a loader or nothing
-  // This prevents Profile from flashing "Welcome Friend" before profile loads
-  if (authLoading) return <div style={{ height: '100vh' }} />;
 
-  // We can track which field is being edited, or just a global edit mode.
-  // User asked for "pencil icon beside every field", implying granular control or just visual cues.
-  // Let's stick to global editing for simplicity in state management, 
-  // but if they click a pencil, we focus that input.
+
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('saved');
@@ -30,12 +24,10 @@ export default function Profile() {
   });
   const [savedRecipes, setSavedRecipes] = useState([]);
 
-  // Refs to focus specific fields
   const nameRef = useRef(null);
   const phoneRef = useRef(null);
   const addressRef = useRef(null);
 
-  // Load Saved Recipes
   useEffect(() => {
     const fetchSavedRecipes = async () => {
       if (!user?.id) return;
@@ -53,7 +45,6 @@ export default function Profile() {
     }
   }, [user]);
 
-  // Sync form
   useEffect(() => {
     if (profile) {
       setForm({
@@ -114,17 +105,17 @@ export default function Profile() {
 
   const startEdit = (fieldRef) => {
     setEditing(true);
-    // Small timeout to allow render to switch to input, then focus
     setTimeout(() => {
       fieldRef.current?.focus();
     }, 50);
   };
 
+  if (authLoading) return <div style={{ height: '100vh' }} />;
+
   return (
     <div className="profile-page">
       <Navbar />
 
-      {/* HERO BANNER SECTION */}
       <div className="profile-hero">
         <div className="hero-content">
           <h1 className="hero-title">Welcome Back, {profile?.full_name?.split(' ')[0] || 'Friend'}</h1>
@@ -133,7 +124,6 @@ export default function Profile() {
 
       <div className="profile-container">
 
-        {/* FLOATING CARD */}
         <div className="profile-float-card">
           <div className="avatar-wrapper">
             <img
@@ -143,10 +133,8 @@ export default function Profile() {
             />
           </div>
 
-          {/* Always show the Form Layout (Grid) */}
           <div className="field-grid">
 
-            {/* FULL NAME */}
             <div className="field-group">
               <label>Full Name</label>
               <div className="field-row">
@@ -166,7 +154,6 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* PHONE */}
             <div className="field-group">
               <label>Phone</label>
               <div className="field-row">
@@ -186,7 +173,6 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* ADDRESS (Full Width) */}
             <div className="field-group full">
               <label>Address</label>
               <div className="field-row">
@@ -198,7 +184,6 @@ export default function Profile() {
                     className="field-input active"
                     rows={1}
                     style={{ resize: 'none' }}
-                  // Auto-grow could be added but 1 row is fine for display similarity
                   />
                 ) : (
                   <div className="field-display">{profile?.address || '—'}</div>
@@ -211,7 +196,6 @@ export default function Profile() {
 
           </div>
 
-          {/* SAVE / CANCEL ACTIONS (Only when editing) */}
           {editing && (
             <div className="edit-actions fade-in">
               <button onClick={handleUpdate} disabled={loading} className="btn-save">Save Changes</button>
@@ -220,7 +204,6 @@ export default function Profile() {
           )}
         </div>
 
-        {/* TABS / SECTIONS */}
         <div className="profile-sections">
           <div className="section-tabs">
             <button
@@ -270,13 +253,11 @@ export default function Profile() {
       </div>
 
       <style>{`
-        /* --- LAYOUT --- */
         .profile-page {
             background-color: #FAFAFA;
             min-height: 100vh;
         }
 
-        /* --- HERO --- */
         .profile-hero {
             height: 300px;
             background: linear-gradient(135deg, #2F4F4F 0%, #1a2f2f 100%);
@@ -294,7 +275,6 @@ export default function Profile() {
             opacity: 0.9;
         }
 
-        /* --- CONTAINER --- */
         .profile-container {
             max-width: 900px;
             margin: 0 auto;
@@ -303,7 +283,6 @@ export default function Profile() {
             top: -60px; /* Overlap hero */
         }
 
-        /* --- FLOAT CARD --- */
         .profile-float-card {
             background: white;
             border-radius: 20px;
@@ -330,7 +309,6 @@ export default function Profile() {
             border: 1px solid #eee;
         }
 
-        /* --- FIELD GRID (Similar to Edit Mode in screenshot) --- */
         .field-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -392,7 +370,6 @@ export default function Profile() {
         }
         .icon-pencil:hover { color: #D4AF7A; }
 
-        /* --- ACTIONS --- */
         .edit-actions {
             display: flex;
             justify-content: center;
@@ -416,7 +393,6 @@ export default function Profile() {
             font-weight: 600;
         }
 
-        /* --- TABS --- */
         .section-tabs {
             display: flex;
             justify-content: center;
@@ -456,7 +432,6 @@ export default function Profile() {
         }
         .tab-link:hover { color: #111; }
 
-        /* --- RECIPES GRID --- */
         .recipes-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -547,7 +522,6 @@ export default function Profile() {
         .btn-remove-x:hover { color: #d32f2f; }
 
 
-        /* --- BUTTONS UTILS --- */
         .btn-gold {
             background: #D4AF7A;
             color: white;
@@ -558,7 +532,6 @@ export default function Profile() {
             display: inline-block;
         }
 
-        /* --- EMPTY STATE --- */
         .empty-state {
             grid-column: 1 / -1;
             text-align: center;
@@ -569,14 +542,12 @@ export default function Profile() {
         }
         .empty-icon { font-size: 3rem; margin-bottom: 15px; }
 
-        /* --- ANIMATIONS --- */
         .fade-in { animation: fadeIn 0.4s ease forwards; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- MEDIA QUERIES --- */
         @media (max-width: 768px) {
             .hero-title { font-size: 2rem; }
             .profile-hero { height: 250px; }

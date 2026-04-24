@@ -26,7 +26,6 @@ export default function OurStores() {
         keywords="frioo store vizag, frioo visakhapatnam location, fruit shop allipuram vizag, juice shop near me vizag, frioo store address, fresh fruit shop visakhapatnam"
       />
       <div className="stores-container">
-        {/* Hero Header */}
         <div className="stores-hero">
           <div className="hero-content">
             <h1>Visit Our Store</h1>
@@ -38,10 +37,8 @@ export default function OurStores() {
           </div>
         </div>
 
-        {/* Main Store Card */}
         <div className="main-store-card">
           <div className="store-content">
-            {/* Store Badge */}
             <div className="flagship-badge">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
@@ -49,10 +46,8 @@ export default function OurStores() {
               <span>Flagship Store</span>
             </div>
 
-            {/* Store Name */}
             <h2 className="store-name">{store.name}</h2>
 
-            {/* Store Details Grid */}
             <div className="store-details">
               <div className="detail-item">
                 <div className="detail-icon">
@@ -95,7 +90,6 @@ export default function OurStores() {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="action-buttons">
               <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -113,7 +107,6 @@ export default function OurStores() {
             </div>
           </div>
 
-          {/* Interactive Map */}
           <div className="map-container">
             <div className="map-wrapper">
               <iframe
@@ -133,7 +126,6 @@ export default function OurStores() {
           </div>
         </div>
 
-        {/* Expansion Notice */}
         <div className="expansion-notice">
           <div className="notice-icon">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -158,7 +150,6 @@ export default function OurStores() {
           margin: 0 auto;
         }
 
-        /* Hero Section */
         .stores-hero {
           position: relative;
           text-align: center;
@@ -228,7 +219,6 @@ export default function OurStores() {
           }
         }
 
-        /* Main Store Card */
         .main-store-card {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -252,7 +242,6 @@ export default function OurStores() {
           background: linear-gradient(90deg, #D4AF7A 0%, #c49a6a 100%);
         }
 
-        /* Store Content */
         .store-content {
           display: flex;
           flex-direction: column;
@@ -343,7 +332,6 @@ export default function OurStores() {
           color: #c49a6a;
         }
 
-        /* Action Buttons */
         .action-buttons {
           display: flex;
           gap: 16px;
@@ -388,7 +376,6 @@ export default function OurStores() {
           transform: translateY(-2px);
         }
 
-        /* Map Container */
         .map-container {
           position: relative;
           border-radius: 20px;
@@ -425,7 +412,6 @@ export default function OurStores() {
           box-shadow: 0 6px 20px rgba(212, 175, 122, 0.4);
         }
 
-        /* Expansion Notice */
         .expansion-notice {
           text-align: center;
           background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
@@ -478,7 +464,6 @@ export default function OurStores() {
           line-height: 1.7;
         }
 
-        /* Responsive */
         @media (max-width: 1024px) {
           .main-store-card {
             grid-template-columns: 1fr;

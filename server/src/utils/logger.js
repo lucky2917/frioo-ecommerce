@@ -1,7 +1,3 @@
-/**
- * Server-side Logger Utility
- * Simple console wrapper with log levels for better debugging
- */
 
 const LOG_LEVELS = {
     error: 0,
@@ -12,9 +8,6 @@ const LOG_LEVELS = {
 
 const currentLevel = LOG_LEVELS[process.env.LOG_LEVEL] || LOG_LEVELS.info;
 
-/**
- * Format log message with timestamp and level
- */
 function formatMessage(level, message, data) {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
@@ -25,9 +18,6 @@ function formatMessage(level, message, data) {
     return `${prefix} ${message}`;
 }
 
-/**
- * Logger object with level methods
- */
 const logger = {
     error: (message, data) => {
         if (currentLevel >= LOG_LEVELS.error) {

@@ -14,7 +14,6 @@ export default function AdminCoupons() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [form, setForm] = useState(INITIAL_FORM);
@@ -41,7 +40,6 @@ export default function AdminCoupons() {
         fetchCoupons();
     }, [fetchCoupons]);
 
-    // Calculate metrics
     const metrics = useMemo(() => {
         const total = coupons.length;
         const active = coupons.filter(c => c.is_active).length;
@@ -51,7 +49,6 @@ export default function AdminCoupons() {
         return { total, active, percentage, fixed };
     }, [coupons]);
 
-    // Filter coupons
     const filteredCoupons = useMemo(() => {
         if (!searchQuery) return coupons;
 
@@ -141,7 +138,6 @@ export default function AdminCoupons() {
 
     return (
         <div className="coupons-page">
-            {/* HEADER */}
             <div className="coupons-header">
                 <div>
                     <h1 className="page-title">Coupon Management</h1>
@@ -153,7 +149,6 @@ export default function AdminCoupons() {
                 </button>
             </div>
 
-            {/* METRICS */}
             <div className="metrics-row">
                 <div className="metric-card">
                     <div className="metric-label">Total Coupons</div>
@@ -173,7 +168,6 @@ export default function AdminCoupons() {
                 </div>
             </div>
 
-            {/* SEARCH */}
             <div className="search-bar">
                 <input
                     type="text"
@@ -185,7 +179,6 @@ export default function AdminCoupons() {
                 <span className="result-count">{filteredCoupons.length} coupons</span>
             </div>
 
-            {/* COUPONS GRID */}
             <div className="coupons-grid">
                 {filteredCoupons.map(coupon => (
                     <div key={coupon.id} className={`coupon-card ${coupon.is_active ? 'active' : 'inactive'}`}>
@@ -229,7 +222,6 @@ export default function AdminCoupons() {
                 )}
             </div>
 
-            {/* MODAL */}
             {isModalOpen && (
                 <div className="modal-overlay" onClick={(e) => e.target.className === 'modal-overlay' && setIsModalOpen(false)}>
                     <div className="modal-container">
@@ -308,7 +300,6 @@ export default function AdminCoupons() {
                     padding-bottom: 60px;
                 }
 
-                /* HEADER */
                 .coupons-header {
                     display: flex;
                     justify-content: space-between;
@@ -356,7 +347,6 @@ export default function AdminCoupons() {
                     font-weight: 700;
                 }
 
-                /* METRICS */
                 .metrics-row {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -402,7 +392,6 @@ export default function AdminCoupons() {
                     color: #0f172a;
                 }
 
-                /* SEARCH */
                 .search-bar {
                     display: flex;
                     gap: 16px;
@@ -431,7 +420,6 @@ export default function AdminCoupons() {
                     white-space: nowrap;
                 }
 
-                /* COUPONS GRID */
                 .coupons-grid {
                     display: grid;
                     grid-template-columns: repeat(4, 1fr);
@@ -555,7 +543,6 @@ export default function AdminCoupons() {
                     background: #fee2e2;
                 }
 
-                /* EMPTY STATE */
                 .empty-state {
                     grid-column: 1 / -1;
                     text-align: center;
@@ -577,7 +564,6 @@ export default function AdminCoupons() {
                     color: #94a3b8;
                 }
 
-                /* MODAL */
                 .modal-overlay {
                     position: fixed;
                     inset: 0;
@@ -732,7 +718,6 @@ export default function AdminCoupons() {
                     font-size: 1.1rem;
                 }
 
-                /* RESPONSIVE */
                 @media (max-width: 768px) {
                     .coupons-header {
                         flex-direction: column;

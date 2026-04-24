@@ -3,7 +3,6 @@ import React from 'react';
 export default function VideoModal({ videoUrl, onClose }) {
   if (!videoUrl) return null;
 
-  // Helper to extract YouTube embed ID from various URL formats
   const getYouTubeId = (url) => {
     if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -103,7 +102,6 @@ const styles = {
   }
 };
 
-// Inject modal animation style
 const styleSheet = document.createElement("style");
 styleSheet.innerText = `
   @keyframes scaleIn {

@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-/**
- * Optimized Image Component
- * - Lazy loading with Intersection Observer
- * - Blur placeholder while loading
- * - Error handling for failed images
- */
 const OptimizedImage = ({
     src,
     alt,
@@ -34,7 +28,6 @@ const OptimizedImage = ({
             };
         };
 
-        // Use Intersection Observer for lazy loading
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {

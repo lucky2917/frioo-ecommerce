@@ -83,7 +83,6 @@ export default function HelpFAQs() {
         setOpenFAQ(openFAQ === index ? null : index);
     };
 
-    // Generate FAQ structured data for rich results
     const faqSchema = {
         "@context": "https://schema.org",
         "@type": "FAQPage",

@@ -4,17 +4,11 @@ const multer = require('multer');
 const { supabaseAdmin } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 
-// Configure Multer (Memory Storage)
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
 });
 
-/**
- * @route   POST /api/upload
- * @desc    Upload image to Supabase Storage (Admin only)
- * @access  Private (Admin)
- */
 router.post('/', requireAdmin, upload.single('file'), async (req, res) => {
     try {
         const file = req.file;
@@ -22,11 +16,9 @@ router.post('/', requireAdmin, upload.single('file'), async (req, res) => {
             return res.status(400).json({ success: false, error: 'No file uploaded' });
         }
 
-        // SECURITY: Validate file type and extension to prevent malicious uploads
         const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
         const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 
-        // Validate MIME type
         if (!ALLOWED_TYPES.includes(file.mimetype)) {
             return res.status(400).json({
                 success: false,
@@ -34,7 +26,6 @@ router.post('/', requireAdmin, upload.single('file'), async (req, res) => {
             });
         }
 
-        // Validate file extension
         const fileExt = file.originalname.split('.').pop().toLowerCase();
         if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
             return res.status(400).json({
@@ -43,10 +34,8 @@ router.post('/', requireAdmin, upload.single('file'), async (req, res) => {
             });
         }
 
-        // Create unique filename (use validated extension)
         const fileName = `${Date.now()}_${Math.round(Math.random() * 1E9)}.${fileExt}`;
 
-        // Upload to Supabase Storage using Service Role Key (Bypasses RLS)
         const { data, error: uploadError } = await supabaseAdmin.storage
             .from('frioo-assets')
             .upload(fileName, file.buffer, {
@@ -59,7 +48,6 @@ router.post('/', requireAdmin, upload.single('file'), async (req, res) => {
             return res.status(500).json({ success: false, error: 'Storage upload failed' });
         }
 
-        // Get Public URL
         const { data: urlData } = supabaseAdmin.storage
             .from('frioo-assets')
             .getPublicUrl(fileName);

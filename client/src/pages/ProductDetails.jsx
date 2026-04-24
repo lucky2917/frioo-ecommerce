@@ -14,7 +14,6 @@ import StaggerText from '../components/animations/StaggerText';
 import { useCart } from '../context/CartContext';
 import { API_BASE_URL } from '../config/constants';
 
-// Mock Weight Options for Fresh Fruits
 const WEIGHT_OPTIONS = [
   { label: '250g', multiplier: 0.25 },
   { label: '500g', multiplier: 0.50 },
@@ -28,11 +27,9 @@ export default function ProductDetails() {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // UI State
   const [selectedImage, setSelectedImage] = useState(0);
   const [showPrepVideo, setShowPrepVideo] = useState(false);
 
-  // Customization State
   const [qty, setQty] = useState(1);
   const [selectedWeight, setSelectedWeight] = useState(null); // { label: '1kg', multiplier: 1 }
   const [selectedExclusions, setSelectedExclusions] = useState([]);
@@ -40,7 +37,6 @@ export default function ProductDetails() {
 
 
 
-  // --- FETCH DATA ---
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -54,19 +50,16 @@ export default function ProductDetails() {
 
         if (found) {
           setProduct(found);
-          // Setup initial state based on product
           setQty(1);
           setSelectedExclusions([]);
           setRemovedIngredients([]);
 
-          // Weight logic
           if (found.category === 'Fresh Fruit' && found.unit === 'kg') {
             setSelectedWeight(WEIGHT_OPTIONS[2]); // Default 1kg
           } else {
             setSelectedWeight(null);
           }
 
-          // Related (Same Category + Random)
           const others = items.filter(p => p.id !== found.id);
           const sameCat = others.filter(p => p.category === found.category);
           const randomMix = others.filter(p => p.category !== found.category).sort(() => 0.5 - Math.random());
@@ -81,7 +74,6 @@ export default function ProductDetails() {
     fetchData();
   }, [id]);
 
-  // --- HANDLERS ---
   const handleAddToCart = () => {
     if (!product) return;
 
@@ -98,7 +90,6 @@ export default function ProductDetails() {
       removedIngredients: removedIngredients
     };
 
-    // Add QTY times
     for (let i = 0; i < qty; i++) {
       addToCart(product, variantLabel, finalPrice, customization);
     }
@@ -118,7 +109,6 @@ export default function ProductDetails() {
     );
   };
 
-  // --- PRICE CALCULATION ---
   const currentPrice = useMemo(() => {
     if (!product) return 0;
     let base = product.price_cents / 100;
@@ -173,13 +163,11 @@ export default function ProductDetails() {
       <Navbar />
 
       <main className="pd-main">
-        {/* BREADCRUMB */}
         <div className="pd-breadcrumb">
           <Link to="/">Home</Link> / <Link to="/shop">Shop</Link> / <span>{product.title}</span>
         </div>
 
         <div className="pd-grid">
-          {/* LEFT: GALLERY */}
           <div className="pd-gallery">
             <ScrollReveal direction="fade" duration={0.8}>
               <div className="pd-main-image-frame">
@@ -204,7 +192,6 @@ export default function ProductDetails() {
               </ScrollReveal>
             )}
 
-            {/* WATCH VIDEO BTN (If available) */}
             {product.video_url && (
               <button className="pd-watch-btn" onClick={() => setShowPrepVideo(true)}>
                 <span className="icon">▶</span>
@@ -216,7 +203,6 @@ export default function ProductDetails() {
             )}
           </div>
 
-          {/* RIGHT: DETAILS */}
           <div className="pd-details">
             <div className="pd-header">
               <ScrollReveal delay={0.1}>
@@ -241,10 +227,8 @@ export default function ProductDetails() {
               <p className="pd-desc">{product.description}</p>
             </ScrollReveal>
 
-            {/* REMOVE INGREDIENTS / EXCLUSIONS SECTION */}
             <div className="pd-options">
 
-              {/* Weight Selector */}
               {selectedWeight && (
                 <div className="pd-option-group">
                   <label>Pack Size</label>
@@ -262,7 +246,6 @@ export default function ProductDetails() {
                 </div>
               )}
 
-              {/* Exclusions (Renamed as requested) */}
               {product.nutrition?.exclusions?.length > 0 && (
                 <div className="pd-option-group">
                   <label>Want to remove any?</label>
@@ -280,7 +263,6 @@ export default function ProductDetails() {
                 </div>
               )}
 
-              {/* Remove Ingredients from standard recipe */}
               {product.nutrition?.ingredients?.length > 0 && (
                 <div className="pd-option-group">
                   <label>Customize Ingredients</label>
@@ -299,7 +281,6 @@ export default function ProductDetails() {
               )}
             </div>
 
-            {/* ACTION ROW */}
             <div className="pd-actions">
               <div className="pd-qty-control">
                 <button onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
@@ -311,7 +292,6 @@ export default function ProductDetails() {
               </button>
             </div>
 
-            {/* SEPARATE SECTIONS (No Tabs) */}
             <div className="pd-info-sections">
               <div className="pd-info-block">
                 <h3>Description</h3>
@@ -342,7 +322,6 @@ export default function ProductDetails() {
           </div>
         </div>
 
-        {/* RELATED SECTION */}
         <section className="pd-related">
           <ScrollReveal>
             <h2 className="section-title">You might also like</h2>
@@ -358,13 +337,11 @@ export default function ProductDetails() {
 
       </main>
 
-      {/* VIDEO MODAL */}
       {showPrepVideo && product.video_url && (
         <VideoModal videoUrl={product.video_url} onClose={() => setShowPrepVideo(false)} />
       )}
 
       <style>{`
-        /* --- LAYOUT & VARS --- */
         .pd-page {
             background: #fff;
             min-height: 100vh;
@@ -389,7 +366,6 @@ export default function ProductDetails() {
         }
         .pd-breadcrumb a:hover { color: #C5A065; }
 
-        /* --- GRID --- */
         .pd-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -397,7 +373,6 @@ export default function ProductDetails() {
             margin-bottom: 80px;
         }
 
-        /* --- GALLERY --- */
         .pd-gallery {
             position: sticky;
             top: 120px;
@@ -480,7 +455,6 @@ export default function ProductDetails() {
         .pd-watch-btn .text strong { color: #2F4F4F; font-size: 1rem; }
         .pd-watch-btn .text span { color: #888; font-size: 0.85rem; }
 
-        /* --- DETAILS --- */
         .pd-details { display: flex; flex-direction: column; }
         .pd-cat-tag {
             display: inline-block;
@@ -517,7 +491,6 @@ export default function ProductDetails() {
             margin-bottom: 30px;
         }
 
-        /* --- OPTIONS --- */
         .pd-options { margin-bottom: 30px; }
         .pd-option-group { margin-bottom: 25px; }
         .pd-option-group label {
@@ -560,7 +533,6 @@ export default function ProductDetails() {
             color: white;
         }
 
-        /* --- ACTIONS --- */
         .pd-actions {
             display: flex;
             gap: 15px;
@@ -610,7 +582,6 @@ export default function ProductDetails() {
             transition-duration: 0.1s;
         }
 
-        /* --- SECTIONS (No Tabs) --- */
         .pd-info-sections {
             display: flex;
             flex-direction: column;
@@ -645,7 +616,6 @@ export default function ProductDetails() {
         .nutri-item strong { color: #C5A065; font-size: 1.5rem; }
         .nutri-item span { color: #888; font-size: 0.9rem; margin-top: 5px; }
 
-        /* --- RELATED --- */
         .pd-related {
             border-top: 1px solid #eee;
             padding-top: 50px;
@@ -677,14 +647,12 @@ export default function ProductDetails() {
             scroll-snap-align: start;
         }
 
-        /* OVERRIDES FOR MINI CARD LOOK in Carousel */
         .pd-related-grid .patisserie-card .card-price { font-size: 1rem; }
         .pd-related-grid .patisserie-card .card-title { font-size: 0.95rem; }
         .pd-related-grid .patisserie-card .action-btn { padding: 10px; font-size: 0.8rem; }
         .pd-related-grid .patisserie-card .card-desc { display: none; } /* Hide desc for mini look */
         .pd-related-grid .patisserie-card .badge-pop { font-size: 0.6rem; padding: 2px 8px; }
 
-        /* --- RESPONSIVE --- */
         @media (max-width: 900px) {
             .pd-page { 
                 padding-top: var(--navbar-height-desktop); /* Desktop navbar with secondary nav */ 
@@ -706,7 +674,6 @@ export default function ProductDetails() {
             }
             .pd-page { padding-bottom: 120px; } 
 
-            /* Mobile Carousel Adjustments */
             .pd-related-grid {
                 gap: 12px;
                 padding-left: 15px;

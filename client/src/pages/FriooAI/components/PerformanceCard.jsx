@@ -1,8 +1,5 @@
 import { motion } from 'framer-motion';
 
-/**
- * PerformanceCard - Performance metrics comparison
- */
 function PerformanceCard() {
     const metrics = [
         { label: 'FriooAI', value: 99.4, color: '#00f0ff' },

@@ -1,19 +1,12 @@
 const { body, param } = require('express-validator');
 
-/**
- * Reusable Validation Rules
- * Centralized validation for consistent data integrity across all endpoints
- */
 
-// ===== PHONE NUMBER VALIDATION =====
-// Supports: +91XXXXXXXXXX, 91XXXXXXXXXX, or XXXXXXXXXX (Indian format)
 const phoneValidator = () =>
     body('phone_number')
         .trim()
         .matches(/^(\+91|91)?[6-9]\d{9}$/)
         .withMessage('Invalid phone number. Must be a valid Indian mobile number starting with 6-9');
 
-// ===== EMAIL VALIDATION =====
 const emailValidator = (fieldName = 'email') =>
     body(fieldName)
         .trim()
@@ -23,7 +16,6 @@ const emailValidator = (fieldName = 'email') =>
         .isLength({ max: 255 })
         .withMessage('Email too long');
 
-// ===== ADDRESS VALIDATION =====
 const addressValidator = (fieldName = 'delivery_address', required = true) => {
     const validator = body(fieldName)
         .trim()
@@ -35,7 +27,6 @@ const addressValidator = (fieldName = 'delivery_address', required = true) => {
     return required ? validator : validator.optional();
 };
 
-// ===== NAME VALIDATION =====
 const nameValidator = (fieldName = 'full_name') =>
     body(fieldName)
         .trim()
@@ -44,38 +35,32 @@ const nameValidator = (fieldName = 'full_name') =>
         .matches(/^[a-zA-Z\s'.,-]+$/)
         .withMessage('Name can only contain letters, spaces, and common punctuation');
 
-// ===== UUID VALIDATION =====
 const uuidValidator = (fieldName) =>
     body(fieldName)
         .isUUID(4)
         .withMessage(`${fieldName} must be a valid UUID`);
 
-// ===== PRICE VALIDATION =====
 const priceValidator = (fieldName = 'price_cents', min = 0, max = 100000000) =>
     body(fieldName)
         .isInt({ min, max })
         .withMessage(`${fieldName} must be an integer between ${min} and ${max}`);
 
-// ===== ARRAY VALIDATION =====
 const arrayValidator = (fieldName, minItems = 1, maxItems = 100) =>
     body(fieldName)
         .isArray({ min: minItems, max: maxItems })
         .withMessage(`${fieldName} must be an array with ${minItems}-${maxItems} items`);
 
-// ===== ORDER TYPE VALIDATION =====
 const orderTypeValidator = () =>
     body('order_type')
         .isIn(['delivery', 'takeaway'])
         .withMessage('Order type must be either "delivery" or "takeaway"');
 
-// ===== DISTANCE VALIDATION =====
 const distanceValidator = (fieldName = 'distance_km', max = 100) =>
     body(fieldName)
         .optional()
         .isFloat({ min: 0, max })
         .withMessage(`Distance must be between 0 and ${max} km`);
 
-// ===== COUPON CODE VALIDATION =====
 const couponCodeValidator = () =>
     body('code')
         .trim()
@@ -85,7 +70,6 @@ const couponCodeValidator = () =>
         .matches(/^[A-Z0-9_-]+$/)
         .withMessage('Coupon code can only contain uppercase letters, numbers, hyphens, and underscores');
 
-// ===== DISCOUNT VALIDATION =====
 const discountTypeValidator = () =>
     body('discount_type')
         .isIn(['percentage', 'fixed'])
@@ -105,14 +89,11 @@ const discountValueValidator = () =>
             return true;
         });
 
-// ===== ORDER ITEMS VALIDATION =====
 const orderItemsValidator = () =>
     body('items')
         .isArray({ min: 1, max: 50 })
         .withMessage('Order must contain between 1 and 50 items')
         .custom((items) => {
-            // Validate each item has required structure
-            // IMPORTANT: Using 'qty' not 'quantity' to match CartContext
             for (const item of items) {
                 if (!item.id || !item.title || typeof item.price !== 'number' || typeof item.qty !== 'number') {
                     throw new Error('Each item must have id, title, price, and qty');
@@ -127,23 +108,17 @@ const orderItemsValidator = () =>
             return true;
         });
 
-// ===== STATUS VALIDATION =====
 const orderStatusValidator = () =>
     body('status')
         .isIn(['pending', 'confirmed', 'preparing', 'ready', 'out-for-delivery', 'delivered', 'cancelled'])
         .withMessage('Invalid order status');
 
-// ===== ID PARAM VALIDATION =====
 const idParamValidator = (paramName = 'id') =>
     param(paramName)
         .trim()
         .notEmpty()
         .withMessage(`${paramName} parameter is required`);
 
-// ===== SANITIZATION HELPERS =====
-/**
- * Custom sanitizer to prevent XSS and script injection
- */
 const sanitizeHtml = (value) => {
     if (typeof value !== 'string') return value;
     return value
@@ -152,10 +127,7 @@ const sanitizeHtml = (value) => {
         .trim();
 };
 
-// ===== COMPOSITE VALIDATORS (Common Combinations) =====
 const orderValidators = () => [
-    // Note: user_id and profile_id are validated in the route handler for better error messages
-    // They need to be optional here to allow the auth check to return "Please login" instead of "Invalid UUID"
     body('user_id').optional().isUUID(4).withMessage('user_id must be a valid UUID'),
     body('profile_id').optional().isUUID(4).withMessage('profile_id must be a valid UUID'),
     orderItemsValidator(),
@@ -187,7 +159,6 @@ const couponValidators = () => [
 ];
 
 module.exports = {
-    // Individual validators
     phoneValidator,
     emailValidator,
     addressValidator,
@@ -204,11 +175,9 @@ module.exports = {
     orderStatusValidator,
     idParamValidator,
 
-    // Composite validators
     orderValidators,
     productValidators,
     couponValidators,
 
-    // Helpers
     sanitizeHtml
 };

@@ -1,4 +1,3 @@
-// Bundle Deals Carousel - "Buy 3 Get 20% Off"
 import React, { useState } from 'react';
 
 export default function BundleDeals({ onAddBundle }) {
@@ -133,7 +132,6 @@ export default function BundleDeals({ onAddBundle }) {
                 </button>
             </div>
 
-            {/* Dots */}
             <div className="carousel-dots">
                 {bundles.map((_, index) => (
                     <button

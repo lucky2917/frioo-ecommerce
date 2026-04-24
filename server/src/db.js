@@ -1,7 +1,6 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 
-// CRITICAL: Validate environment variables at startup
 const requiredEnvVars = {
   SUPABASE_URL: process.env.SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY

@@ -18,7 +18,6 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    // Target: Midnight tonight
     const getTargetTime = () => {
       const target = new Date();
       target.setHours(24, 0, 0, 0);
@@ -32,7 +31,6 @@ export default function Home() {
       let difference = target.getTime() - now.getTime();
 
       if (difference <= 0) {
-        // Reset for next day
         target = getTargetTime();
         difference = target.getTime() - now.getTime();
       }
@@ -83,7 +81,6 @@ export default function Home() {
 
 
 
-  // Structured Data for Home Page
   const homeSchema = {
     "@context": "https://schema.org",
     "@type": "Store",
@@ -117,16 +114,13 @@ export default function Home() {
       />
       <Navbar />
 
-      {/* SEO H1 — visually hidden but read by crawlers */}
       <h1 className="seo-h1">Frioo — Best Fresh Fruits, Juices & Salads Delivery in Vizag, Visakhapatnam</h1>
 
-      {/* ===== HERO VIDEO ===== */}
       <div className="hero-carousel">
         <video className="hero-video" autoPlay loop muted playsInline>
           <source src={previewVideo} type="video/mp4" />
         </video>
 
-        {/* [NEW] Hero Text Overlay */}
         <div className="hero-overlay-text">
           <StaggerText
             text="FRIOO AI"
@@ -141,7 +135,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ===== FRESHLY MADE FAVORITES ===== */}
       <section className="featured-section" aria-label="Featured fresh juices and fruits in Vizag">
         <div className="section-container">
           <ScrollReveal>
@@ -150,7 +143,6 @@ export default function Home() {
           </ScrollReveal>
 
           <div className="products-scroll-wrapper">
-            {/* Feature Card */}
             <ScrollReveal direction="left" delay={0.2}>
               <div className="feature-card">
                 <div className="feature-content">
@@ -161,7 +153,6 @@ export default function Home() {
               </div>
             </ScrollReveal>
 
-            {/* Product Cards */}
             <div className="products-scroll">
               {filteredProducts.featured.map((product, idx) => (
                 <ScrollReveal key={product.id} delay={0.1 * (idx + 1)} direction="up" className="inline-block">
@@ -187,7 +178,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Promo Banner */}
           <div className="promo-banner">
             <div className="promo-banner-content">
               <span className="promo-banner-icon">🎉</span>
@@ -219,7 +209,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== FROM OUR KITCHEN TO YOU (Categories) ===== */}
       <section className="categories-section" aria-label="Fresh fruit categories available in Vizag">
         <div className="section-container">
           <ScrollReveal direction="up">
@@ -269,11 +258,9 @@ export default function Home() {
               </div>
             </ScrollReveal>
 
-            {/* Navigation Arrows */}
             <button className="category-nav-btn category-prev" onClick={() => setCategorySlide(prev => (prev - 1 + 4) % 4)}>‹</button>
             <button className="category-nav-btn category-next" onClick={() => setCategorySlide(prev => (prev + 1) % 4)}>›</button>
 
-            {/* Dot Indicators */}
             <div className="category-dots">
               {[0, 1, 2, 3].map((index) => (
                 <button
@@ -287,7 +274,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== PICK YOUR FRESH PLEASURE (Product Carousel) ===== */}
       <section className="product-carousel-section">
         <div className="section-container">
           <div className="carousel-header">
@@ -332,7 +318,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== STORY SECTION ===== */}
       <section className="story-section" aria-label="Our story - Frioo Vizag">
         <video
           className="story-video"
@@ -353,7 +338,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== REPEATING TEXT BANNER ===== */}
       <div className="text-banner">
         <div className="text-banner-scroll">
           {[...Array(10)].map((_, i) => (
@@ -366,7 +350,6 @@ export default function Home() {
       </div>
 
 
-      {/* Footer */}
       <Footer />
 
     </div>

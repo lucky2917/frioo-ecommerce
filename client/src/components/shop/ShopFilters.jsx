@@ -6,7 +6,6 @@ export default function ShopFilters({
   tabs,
   showFilters // controlled by parent
 }) {
-  // Accordion states
   const [openSections, setOpenSections] = useState({
     categories: true,
     availability: true,
@@ -20,7 +19,6 @@ export default function ShopFilters({
   return (
     <div className={`shop-sidebar ${showFilters ? 'visible' : 'hidden'}`}>
 
-      {/* SECTION: CATEGORIES */}
       <div className="filter-group">
         <button
           className="accordion-header"
@@ -43,7 +41,6 @@ export default function ShopFilters({
                 />
                 <span className="filter-label">{tab}</span>
                 <span className="count-badge">
-                  {/* Mock counts for aesthetic - Deterministic based on name */}
                   {(tab.length * 3) % 20 + 2}
                 </span>
               </label>
@@ -54,7 +51,6 @@ export default function ShopFilters({
 
       <div className="divider"></div>
 
-      {/* SECTION: AVAILABILITY (Mock) */}
       <div className="filter-group">
         <button
           className="accordion-header"
@@ -82,7 +78,6 @@ export default function ShopFilters({
 
       <div className="divider"></div>
 
-      {/* SECTION: PRICE */}
       <div className="filter-group">
         <button
           className="accordion-header"
@@ -162,7 +157,6 @@ export default function ShopFilters({
           to { opacity: 1; transform: translateY(0); }
         }
 
-        /* CHECKBOX ROW */
         .filter-checkbox-row {
           display: flex;
           align-items: center;
@@ -194,7 +188,6 @@ export default function ShopFilters({
           font-size: 0.85rem;
         }
 
-        /* PRICE INPUTS */
         .price-info {
           font-size: 0.85rem;
           color: #666;

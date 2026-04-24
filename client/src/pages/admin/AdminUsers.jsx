@@ -8,7 +8,6 @@ export default function AdminUsers() {
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
 
-    // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [formData, setFormData] = useState({ full_name: '', phone_number: '', role: 'customer' });
@@ -34,7 +33,6 @@ export default function AdminUsers() {
         }
     };
 
-    // Calculate metrics
     const metrics = useMemo(() => {
         const total = users.length;
         const admins = users.filter(u => u.role === 'admin').length;
@@ -47,16 +45,13 @@ export default function AdminUsers() {
         return { total, admins, customers, recentSignups };
     }, [users]);
 
-    // Filter users
     const filteredUsers = useMemo(() => {
         return users.filter(user => {
-            // Role filter
             if (roleFilter !== 'all') {
                 const userRole = user.role || 'customer';
                 if (userRole !== roleFilter) return false;
             }
 
-            // Search filter
             if (searchQuery) {
                 const query = searchQuery.toLowerCase();
                 const name = (user.full_name || '').toLowerCase();
@@ -145,7 +140,6 @@ export default function AdminUsers() {
 
     return (
         <div className="users-page">
-            {/* HEADER */}
             <div className="users-header">
                 <div>
                     <h1 className="page-title">User Management</h1>
@@ -153,7 +147,6 @@ export default function AdminUsers() {
                 </div>
             </div>
 
-            {/* METRICS */}
             <div className="metrics-row">
                 <div className="metric-card">
                     <div className="metric-label">Total Users</div>
@@ -175,7 +168,6 @@ export default function AdminUsers() {
                 </div>
             </div>
 
-            {/* SEARCH & FILTERS */}
             <div className="filters-bar">
                 <div className="search-wrapper">
                     <input
@@ -200,7 +192,6 @@ export default function AdminUsers() {
                 </div>
             </div>
 
-            {/* USERS TABLE */}
             <div className="users-table-container">
                 <table className="users-table">
                     <thead>
@@ -270,7 +261,6 @@ export default function AdminUsers() {
                 )}
             </div>
 
-            {/* EDIT MODAL */}
             {isModalOpen && (
                 <div className="modal-overlay" onClick={(e) => e.target.className === 'modal-overlay' && setIsModalOpen(false)}>
                     <div className="modal-container">
@@ -330,7 +320,6 @@ export default function AdminUsers() {
                     padding-bottom: 60px;
                 }
 
-                /* HEADER */
                 .users-header {
                     margin-bottom: 32px;
                 }
@@ -349,7 +338,6 @@ export default function AdminUsers() {
                     margin: 0;
                 }
 
-                /* METRICS */
                 .metrics-row {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -406,7 +394,6 @@ export default function AdminUsers() {
                     margin-top: 4px;
                 }
 
-                /* FILTERS */
                 .filters-bar {
                     display: flex;
                     gap: 16px;
@@ -460,7 +447,6 @@ export default function AdminUsers() {
                     white-space: nowrap;
                 }
 
-                /* TABLE */
                 .users-table-container {
                     background: white;
                     border: 1px solid #e2e8f0;
@@ -605,7 +591,6 @@ export default function AdminUsers() {
                     background: #fee2e2;
                 }
 
-                /* EMPTY STATE */
                 .empty-state {
                     text-align: center;
                     padding: 80px 20px;
@@ -623,7 +608,6 @@ export default function AdminUsers() {
                     color: #94a3b8;
                 }
 
-                /* MODAL */
                 .modal-overlay {
                     position: fixed;
                     inset: 0;
@@ -765,7 +749,6 @@ export default function AdminUsers() {
                     font-size: 1.1rem;
                 }
 
-                /* RESPONSIVE */
                 @media (max-width: 768px) {
                     .metrics-row {
                         grid-template-columns: repeat(2, 1fr);

@@ -1,10 +1,5 @@
 import { motion } from 'framer-motion';
 
-/**
- * FadeIn - Ultra-smooth fade-in animation wrapper
- * 
- * For elements that need simple, elegant fade transitions
- */
 export default function FadeIn({ children, delay = 0, duration = 0.4, className = '' }) {
     return (
         <motion.div
