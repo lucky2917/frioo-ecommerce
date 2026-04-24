@@ -5,7 +5,7 @@ const { sendSuccess, sendError } = require('../utils/responses');
 
 router.get('/', async (req, res) => {
     try {
-        const limit = parseInt(req.query.limit) || null; // null = no limit (backward compatible)
+        const limit = parseInt(req.query.limit) || null;
         const offset = parseInt(req.query.offset) || 0;
 
         if (limit !== null && (limit < 1 || limit > 100)) {
@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
 
         let query = supabaseAdmin
             .from('products')
-            .select('*', { count: 'exact' }) // Include total count
+            .select('*', { count: 'exact' })
             .order('created_at', { ascending: false });
 
         if (limit !== null) {
@@ -33,7 +33,7 @@ router.get('/', async (req, res) => {
             items: data,
             pagination: {
                 total: count,
-                limit: limit || count, // If no limit, return total
+                limit: limit || count,
                 offset: offset,
                 hasMore: limit !== null ? (offset + limit < count) : false
             }

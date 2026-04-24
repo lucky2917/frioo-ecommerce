@@ -11,7 +11,7 @@ router.use(requireAdmin);
 router.get('/orders', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 50; // 50 orders per page
+        const limit = parseInt(req.query.limit) || 50;
         const offset = (page - 1) * limit;
 
         const { count, error: countError } = await supabaseAdmin
@@ -203,7 +203,7 @@ router.delete('/products/:id', async (req, res) => {
 });
 
 router.patch('/users/:id',
-    phoneValidator(), // Validate Indian phone number format
+    phoneValidator(),
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

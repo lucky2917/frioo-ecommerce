@@ -21,8 +21,8 @@ const logger = require('./utils/logger');
 const app = express();
 
 initSentry(app);
-app.use(requestHandler()); // Request context
-app.use(tracingHandler()); // Performance monitoring
+app.use(requestHandler());
+app.use(tracingHandler());
 
 const productsRouter = require('./routes/products');
 const couponsRouter = require('./routes/coupons');
@@ -37,8 +37,8 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: [
         "'self'",
-        "'unsafe-inline'", // Required for Vite dev mode
-        process.env.NODE_ENV === 'production' ? '' : "'unsafe-eval'", // Dev only
+        "'unsafe-inline'",
+        process.env.NODE_ENV === 'production' ? '' : "'unsafe-eval'",
       ].filter(Boolean),
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
@@ -48,20 +48,20 @@ app.use(helmet({
         process.env.SUPABASE_URL,
         process.env.SENTRY_DSN ? "https://*.ingest.sentry.io" : "",
       ].filter(Boolean),
-      frameSrc: ["'none'"], // Prevent embedding
-      objectSrc: ["'none'"], // Block plugins
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
       upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
     },
   },
 
   hsts: {
-    maxAge: 31536000, // 1 year
+    maxAge: 31536000,
     includeSubDomains: true,
     preload: true,
   },
 
   frameguard: {
-    action: 'deny', // Don't allow any framing
+    action: 'deny',
   },
 
   permittedCrossDomainPolicies: {
@@ -82,7 +82,7 @@ app.use(helmet({
     allow: false,
   },
 
-  crossOriginEmbedderPolicy: false, // Disable for development (enable in production)
+  crossOriginEmbedderPolicy: false,
   crossOriginOpenerPolicy: { policy: 'same-origin' },
   crossOriginResourcePolicy: { policy: 'same-origin' },
 }));
@@ -105,8 +105,8 @@ app.use((req, res, next) => {
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
-  'https://frioo.in',           // Custom domain
-  'https://www.frioo.in',       // Custom domain with www
+  'https://frioo.in',
+  'https://www.frioo.in',
   'https://frioo-shop.vercel.app',
   process.env.PRODUCTION_URL
 ].filter(Boolean);
@@ -166,18 +166,18 @@ app.use(csrfProtection);
 app.get('/api/csrf-token', getCsrfToken);
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // INCREASED: Limit to 300 to prevent false positives for legitimate users
+  windowMs: 15 * 60 * 1000,
+  max: 300,
   message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: 'draft-7', // Return RateLimit-* headers (newer standard)
-  legacyHeaders: false, // Disable X-RateLimit-* headers
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
 });
 
 app.use(limiter);
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // Relaxed: 20 attempts per 15 minutes (was 5)
+  windowMs: 15 * 60 * 1000,
+  max: 20,
   message: {
     success: false,
     error: {
@@ -186,9 +186,9 @@ const authLimiter = rateLimit({
       retryAfter: '15 minutes'
     }
   },
-  standardHeaders: 'draft-7', // Return RateLimit-* headers
+  standardHeaders: 'draft-7',
   legacyHeaders: false,
-  skipSuccessfulRequests: true, // Only count failed attempts
+  skipSuccessfulRequests: true,
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -221,8 +221,8 @@ app.use('/api', (req, res, next) => {
 app.use('/api/products', productsRouter);
 app.use('/api/coupons', couponsRouter);
 app.use('/api/orders', ordersRouter);
-app.use('/api/admin', authLimiter, adminRouter); // AUTH RATE LIMIT: 5 attempts per 15 min
-app.use('/api/upload', authLimiter, uploadRoutes); // AUTH RATE LIMIT: Protect file uploads
+app.use('/api/admin', authLimiter, adminRouter);
+app.use('/api/upload', authLimiter, uploadRoutes);
 
 app.use(errorHandler());
 
@@ -243,7 +243,6 @@ app.use((err, req, res, next) => {
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
-
 
 const PORT = process.env.PORT || 4000;
 

@@ -1,4 +1,3 @@
-
 const Sentry = require('@sentry/node');
 const { ProfilingIntegration } = require('@sentry/profiling-node');
 
@@ -17,7 +16,7 @@ function initSentry(app) {
 
         release: process.env.npm_package_version || '1.0.0',
 
-        tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // 10% in prod, 100% in dev
+        tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
         profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
@@ -66,8 +65,8 @@ const noopMiddleware = (req, res, next) => next();
 const requestHandler = () => {
     if (!sentryInitialized) return noopMiddleware;
     return Sentry.Handlers.requestHandler({
-        ip: true, // Track IP addresses
-        user: ['id', 'email'], // Track user context
+        ip: true,
+        user: ['id', 'email'],
     });
 };
 
@@ -127,5 +126,5 @@ module.exports = {
     captureMessage,
     setUser,
     clearUser,
-    Sentry, // Export for direct access if needed
+    Sentry,
 };

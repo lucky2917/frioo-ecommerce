@@ -1,13 +1,12 @@
 import DOMPurify from 'dompurify';
 
-
 export const sanitize = (dirty, options = {}) => {
     if (!dirty || typeof dirty !== 'string') return '';
 
     const defaultOptions = {
-        ALLOWED_TAGS: [], // Strip all HTML tags by default (plain text only)
-        ALLOWED_ATTR: [], // No attributes allowed
-        KEEP_CONTENT: true, // Keep text content even if tags are removed
+        ALLOWED_TAGS: [],
+        ALLOWED_ATTR: [],
+        KEEP_CONTENT: true,
         ...options
     };
 

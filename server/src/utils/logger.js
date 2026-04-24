@@ -1,4 +1,3 @@
-
 const LOG_LEVELS = {
     error: 0,
     warn: 1,

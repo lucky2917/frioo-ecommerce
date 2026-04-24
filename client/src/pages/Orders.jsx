@@ -234,7 +234,7 @@ export default function Orders() {
             font-size: 1.2rem;
             color: #3E2723;
         }
-        
+
         .status-badge {
             padding: 6px 14px;
             border-radius: 20px;
@@ -258,7 +258,7 @@ export default function Orders() {
             border-bottom: 1px solid #f9f9f9;
         }
         .order-item:last-child { border-bottom: none; }
-        
+
         .item-qty {
             font-weight: 700;
             color: #D4AF7A;
@@ -283,7 +283,7 @@ export default function Orders() {
 
         .item-prefs { margin-top: 4px; font-size: 0.8rem; }
         .pref-row { color: #d32f2f; font-weight: 500; }
-        
+
         .order-note-block {
             background: #fffbeb; padding: 10px; border-radius: 8px;
             margin-top: 15px; border: 1px solid #fcd34d;

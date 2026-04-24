@@ -5,12 +5,18 @@ import ScrollReveal from '../components/animations/ScrollReveal';
 import StaggerText from '../components/animations/StaggerText';
 
 import ProductCard from '../components/shop/ProductCard';
+import ShopFilters from '../components/shop/ShopFilters';
+import BundleDeals from '../components/shop/BundleDeals';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { logger } from '../utils/logger';
 import { useCart } from '../context/CartContext';
+import { showToast } from '../utils/toast';
 
 import SEO from '../components/SEO';
 import { API_BASE_URL } from '../config/constants';
+
+const TABS = ['Pure Juices', 'Fruit Shakes', 'Salads', 'Fresh Fruits', 'Daily Deals'];
+const ITEMS_PER_PAGE = 12;
 
 export default function Shop() {
   const { cart, addToCart } = useCart();
@@ -18,29 +24,47 @@ export default function Shop() {
   const [loading, setLoading] = useState(true);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [sortOption, setSortOption] = useState("recommended");
+  const [sortOption, setSortOption] = useState('recommended');
+  const [showFilters, setShowFilters] = useState(false);
+  const [priceRange, setPriceRange] = useState([0, Infinity]);
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
   const categoryParam = searchParams.get('category');
-  const searchParam = searchParams.get('search'); // [NEW] Get search query
+  const searchParam = searchParams.get('search');
 
-  let activeTab = "Pure Juices";
-  if (categoryParam === 'juices') activeTab = "Pure Juices";
-  if (categoryParam === 'shakes') activeTab = "Fruit Shakes";
-  if (categoryParam === 'salads') activeTab = "Salads";
-  if (categoryParam === 'fruits') activeTab = "Fresh Fruits";
-  if (categoryParam === 'deals') activeTab = "Daily Deals";
+  let activeTab = 'Pure Juices';
+  if (categoryParam === 'juices') activeTab = 'Pure Juices';
+  if (categoryParam === 'shakes') activeTab = 'Fruit Shakes';
+  if (categoryParam === 'salads') activeTab = 'Salads';
+  if (categoryParam === 'fruits') activeTab = 'Fresh Fruits';
+  if (categoryParam === 'deals') activeTab = 'Daily Deals';
 
   const isSearchMode = !!searchParam;
 
+  const maxPrice = useMemo(() => {
+    if (products.length === 0) return 500;
+    return Math.ceil(Math.max(...products.map(p => p.price_cents / 100)));
+  }, [products]);
+
+  useEffect(() => {
+    if (products.length > 0 && priceRange[1] === Infinity) {
+      setPriceRange([0, maxPrice]);
+    }
+  }, [maxPrice, products.length]);
+
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE);
+  }, [categoryParam, searchParam, sortOption, priceRange]);
+
   const handleTabChange = (tab) => {
     const map = {
-      "Pure Juices": "juices",
-      "Fruit Shakes": "shakes",
-      "Salads": "salads",
-      "Fresh Fruits": "fruits",
-      "Daily Deals": "deals"
+      'Pure Juices': 'juices',
+      'Fruit Shakes': 'shakes',
+      'Salads': 'salads',
+      'Fresh Fruits': 'fruits',
+      'Daily Deals': 'deals'
     };
-    setSearchParams({ category: map[tab] }); // Clears search param implicitly
+    setSearchParams({ category: map[tab] });
   };
 
   useEffect(() => {
@@ -52,14 +76,12 @@ export default function Shop() {
         setProducts(data.items || []);
         setLoading(false);
       } catch (err) {
-        logger.error("Shop Fetch Error:", err);
+        logger.error('Shop Fetch Error:', err);
         setLoading(false);
       }
     };
     fetchShopProducts();
   }, []);
-
-
 
   const processedProducts = useMemo(() => {
     let result = [...products];
@@ -73,13 +95,21 @@ export default function Shop() {
     } else {
       result = result.filter(p => {
         switch (activeTab) {
-          case "Pure Juices": return p.category === 'Pure Fruit Juice';
-          case "Fruit Shakes": return p.category === 'Fruit Milkshake';
-          case "Salads": return p.category === 'Salad';
-          case "Fresh Fruits": return p.category === 'Fresh Fruit';
-          case "Daily Deals": return p.featured === true;
+          case 'Pure Juices': return p.category === 'Pure Fruit Juice';
+          case 'Fruit Shakes': return p.category === 'Fruit Milkshake';
+          case 'Salads': return p.category === 'Salad';
+          case 'Fresh Fruits': return p.category === 'Fresh Fruit';
+          case 'Daily Deals': return p.featured === true;
           default: return false;
         }
+      });
+    }
+
+    const [minP, maxP] = priceRange;
+    if (maxP !== Infinity) {
+      result = result.filter(p => {
+        const price = p.price_cents / 100;
+        return price >= minP && price <= maxP;
       });
     }
 
@@ -87,7 +117,15 @@ export default function Shop() {
     if (sortOption === 'price-desc') result.sort((a, b) => b.price_cents - a.price_cents);
     if (sortOption === 'alpha-asc') result.sort((a, b) => a.title.localeCompare(b.title));
     return result;
-  }, [products, activeTab, sortOption, isSearchMode, searchParam]);
+  }, [products, activeTab, sortOption, isSearchMode, searchParam, priceRange]);
+
+  const displayedProducts = processedProducts.slice(0, visibleCount);
+  const hasMore = processedProducts.length > visibleCount;
+
+  const handleAddBundle = (bundleProducts) => {
+    bundleProducts.forEach(p => addToCart(p, 'Standard', p.price_cents / 100, {}));
+    showToast(`${bundleProducts.length} items added to cart`, 'success');
+  };
 
   const safeCart = cart || {};
 
@@ -116,7 +154,7 @@ export default function Shop() {
 
         <ScrollReveal delay={0.1}>
           <div className="mobile-category-scroll">
-            {['Pure Juices', 'Fruit Shakes', 'Salads', 'Fresh Fruits', 'Daily Deals'].map((cat) => (
+            {TABS.map((cat) => (
               <button
                 key={cat}
                 className={`mobile-cat-pill ${!isSearchMode && activeTab === cat ? 'active' : ''}`}
@@ -142,7 +180,6 @@ export default function Shop() {
         </div>
       </div>
 
-
       <section className="shop-header hidden-mobile">
         <StaggerText
           text={isSearchMode ? `Search Results: "${searchParam}"` : 'Fresh Collection'}
@@ -163,6 +200,14 @@ export default function Shop() {
         <ScrollReveal direction="up" delay={0.4}>
           <div className="shop-toolbar">
             <div className="toolbar-left">
+              {!isSearchMode && (
+                <button
+                  onClick={() => setShowFilters(s => !s)}
+                  className="filter-toggle-btn"
+                >
+                  ☰ {showFilters ? 'Hide' : 'Show'} Filters
+                </button>
+              )}
               {isSearchMode && (
                 <button onClick={() => handleTabChange('Pure Juices')} className="filter-toggle-btn">
                   ← Back to Categories
@@ -189,6 +234,19 @@ export default function Shop() {
 
       <div className="shop-main-layout">
         <div className="layout-inner">
+          {showFilters && !isSearchMode && (
+            <div className="sidebar-wrapper">
+              <ShopFilters
+                activeTab={activeTab}
+                setActiveTab={handleTabChange}
+                tabs={TABS}
+                products={products}
+                priceRange={priceRange}
+                onPriceChange={setPriceRange}
+                maxPrice={maxPrice}
+              />
+            </div>
+          )}
 
           <main className="grid-wrapper">
             {loading ? (
@@ -196,8 +254,8 @@ export default function Shop() {
             ) : (
               <>
                 <div className="product-grid">
-                  {processedProducts.length > 0 ? (
-                    processedProducts.map((p, idx) => (
+                  {displayedProducts.length > 0 ? (
+                    displayedProducts.map((p, idx) => (
                       <ScrollReveal key={p.id} delay={0.05 * (idx % 8)} direction="fade" className="grid-item-reveal">
                         <ProductCard product={p} cart={safeCart} onAdd={addToCart} />
                       </ScrollReveal>
@@ -209,22 +267,35 @@ export default function Shop() {
                   )}
                 </div>
 
+                {hasMore && (
+                  <div className="load-more-wrapper">
+                    <button
+                      className="load-more-btn"
+                      onClick={() => setVisibleCount(c => c + ITEMS_PER_PAGE)}
+                    >
+                      Load More
+                    </button>
+                    <p className="load-more-hint">
+                      Showing {displayedProducts.length} of {processedProducts.length}
+                    </p>
+                  </div>
+                )}
 
+                {!isSearchMode && !loading && products.length > 0 && (
+                  <BundleDeals products={products} onAddBundle={handleAddBundle} />
+                )}
               </>
             )}
           </main>
-
         </div>
       </div>
-
-
 
       <style>{`
         .shop-page {
           min-height: 100vh;
           background: white;
           color: #1a1a1a;
-          padding-top: var(--navbar-height-mobile); /* Responsive navbar clearance */
+          padding-top: var(--navbar-height-mobile);
         }
 
         .shop-header {
@@ -251,7 +322,7 @@ export default function Shop() {
           border-bottom: 1px solid #eee;
           background: white;
           position: sticky;
-          top: 80px; /* Below navbar */
+          top: 80px;
           z-index: 90;
         }
         .shop-toolbar {
@@ -277,7 +348,9 @@ export default function Shop() {
           align-items: center;
           gap: 8px;
           color: #333;
+          transition: color 0.2s;
         }
+        .filter-toggle-btn:hover { color: #C5A065; }
         .toolbar-select {
           border: none;
           background: transparent;
@@ -308,22 +381,14 @@ export default function Shop() {
         .sidebar-wrapper {
           width: 250px;
           flex-shrink: 0;
-          transition: all 0.3s ease;
-        }
-        .sidebar-wrapper.closed {
-          width: 0;
-          overflow: hidden;
-          opacity: 0;
         }
 
-        .grid-wrapper {
-          flex: 1;
-        }
+        .grid-wrapper { flex: 1; }
 
         .product-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 40px 30px; /* Vertical gap bigger */
+          gap: 40px 30px;
         }
 
         .hidden-mobile { display: block; }
@@ -332,34 +397,29 @@ export default function Shop() {
         @media (max-width: 900px) {
           .hidden-mobile { display: none !important; }
           .visible-mobile { display: block !important; }
-          
+
           .shop-page {
-            padding-top: var(--navbar-height-desktop); /* Desktop navbar with secondary nav */ 
+            padding-top: var(--navbar-height-desktop);
           }
 
           .shop-toolbar-container-mobile {
-             background: white;
-             padding: 15px 20px;
-             border-bottom: 1px solid #f0f0f0;
-             margin-bottom: 20px;
-             display: flex;
-             flex-direction: column;
-             gap: 15px;
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
           }
 
-          .mobile-header-content {
-            text-align: left;
-          }
+          .mobile-header-content { text-align: left; }
           .header-title-mobile {
-             font-family: 'Playfair Display', serif;
-             font-size: 2rem;
-             color: #2F4F4F;
-             margin-bottom: 5px;
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: #2F4F4F;
+            margin-bottom: 5px;
           }
-           .header-desc-mobile {
-             color: #666;
-             font-size: 0.9rem;
-          }
+          .header-desc-mobile { color: #666; font-size: 0.9rem; }
 
           .mobile-category-scroll {
             display: flex;
@@ -389,45 +449,24 @@ export default function Shop() {
             border-color: #1a1a1a;
           }
 
-          .toolbar-mobile-inner {
-             display: flex;
-             justify-content: space-between;
-             align-items: center;
-             border-top: 1px solid #eee;
-             padding-top: 15px;
-           }
-
-          .mobile-inline-filter-btn {
-            background: none;
-            border: none;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
+          .mobile-sort-wrapper {
             display: flex;
             align-items: center;
-            gap: 6px;
-            color: #1a1a1a;
-            font-size: 0.9rem;
-            padding: 0;
-          }
-
-          .mobile-sort-wrapper {
-             display: flex;
-             align-items: center;
-             gap: 5px;
+            gap: 5px;
           }
           .sort-label { display: inline-block; font-size: 0.9rem; color: #666; margin-right: 5px; }
 
           .shop-main-layout { padding: 0 15px 40px; }
-          
-          .product-grid { 
+
+          .product-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr) !important; 
+            grid-template-columns: repeat(2, 1fr) !important;
             gap: 20px 10px;
           }
         }
 
         @media (max-width: 400px) {
-           .product-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .product-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
 
         .load-more-wrapper {
@@ -450,19 +489,23 @@ export default function Shop() {
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
-        .load-more-btn:hover:not(:disabled) {
+        .load-more-btn:hover {
           background: #333;
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .load-more-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
         }
         .load-more-hint {
           font-size: 0.85rem;
           color: #888;
           margin: 0;
+        }
+
+        .no-res {
+          grid-column: 1 / -1;
+          text-align: center;
+          padding: 60px 0;
+          color: #888;
+          font-size: 1rem;
         }
       `}</style>
     </div>

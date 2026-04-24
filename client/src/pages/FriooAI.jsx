@@ -18,9 +18,6 @@ import PrivacySection from './FriooAI/sections/PrivacySection';
 import BioScanForm from './FriooAI/components/BioScanForm';
 import IdentityMorph from './FriooAI/components/IdentityMorph';
 
-
-
-
 function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, setCtaHovered, replayObj, setReplayObj, scrollControl }) {
     const { loading, results, formData, resultTab, resultTier, introComplete, ctaHovered } = viewState;
     const { updateForm, toggleAllergy, runAnalysis, handleOrder, setResultTab, setResultTier, scrollToSection } = formActions;
@@ -29,7 +26,6 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
 
     const [graphW, setGraphW] = useState('0%');
     const precisionVal = useMotionValue(0);
-
 
     const getCurrentPlan = () => {
         if (!results) return null;
@@ -41,7 +37,6 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
         return plans[resultTier] || null;
     };
     const activePlan = getCurrentPlan();
-
 
     return (
         <div className="v5-overlay-content">
@@ -214,14 +209,13 @@ function Overlay({ viewState, formActions, setIntroComplete, scrollProgress, set
     );
 }
 
-
 export default function FriooAI() {
     const navigate = useNavigate();
-    const { addToCart } = useCart(); // Auth not strictly needed for UI 
+    const { addToCart } = useCart();
     const [introComplete, setIntroComplete] = useState(false);
 
     const [ctaHovered, setCtaHovered] = useState(false);
-    const [replayObj, setReplayObj] = useState({ c1: 0 }); // For triggering card animations
+    const [replayObj, setReplayObj] = useState({ c1: 0 });
 
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState(null);

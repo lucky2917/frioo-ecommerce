@@ -19,7 +19,7 @@ import StaggerText from '../components/animations/StaggerText';
 import SEO from '../components/SEO';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Radius of Earth in kilometers
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a =
@@ -50,16 +50,17 @@ export default function Cart() {
   const finalTotal = Math.max(0, subTotal - discountAmount);
 
   const [couponInput, setCouponInput] = useState('');
-  const [orderType, setOrderType] = useState('delivery'); // 'delivery' or 'takeaway'
+  const [orderType, setOrderType] = useState('delivery');
   const [showCouponModal, setShowCouponModal] = useState(false);
 
-  const [editingItem, setEditingItem] = useState(null); // The cart item being edited
-  const [editProduct, setEditProduct] = useState(null); // The full product details for the item
+  const [editingItem, setEditingItem] = useState(null);
+  const [editProduct, setEditProduct] = useState(null);
   const [editLoading, setEditLoading] = useState(false);
   const [editExclusions, setEditExclusions] = useState([]);
   const [editRemovedIngredients, setEditRemovedIngredients] = useState([]);
   const [editNote, setEditNote] = useState('');
 
+  const [deliveryAddress, setDeliveryAddress] = useState('');
   const [isChecking, setIsChecking] = useState(false);
   const [warningModal, setWarningModal] = useState({ show: false, distance: 0, lat: null, lng: null });
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -69,7 +70,6 @@ export default function Cart() {
 
   if (authLoading) return <div className="cart-page"><Navbar /><div style={{ padding: '100px', textAlign: 'center' }}>Loading...</div></div>;
 
-
   const amountToMin = Math.max(0, MIN_CART_VALUE - finalTotal);
   const isBelowMin = orderType === 'delivery' && finalTotal < MIN_CART_VALUE;
 
@@ -77,7 +77,7 @@ export default function Cart() {
     const fetchCsrfToken = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/csrf-token`, {
-          credentials: 'include' // Important for cookies
+          credentials: 'include'
         });
         const data = await res.json();
         if (data.success && data.data?.csrfToken) {
@@ -116,7 +116,7 @@ export default function Cart() {
     } catch (err) {
       logger.error('Failed to fetch product for editing:', err);
       showToast('Could not load customization options', 'error');
-      setEditingItem(null); // Close modal on error
+      setEditingItem(null);
     } finally {
       setEditLoading(false);
     }
@@ -133,7 +133,6 @@ export default function Cart() {
 
     deleteFromCart(editingItem.originalKey);
 
-
     for (let i = 0; i < editingItem.qty; i++) {
       addToCart(editProduct, editingItem.variant, editingItem.price, newPreferences);
     }
@@ -149,7 +148,6 @@ export default function Cart() {
   const toggleEditIngredient = (val) => {
     setEditRemovedIngredients(prev => prev.includes(val) ? prev.filter(i => i !== val) : [...prev, val]);
   };
-
 
   const placeOrderInDB = async (distance = 0, userLat = null, userLng = null) => {
     setIsPlacingOrder(true);
@@ -188,12 +186,12 @@ export default function Cart() {
 
       const orderPayload = {
         user_id: user?.id,
-        profile_id: user?.id, // Required by backend validation
-        items: cleanedItems, // Send cleaned items
+        profile_id: user?.id,
+        items: cleanedItems,
         total_amount: finalTotal,
         order_type: orderType,
-        delivery_address: orderType === 'delivery' ? 'User location' : null,
-        phone_number: user?.phone || '0000000000', // Placeholder if not available
+        delivery_address: orderType === 'delivery' ? sanitizeText(deliveryAddress.trim()) : null,
+        phone_number: user?.phone || '0000000000',
         distance_km: distance,
         coupon_code: appliedCoupon?.code || null,
         discount_amount: appliedCoupon ? discountAmount : 0
@@ -201,10 +199,10 @@ export default function Cart() {
 
       const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: 'POST',
-        credentials: 'include', // Send cookies
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken // Include CSRF token
+          'X-CSRF-Token': csrfToken
         },
         body: JSON.stringify(orderPayload)
       });
@@ -230,7 +228,7 @@ export default function Cart() {
       }
       const errorMessage = error.message || 'Failed to place order';
       showToast(errorMessage, 'error');
-      console.error('Full error details:', error); // Also log to browser console for debugging
+      console.error('Full error details:', error);
     } finally {
       setIsPlacingOrder(false);
     }
@@ -246,6 +244,11 @@ export default function Cart() {
 
     if (isBelowMin) {
       showToast(`Minimum delivery order is ₹${MIN_CART_VALUE}`, 'error');
+      return;
+    }
+
+    if (orderType === 'delivery' && !deliveryAddress.trim()) {
+      showToast('Please enter your delivery address', 'error');
       return;
     }
 
@@ -381,6 +384,19 @@ export default function Cart() {
                   <button className={orderType === 'delivery' ? 'active' : ''} onClick={() => setOrderType('delivery')}>Delivery</button>
                   <button className={orderType === 'takeaway' ? 'active' : ''} onClick={() => setOrderType('takeaway')}>Pickup</button>
                 </div>
+                {orderType === 'delivery' && (
+                  <div className="delivery-address-wrapper">
+                    <label className="address-label">Delivery Address</label>
+                    <textarea
+                      className="address-input"
+                      placeholder="House/Flat No., Street, Landmark..."
+                      value={deliveryAddress}
+                      onChange={e => setDeliveryAddress(e.target.value)}
+                      rows={2}
+                    />
+                  </div>
+                )}
+
                 <div className="os-rows">
                   <div className="os-row"><span>Subtotal</span><span>₹{subTotal.toFixed(2)}</span></div>
                   {appliedCoupon && <div className="os-row discount"><span>Discount ({appliedCoupon.code})</span><span>-₹{discountAmount.toFixed(2)}</span></div>}
@@ -574,7 +590,7 @@ export default function Cart() {
         .cart-row-info { display: flex; flex-direction: column; gap: 6px; }
         .row-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin: 0; color: #111; }
         .row-variant { color: #666; font-size: 0.9rem; margin: 0; }
-        
+
         .row-actions-group { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
         .sep { color: #ccc; font-size: 0.8rem; }
         .row-remove-link, .row-edit-link { background: none; border: none; padding: 0; color: #999; font-size: 0.8rem; text-decoration: underline; cursor: pointer; transition: color 0.2s; }
@@ -618,6 +634,10 @@ export default function Cart() {
         .os-warning { font-size: 0.8rem; color: #d32f2f; text-align: center; margin-bottom: 10px; }
         .coupons-hint { font-size: 0.8rem; color: #888; margin-bottom: 20px; font-style: italic; }
         .secure-badge { text-align: center; font-size: 0.8rem; color: #999; }
+        .delivery-address-wrapper { margin-bottom: 20px; }
+        .address-label { display: block; font-size: 0.85rem; font-weight: 600; color: #555; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .address-input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Manrope', sans-serif; font-size: 0.9rem; resize: none; box-sizing: border-box; transition: border-color 0.2s; }
+        .address-input:focus { outline: none; border-color: #3E2723; }
         .mobile-bar-modern { display: none; }
         .coupon-modal { max-width: 450px; width: 90%; padding: 0; overflow: hidden; border-radius: 12px; }
         .cm-header { padding: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: #fff; }
@@ -631,25 +651,25 @@ export default function Cart() {
         .cm-min { font-size: 0.75rem; color: #999; }
         .cm-apply-btn { background: #111; color: white; border: none; padding: 8px 16px; font-size: 0.75rem; font-weight: 700; cursor: pointer; border-radius: 4px; }
         .cm-locked { font-size: 0.75rem; color: #999; font-weight: 600; background: #eee; padding: 5px 10px; border-radius: 4px; }
-        
+
         .edit-modal { max-width: 500px; width: 90%; padding: 0; overflow: hidden; border-radius: 12px; }
         .em-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
         .em-section { margin-bottom: 25px; }
         .em-section label { display: block; font-weight: 600; margin-bottom: 10px; color: #333; font-size: 0.95rem; }
         .em-footer { padding: 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; background: #f9f9f9; }
-        
+
         .pd-pill-row { display: flex; flex-wrap: wrap; gap: 10px; }
         .pd-pill { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 50px; font-size: 0.85rem; color: #555; cursor: pointer; transition: all 0.2s; }
         .pd-pill:hover { border-color: #C5A065; }
         .pd-pill.active { border-color: #C5A065; background: #C5A065; color: white; }
         .pd-pill.glass-red:hover { border-color: #e57373; }
         .pd-pill.glass-red.active { border-color: #e57373; background: #e57373; color: white; }
-        
+
         .em-note-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Manrope'; resize: vertical; box-sizing: border-box;}
-        
+
         .confirm-btn { background: #3E2723; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .cancel-btn { background: #eee; color: #333; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        
+
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
         .modal-content { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
         .modal-actions { margin-top: 25px; display: flex; gap: 15px; justify-content: center; }
@@ -664,7 +684,7 @@ export default function Cart() {
             .cart-row-qty { margin-top: 15px; width: auto; }
             .cart-row-price { width: 100%; text-align: right; margin-top: -30px; }
             .cart-summary-section { margin-top: 20px; }
-            .checkout-btn-modern { display: none; } 
+            .checkout-btn-modern { display: none; }
             .mobile-bar-modern { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
             .mb-info span { display: block; font-size: 0.8rem; color: #888; }
             .mb-info strong { font-size: 1.2rem; }

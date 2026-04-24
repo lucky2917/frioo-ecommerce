@@ -15,7 +15,7 @@ if (missingVars.length > 0) {
   });
   console.error('\n📝 Please check your .env file and ensure all variables are set.');
   console.error('   See .env.example for reference.\n');
-  process.exit(1); // Exit with error code
+  process.exit(1);
 }
 
 const supabaseAdmin = createClient(
@@ -24,11 +24,11 @@ const supabaseAdmin = createClient(
   {
     db: {
       schema: 'public',
-     
+
       poolSettings: {
-        max: 10,                      
-        idleTimeoutMillis: 30000,     // 30 seconds idle timeout
-        connectionTimeoutMillis: 2000 // 2 seconds connection timeout
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 2000
       }
     },
     auth: {

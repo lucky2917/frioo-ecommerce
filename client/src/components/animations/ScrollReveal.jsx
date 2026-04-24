@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 export default function ScrollReveal({
     children,
-    direction = 'up', // 'up', 'left', 'right'
+    direction = 'up',
     delay = 0,
     duration = 0.6,
     className = ''
@@ -15,7 +15,7 @@ export default function ScrollReveal({
             opacity: 0,
             y: direction === 'up' ? 30 : 0,
             x: direction === 'left' ? -30 : direction === 'right' ? 30 : 0,
-            scale: 0.98, // Subtle scale (not too much!)
+            scale: 0.98,
         },
         visible: {
             opacity: 1,
@@ -25,7 +25,7 @@ export default function ScrollReveal({
             transition: {
                 duration: duration,
                 delay: delay,
-                ease: customEase, // Smooth professional easing
+                ease: customEase,
             }
         }
     };
@@ -35,9 +35,9 @@ export default function ScrollReveal({
             initial="hidden"
             whileInView="visible"
             viewport={{
-                once: true, // ✅ NO GLITCHES - only animates once
-                amount: 0.15, // Trigger when 15% visible
-                margin: "0px 0px -100px 0px" // Start animation slightly before element enters
+                once: true,
+                amount: 0.15,
+                margin: "0px 0px -100px 0px"
             }}
             variants={variants}
             className={className}

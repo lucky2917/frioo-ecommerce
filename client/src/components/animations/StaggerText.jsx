@@ -5,7 +5,7 @@ export default function StaggerText({
     text,
     className = '',
     delay = 0,
-    stagger = 0.04 // Slightly tighter for better rhythm
+    stagger = 0.04
 }) {
     const words = text.split(" ");
 
@@ -33,7 +33,7 @@ export default function StaggerText({
         },
         hidden: {
             opacity: 0,
-            y: 15, // Smaller movement for subtlety
+            y: 15,
             transition: {
                 duration: 0.5,
                 ease: customEase
@@ -48,7 +48,7 @@ export default function StaggerText({
             initial="hidden"
             whileInView="visible"
             viewport={{
-                once: true, // ✅ NO GLITCHES
+                once: true,
                 amount: 0.3
             }}
         >

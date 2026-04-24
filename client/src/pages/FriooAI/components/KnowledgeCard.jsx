@@ -4,7 +4,7 @@ function KnowledgeCard() {
     return (
         <div className="v4-card knowledge">
             <div className="card-top">
-                <span className="code">SYS_03 // KNOWLEDGE_BASE</span>
+                <span className="code">SYS_03
                 <h3>Global Nutrition Map</h3>
             </div>
             <ul className="feature-list">

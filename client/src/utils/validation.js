@@ -1,13 +1,12 @@
-
 export const validatePhoneNumber = (phone) => {
     if (!phone || typeof phone !== 'string') return false;
 
     const cleaned = phone.replace(/[\s-]/g, '');
 
     const patterns = [
-        /^\+91[6-9]\d{9}$/,  // +91XXXXXXXXXX
-        /^91[6-9]\d{9}$/,     // 91XXXXXXXXXX
-        /^[6-9]\d{9}$/        // XXXXXXXXXX (10 digits starting with 6-9)
+        /^\+91[6-9]\d{9}$/,
+        /^91[6-9]\d{9}$/,
+        /^[6-9]\d{9}$/
     ];
 
     return patterns.some(pattern => pattern.test(cleaned));

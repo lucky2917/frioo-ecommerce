@@ -13,7 +13,7 @@ const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Orders = lazy(() => import('./pages/Orders'));
-const FriooAI = lazy(() => import('./pages/FriooAI')); // [NEW] AI Module
+const FriooAI = lazy(() => import('./pages/FriooAI'));
 
 const NotFound = lazy(() => import('./pages/NotFound'));
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 export default function Promo() {
-  const [timeLeft, setTimeLeft] = useState(7200); // 2 hours
+  const [timeLeft, setTimeLeft] = useState(7200);
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft(t => (t > 0 ? t - 1 : 0)), 1000);

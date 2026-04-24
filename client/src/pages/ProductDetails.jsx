@@ -5,7 +5,7 @@ import Navbar from '../components/layout/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
 import VideoModal from '../components/shop/VideoModal';
 import ProductCard from '../components/shop/ProductCard';
-import OptimizedImage from '../components/OptimizedImage'; // Assuming this exists or standard img
+import OptimizedImage from '../components/OptimizedImage';
 import { showToast } from '../utils/toast';
 import { logger } from '../utils/logger';
 import ScrollReveal from '../components/animations/ScrollReveal';
@@ -31,11 +31,9 @@ export default function ProductDetails() {
   const [showPrepVideo, setShowPrepVideo] = useState(false);
 
   const [qty, setQty] = useState(1);
-  const [selectedWeight, setSelectedWeight] = useState(null); // { label: '1kg', multiplier: 1 }
+  const [selectedWeight, setSelectedWeight] = useState(null);
   const [selectedExclusions, setSelectedExclusions] = useState([]);
   const [removedIngredients, setRemovedIngredients] = useState([]);
-
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,7 +53,7 @@ export default function ProductDetails() {
           setRemovedIngredients([]);
 
           if (found.category === 'Fresh Fruit' && found.unit === 'kg') {
-            setSelectedWeight(WEIGHT_OPTIONS[2]); // Default 1kg
+            setSelectedWeight(WEIGHT_OPTIONS[2]);
           } else {
             setSelectedWeight(null);
           }
@@ -63,7 +61,7 @@ export default function ProductDetails() {
           const others = items.filter(p => p.id !== found.id);
           const sameCat = others.filter(p => p.category === found.category);
           const randomMix = others.filter(p => p.category !== found.category).sort(() => 0.5 - Math.random());
-          setRelatedProducts([...sameCat, ...randomMix].slice(0, 4)); // Show 4 related
+          setRelatedProducts([...sameCat, ...randomMix].slice(0, 4));
         }
       } catch (err) {
         logger.error("Error loading product:", err);
@@ -214,7 +212,7 @@ export default function ProductDetails() {
                 <div className="pd-price-row">
                   <span className="pd-price">₹{currentPrice.toFixed(0)}</span>
                   {product.discount && (
-                    <span className="pd-old-price">₹{(currentPrice * 1.2).toFixed(0)}</span>
+                    <span className="pd-old-price">₹{Math.round(currentPrice / (1 - product.discount / 100))}</span>
                   )}
                   <span className="pd-unit-label">
                     {selectedWeight ? `/ ${selectedWeight.label}` : '/ item'}
@@ -483,7 +481,7 @@ export default function ProductDetails() {
         .pd-price { font-size: 2rem; font-weight: 700; color: #1a1a1a; }
         .pd-old-price { font-size: 1.2rem; color: #ccc; text-decoration: line-through; }
         .pd-unit-label { font-size: 1rem; color: #888; }
-        
+
         .pd-desc {
             font-size: 1.05rem;
             line-height: 1.6;
@@ -620,7 +618,7 @@ export default function ProductDetails() {
             border-top: 1px solid #eee;
             padding-top: 50px;
             margin-top: 40px;
-            overflow: hidden; 
+            overflow: hidden;
         }
         .section-title {
             text-align: center;
@@ -641,7 +639,7 @@ export default function ProductDetails() {
             scrollbar-width: none;
         }
         .pd-related-grid::-webkit-scrollbar { display: none; }
-        
+
         .pd-related-grid > * {
             flex: 0 0 190px; /* Mini Card Width from Home.jsx */
             scroll-snap-align: start;
@@ -654,13 +652,13 @@ export default function ProductDetails() {
         .pd-related-grid .patisserie-card .badge-pop { font-size: 0.6rem; padding: 2px 8px; }
 
         @media (max-width: 900px) {
-            .pd-page { 
-                padding-top: var(--navbar-height-desktop); /* Desktop navbar with secondary nav */ 
+            .pd-page {
+                padding-top: var(--navbar-height-desktop); /* Desktop navbar with secondary nav */
             }
             .pd-grid { grid-template-columns: 1fr; gap: 40px; }
             .pd-gallery { position: static; }
             .pd-title { font-size: 2.2rem; }
-            
+
             .pd-actions {
                 position: fixed;
                 bottom: 0;
@@ -672,7 +670,7 @@ export default function ProductDetails() {
                 margin: 0;
                 z-index: 100;
             }
-            .pd-page { padding-bottom: 120px; } 
+            .pd-page { padding-bottom: 120px; }
 
             .pd-related-grid {
                 gap: 12px;

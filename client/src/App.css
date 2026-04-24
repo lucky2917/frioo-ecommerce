@@ -4,7 +4,6 @@
   box-sizing: border-box;
 }
 
-/* ===== FRAMER-QUALITY SMOOTH SCROLLING ===== */
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
@@ -14,7 +13,7 @@ html {
 html,
 body {
   overflow-x: hidden;
-  /* Prevent horizontal scroll */
+
 }
 
 #root {
@@ -24,17 +23,16 @@ body {
   text-align: center;
   width: 100%;
   min-height: 100vh;
-  /* GPU acceleration for smooth rendering */
+
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
 
-/* Optimize scroll performance */
 * {
   scroll-padding-top: 80px;
-  /* Offset for fixed navbar */
+
   -webkit-overflow-scrolling: touch;
-  /* Smooth momentum scrolling on iOS */
+
 }
 
 .logo {
@@ -75,5 +73,3 @@ body {
 .read-the-docs {
   color: #888;
 }
-
-/*that not in center the page is going downwards for adding customizations */

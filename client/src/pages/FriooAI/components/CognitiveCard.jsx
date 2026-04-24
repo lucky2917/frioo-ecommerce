@@ -12,7 +12,7 @@ function CognitiveCard({ replayKey, onReplay }) {
     return (
         <div className="v4-card cognitive">
             <div className="card-top">
-                <span className="code">SYS_01 // COGNITIVE_ENGINE</span>
+                <span className="code">SYS_01
                 <h3>Neural Processing</h3>
             </div>
 

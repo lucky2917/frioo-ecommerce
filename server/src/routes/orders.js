@@ -8,7 +8,7 @@ const { sendError, sendValidationError, sendSuccess } = require('../utils/respon
 
 const strictLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 10, // Limit order placement to 10 per 15 min
+    max: 10,
     message: 'Too many orders, please try again later.'
 });
 
@@ -21,20 +21,19 @@ router.post('/',
             return sendValidationError(res, errors);
         }
 
-
         try {
             const {
                 user_id,
                 profile_id,
                 items,
-                total_amount, // Client-sent total (will be verified)
+                total_amount,
                 order_type,
                 delivery_address,
                 phone_number,
                 distance_km,
                 coupon_code,
                 discount_amount,
-                notes // Add notes
+                notes
             } = req.body;
 
             const isInvalidUser = !user_id || user_id === 'undefined' || user_id === 'null';
@@ -50,7 +49,6 @@ router.post('/',
                     }
                 });
             }
-
 
             const { data: userProfile, error: profileError } = await supabaseAdmin
                 .from('profiles')
@@ -68,7 +66,6 @@ router.post('/',
                     }
                 });
             }
-
 
             if (order_type === 'delivery') {
                 if (!delivery_address) {
@@ -159,18 +156,17 @@ router.post('/',
                 .insert([{
                     user_id,
                     items: JSON.stringify(items),
-                    total_amount: serverCalculatedTotal, // Use server-verified total
+                    total_amount: serverCalculatedTotal,
                     order_type,
-                    address: delivery_address, // Changed from delivery_address to address
-                    distance: distance_km || 0, // Changed from distance_km to distance
+                    address: delivery_address,
+                    distance: distance_km || 0,
                     coupon_code: coupon_code || null,
-                    discount: serverCalculatedDiscount, // Changed from discount_amount to discount
+                    discount: serverCalculatedDiscount,
                     status: 'pending',
                     created_at: new Date().toISOString()
                 }])
                 .select()
                 .single();
-
 
             if (error) throw error;
 
@@ -184,6 +180,5 @@ router.post('/',
         }
     }
 );
-
 
 module.exports = router;

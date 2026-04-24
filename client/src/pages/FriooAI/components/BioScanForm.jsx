@@ -22,7 +22,7 @@ function BioScanForm({ formData, updateForm, toggleAllergy, runAnalysis, loading
     const canProceed = () => {
         const currentFields = steps[currentStep].fields;
         return currentFields.every(field => {
-            if (field === 'allergies') return true; // Optional
+            if (field === 'allergies') return true;
             return formData[field] && formData[field] !== '';
         });
     };

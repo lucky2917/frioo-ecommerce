@@ -12,7 +12,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    full_name: '', // Initialize empty, set via effect
+    full_name: '',
     phone_number: '',
     address: ''
   });
@@ -115,8 +115,8 @@ export default function Onboarding() {
       logger.error('Profile creation error:', error);
       showToast("Error creating profile: " + error.message, 'error');
     } else {
-      await fetchProfile(user.id); // Update Context state immediately
-      navigate('/shop'); // Redirect to Shop
+      await fetchProfile(user.id);
+      navigate('/shop');
     }
   };
 

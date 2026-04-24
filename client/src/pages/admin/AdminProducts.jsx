@@ -197,7 +197,7 @@ export default function AdminProducts() {
             return;
         }
 
-        const maxSize = 5 * 1024 * 1024; // 5MB
+        const maxSize = 5 * 1024 * 1024;
         if (file.size > maxSize) {
             showToast('File too large. Maximum size is 5MB.', 'error');
             return;

@@ -1,6 +1,5 @@
 const { body, param } = require('express-validator');
 
-
 const phoneValidator = () =>
     body('phone_number')
         .trim()

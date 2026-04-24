@@ -1,153 +1,136 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
-export default function BundleDeals({ onAddBundle }) {
-    const [activeSlide, setActiveSlide] = useState(0);
+const BUNDLE_DEFINITIONS = [
+  {
+    id: 'juice-trio',
+    title: 'Juice Trio',
+    description: 'Three pure fruit juices — refreshing and natural',
+    category: 'Pure Fruit Juice',
+    count: 3,
+    color: '#FF9500'
+  },
+  {
+    id: 'shake-pack',
+    title: 'Shake Pack',
+    description: 'Power up with three of our best milkshakes',
+    category: 'Fruit Milkshake',
+    count: 3,
+    color: '#9C27B0'
+  },
+  {
+    id: 'salad-duo',
+    title: 'Salad Duo',
+    description: 'Two fresh salad bowls for the wellness pair',
+    category: 'Salad',
+    count: 2,
+    color: '#2E7D32'
+  }
+];
 
-    const bundles = [
-        {
-            id: 1,
-            title: "Juice Power Pack",
-            description: "Buy 3 Pure Juices, Save 20%",
-            products: ["Orange Juice", "Apple Juice", "Carrot Juice"],
-            originalPrice: 450,
-            discountedPrice: 360,
-            savings: 90,
-            image: "🍊",
-            color: "#FF9500"
-        },
-        {
-            id: 2,
-            title: "Breakfast Combo",
-            description: "Juice + Salad + Fruit Bowl",
-            products: ["Morning Juice", "Fresh Salad", "Mixed Fruits"],
-            originalPrice: 380,
-            discountedPrice: 300,
-            savings: 80,
-            image: "🥗",
-            color: "#4CAF50"
-        },
-        {
-            id: 3,
-            title: "Protein Power",
-            description: "3 High-Protein Shakes",
-            products: ["Banana Shake", "Mango Shake", "Berry Blast"],
-            originalPrice: 420,
-            discountedPrice: 335,
-            savings: 85,
-            image: "💪",
-            color: "#9C27B0"
-        },
-        {
-            id: 4,
-            title: "Family Pack",
-            description: "5 Items, Save ₹150",
-            products: ["2 Juices", "2 Salads", "1 Fruit Bowl"],
-            originalPrice: 650,
-            discountedPrice: 500,
-            savings: 150,
-            image: "👨‍👩‍👧‍👦",
-            color: "#FF5722"
-        }
-    ];
+export default function BundleDeals({ products, onAddBundle }) {
+  const [activeSlide, setActiveSlide] = useState(0);
 
-    const nextSlide = () => {
-        setActiveSlide((prev) => (prev + 1) % bundles.length);
-    };
+  const bundles = useMemo(() => {
+    return BUNDLE_DEFINITIONS.reduce((acc, def) => {
+      const picks = products.filter(p => p.category === def.category).slice(0, def.count);
+      if (picks.length < 2) return acc;
+      acc.push({
+        ...def,
+        products: picks,
+        totalPrice: picks.reduce((sum, p) => sum + p.price_cents / 100, 0)
+      });
+      return acc;
+    }, []);
+  }, [products]);
 
-    const prevSlide = () => {
-        setActiveSlide((prev) => (prev - 1 + bundles.length) % bundles.length);
-    };
+  if (bundles.length === 0) return null;
 
-    return (
-        <div className="bundle-deals">
-            <div className="section-header">
-                <h2>🎁 Bundle Deals</h2>
-                <p>Save more when you buy together</p>
-            </div>
+  const nextSlide = () => setActiveSlide(prev => (prev + 1) % bundles.length);
+  const prevSlide = () => setActiveSlide(prev => (prev - 1 + bundles.length) % bundles.length);
 
-            <div className="carousel-container">
-                <button className="nav-btn prev" onClick={prevSlide}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                </button>
+  return (
+    <div className="bundle-deals">
+      <div className="section-header">
+        <h2>Popular Combos</h2>
+        <p>Add a curated combo to your cart in one click</p>
+      </div>
 
-                <div className="carousel-track">
-                    {bundles.map((bundle, index) => {
-                        const offset = (index - activeSlide + bundles.length) % bundles.length;
-                        const isActive = offset === 0;
-                        const isPrev = offset === bundles.length - 1;
-                        const isNext = offset === 1;
+      <div className="carousel-container">
+        <button className="nav-btn prev" onClick={prevSlide}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
 
-                        return (
-                            <div
-                                key={bundle.id}
-                                className={`bundle-card ${isActive ? 'active' : ''} ${isPrev ? 'prev' : ''} ${isNext ? 'next' : ''}`}
-                                style={{ '--accent-color': bundle.color }}
-                            >
-                                <div className="bundle-icon">{bundle.image}</div>
+        <div className="carousel-track">
+          {bundles.map((bundle, index) => {
+            const offset = (index - activeSlide + bundles.length) % bundles.length;
+            const isActive = offset === 0;
+            const isPrev = offset === bundles.length - 1;
+            const isNext = offset === 1;
 
-                                <div className="bundle-content">
-                                    <h3>{bundle.title}</h3>
-                                    <p className="bundle-desc">{bundle.description}</p>
-
-                                    <div className="products-list">
-                                        {bundle.products.map((product, idx) => (
-                                            <span key={idx} className="product-tag">
-                                                {product}
-                                            </span>
-                                        ))}
-                                    </div>
-
-                                    <div className="pricing">
-                                        <div className="price-row">
-                                            <span className="label">Original:</span>
-                                            <span className="old-price">₹{bundle.originalPrice}</span>
-                                        </div>
-                                        <div className="price-row main">
-                                            <span className="label">Deal Price:</span>
-                                            <span className="new-price">₹{bundle.discountedPrice}</span>
-                                        </div>
-                                        <div className="savings-badge">
-                                            💰 Save ₹{bundle.savings}
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        className="add-bundle-btn"
-                                        onClick={() => onAddBundle(bundle)}
-                                    >
-                                        Add Bundle to Cart
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    })}
+            return (
+              <div
+                key={bundle.id}
+                className={`bundle-card ${isActive ? 'active' : ''} ${isPrev ? 'prev' : ''} ${isNext ? 'next' : ''}`}
+                style={{ '--accent-color': bundle.color }}
+              >
+                <div className="bundle-images">
+                  {bundle.products.map(p => (
+                    <img key={p.id} src={p.images?.[0]} alt={p.title} className="bundle-thumb" />
+                  ))}
                 </div>
 
-                <button className="nav-btn next" onClick={nextSlide}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M9 18l6-6-6-6" />
-                    </svg>
-                </button>
-            </div>
+                <div className="bundle-content">
+                  <h3>{bundle.title}</h3>
+                  <p className="bundle-desc">{bundle.description}</p>
 
-            <div className="carousel-dots">
-                {bundles.map((_, index) => (
-                    <button
-                        key={index}
-                        className={`dot ${index === activeSlide ? 'active' : ''}`}
-                        onClick={() => setActiveSlide(index)}
-                    />
-                ))}
-            </div>
+                  <div className="products-list">
+                    {bundle.products.map(p => (
+                      <span key={p.id} className="product-tag">{p.title}</span>
+                    ))}
+                  </div>
 
-            <style jsx>{`
+                  <div className="pricing">
+                    <div className="price-row main">
+                      <span className="label">Combo total:</span>
+                      <span className="new-price">₹{bundle.totalPrice.toFixed(0)}</span>
+                    </div>
+                  </div>
+
+                  <button className="add-bundle-btn" onClick={() => onAddBundle(bundle.products)}>
+                    Add Combo to Cart
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <button className="nav-btn next" onClick={nextSlide}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="carousel-dots">
+        {bundles.map((_, index) => (
+          <button
+            key={index}
+            className={`dot ${index === activeSlide ? 'active' : ''}`}
+            onClick={() => setActiveSlide(index)}
+          />
+        ))}
+      </div>
+
+      <style jsx>{`
         .bundle-deals {
-          margin: 40px 0;
+          margin: 60px 0 40px;
           padding: 40px 20px;
-          background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 20%);
+          background: #fafaf8;
           border-radius: 24px;
+          border: 1px solid #eee;
         }
 
         .section-header {
@@ -156,16 +139,15 @@ export default function BundleDeals({ onAddBundle }) {
         }
 
         .section-header h2 {
-          font-size: 2.5rem;
+          font-family: 'Playfair Display', serif;
+          font-size: 2rem;
           margin: 0 0 10px 0;
-          background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: #2F4F4F;
         }
 
         .section-header p {
           color: #666;
-          font-size: 1.1rem;
+          font-size: 1rem;
         }
 
         .carousel-container {
@@ -174,46 +156,39 @@ export default function BundleDeals({ onAddBundle }) {
           align-items: center;
           justify-content: center;
           padding: 0 60px;
-          min-height: 450px;
+          min-height: 420px;
         }
 
         .nav-btn {
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
-          width: 50px;
-          height: 50px;
+          width: 44px;
+          height: 44px;
           border-radius: 50%;
           background: white;
-          border: 2px solid #e0e0e0;
+          border: 1px solid #e0e0e0;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 10;
-          transition: all 0.3s ease;
+          transition: all 0.2s;
         }
 
         .nav-btn:hover {
-          border-color: #4CAF50;
-          background: #4CAF50;
-          color: white;
-          transform: translateY(-50%) scale(1.1);
+          border-color: var(--accent-color, #C5A065);
+          color: var(--accent-color, #C5A065);
         }
 
-        .nav-btn.prev {
-          left: 0;
-        }
-
-        .nav-btn.next {
-          right: 0;
-        }
+        .nav-btn.prev { left: 0; }
+        .nav-btn.next { right: 0; }
 
         .carousel-track {
           position: relative;
           width: 100%;
-          max-width: 400px;
-          height: 450px;
+          max-width: 380px;
+          height: 420px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -223,12 +198,12 @@ export default function BundleDeals({ onAddBundle }) {
           position: absolute;
           width: 100%;
           background: white;
-          border-radius: 24px;
-          padding: 30px;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+          border-radius: 20px;
+          padding: 24px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
           transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
           opacity: 0;
-          transform: translateX(100%) scale(0.8);
+          transform: translateX(100%) scale(0.85);
           pointer-events: none;
         }
 
@@ -240,147 +215,128 @@ export default function BundleDeals({ onAddBundle }) {
         }
 
         .bundle-card.prev {
-          opacity: 0.3;
-          transform: translateX(-50%) scale(0.9);
+          opacity: 0.25;
+          transform: translateX(-45%) scale(0.9);
           z-index: 1;
         }
 
         .bundle-card.next {
-          opacity: 0.3;
-          transform: translateX(50%) scale(0.9);
+          opacity: 0.25;
+          transform: translateX(45%) scale(0.9);
           z-index: 1;
         }
 
-        .bundle-icon {
-          font-size: 4rem;
-          text-align: center;
-          margin-bottom: 20px;
-          animation: float 3s ease-in-out infinite;
+        .bundle-images {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 18px;
+          justify-content: center;
         }
 
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
+        .bundle-thumb {
+          width: 72px;
+          height: 72px;
+          border-radius: 12px;
+          object-fit: cover;
+          border: 1px solid #eee;
         }
 
         .bundle-content h3 {
-          font-size: 1.8rem;
-          margin: 0 0 10px 0;
-          color: var(--accent-color, #4CAF50);
+          font-family: 'Playfair Display', serif;
+          font-size: 1.5rem;
+          margin: 0 0 6px 0;
+          color: var(--accent-color, #C5A065);
         }
 
         .bundle-desc {
-          color: #666;
-          margin: 0 0 20px 0;
+          color: #777;
+          font-size: 0.9rem;
+          margin: 0 0 16px 0;
+          line-height: 1.4;
         }
 
         .products-list {
           display: flex;
           flex-wrap: wrap;
-          gap: 8px;
-          margin-bottom: 20px;
+          gap: 6px;
+          margin-bottom: 16px;
         }
 
         .product-tag {
-          padding: 6px 12px;
+          padding: 4px 10px;
           background: #f5f5f5;
           border-radius: 20px;
-          font-size: 0.85rem;
-          color: #666;
+          font-size: 0.8rem;
+          color: #555;
         }
 
         .pricing {
-          background: #f9f9f9;
-          padding: 16px;
-          border-radius: 12px;
-          margin: 20px 0;
+          background: #fafaf8;
+          padding: 12px 16px;
+          border-radius: 10px;
+          margin-bottom: 16px;
         }
 
         .price-row {
           display: flex;
           justify-content: space-between;
-          margin-bottom: 8px;
+          align-items: baseline;
         }
 
-        .price-row.main {
-          font-size: 1.3rem;
-          font-weight: 700;
-          color: var(--accent-color, #4CAF50);
-        }
+        .price-row.main { font-size: 1.1rem; font-weight: 700; }
 
-        .old-price {
-          text-decoration: line-through;
-          color: #999;
-        }
+        .label { color: #888; font-size: 0.85rem; font-weight: 400; }
 
-        .savings-badge {
-          display: inline-block;
-          background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-          color: white;
-          padding: 8px 16px;
-          border-radius: 50px;
-          font-weight: 700;
-          margin-top: 10px;
-          animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
+        .new-price { color: var(--accent-color, #C5A065); }
 
         .add-bundle-btn {
           width: 100%;
-          padding: 14px;
-          background: var(--accent-color, #4CAF50);
+          padding: 12px;
+          background: var(--accent-color, #C5A065);
           color: white;
           border: none;
-          border-radius: 12px;
+          border-radius: 10px;
           font-weight: 700;
-          font-size: 1rem;
+          font-size: 0.95rem;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: opacity 0.2s, transform 0.2s;
         }
 
         .add-bundle-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+          opacity: 0.9;
+          transform: translateY(-1px);
         }
 
         .carousel-dots {
           display: flex;
           justify-content: center;
-          gap: 10px;
-          margin-top: 30px;
+          gap: 8px;
+          margin-top: 24px;
         }
 
         .dot {
-          width: 10px;
-          height: 10px;
+          width: 8px;
+          height: 8px;
           border-radius: 50%;
-          background: #ccc;
+          background: #ddd;
           border: none;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.3s;
+          padding: 0;
         }
 
         .dot.active {
-          width: 30px;
-          border-radius: 5px;
-          background: #4CAF50;
+          width: 24px;
+          border-radius: 4px;
+          background: #C5A065;
         }
 
         @media (max-width: 768px) {
-          .carousel-container {
-            padding: 0 40px;
-          }
-
-          .bundle-card.prev,
-          .bundle-card.next {
-            display: none;
-          }
+          .carousel-container { padding: 0 40px; min-height: 480px; }
+          .carousel-track { height: 480px; }
+          .bundle-card.prev, .bundle-card.next { display: none; }
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 }

@@ -9,7 +9,7 @@ export default function AdminOrders() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [orderTypeFilter, setOrderTypeFilter] = useState('all');
-    const [categoryFilter, setCategoryFilter] = useState('active'); // active, completed, all
+    const [categoryFilter, setCategoryFilter] = useState('active');
     const [expandedOrders, setExpandedOrders] = useState(new Set());
 
     const toggleOrder = (orderId) => {

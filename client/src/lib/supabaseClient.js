@@ -25,7 +25,6 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 
         storage: window.localStorage,
 
-
         flowType: 'pkce'
     }
 });

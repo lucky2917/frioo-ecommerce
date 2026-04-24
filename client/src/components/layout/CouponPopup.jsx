@@ -59,12 +59,12 @@ const styles = {
 
 const styleSheet = document.createElement("style");
 styleSheet.innerText = `
-    @keyframes pop { 
-        from { transform: scale(0.9); opacity: 0; } 
-        to { transform: scale(1); opacity: 1; } 
-    } 
-    .animate-pop { 
-        animation: pop 0.3s ease-out; 
+    @keyframes pop {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+        animation: pop 0.3s ease-out;
     }
     button:hover {
         transform: translateY(-1px);

@@ -48,8 +48,6 @@ export default function OrderTracker() {
     return () => supabase.removeChannel(channel);
   }, [user]);
 
-
-
   if (!activeOrder) return null;
 
   const currentStepIndex = STEPS.indexOf(activeOrder.status);

@@ -1,4 +1,3 @@
-
 const logger = require('../utils/logger');
 
 const requestLogger = (req, res, next) => {
@@ -98,7 +97,7 @@ const analyticsLogger = (req, res, next) => {
     res.on('finish', () => {
         if (res.statusCode < 400) {
             const analyticsData = {
-                endpoint: req.originalUrl.split('?')[0], // Remove query params
+                endpoint: req.originalUrl.split('?')[0],
                 method: req.method,
                 status: res.statusCode,
                 timestamp: new Date().toISOString(),

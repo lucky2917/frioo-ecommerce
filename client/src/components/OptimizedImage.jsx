@@ -37,7 +37,7 @@ const OptimizedImage = ({
                     }
                 });
             },
-            { rootMargin: '50px' } // Start loading 50px before image enters viewport
+            { rootMargin: '50px' }
         );
 
         if (imgRef.current) {
@@ -48,8 +48,6 @@ const OptimizedImage = ({
             if (observer) observer.disconnect();
         };
     }, [src]);
-
-
 
     if (hasError) {
         return (

@@ -10,7 +10,7 @@ function PerformanceCard() {
     return (
         <div className="v4-card performance">
             <div className="card-top">
-                <span className="code">SYS_02 // PERFORMANCE_ENGINE</span>
+                <span className="code">SYS_02
                 <h3>Accuracy Benchmark</h3>
             </div>
 

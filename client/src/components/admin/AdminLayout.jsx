@@ -285,24 +285,24 @@ export default function AdminLayout() {
                     box-shadow: 0 4px 16px rgba(197, 160, 101, 0.4);
                 }
 
-                .icon { 
+                .icon {
                     width: 20px;
                     height: 20px;
                     flex-shrink: 0;
                     stroke-width: 2;
                 }
-                
-                .nav-group.secondary { 
+
+                .nav-group.secondary {
                     margin-top: auto;
                     padding-top: 24px;
                     border-top: 1px solid rgba(255,255,255,0.08);
                 }
-                
-                .logout-btn { 
+
+                .logout-btn {
                     color: #fca5a5;
                 }
-                
-                .logout-btn:hover { 
+
+                .logout-btn:hover {
                     background: rgba(248, 113, 113, 0.15);
                     color: #ef4444;
                 }
@@ -362,7 +362,7 @@ export default function AdminLayout() {
                 }
 
                 .mobile-header { display: none; }
-                
+
                 @media (max-width: 1024px) {
                     .desktop-toggle-btn {
                         display: none;
@@ -394,13 +394,13 @@ export default function AdminLayout() {
                         z-index: 40;
                         box-shadow: 0 4px 16px rgba(0,0,0,0.12);
                     }
-                    
-                    .logo-area { 
+
+                    .logo-area {
                         font-family: 'Playfair Display', serif;
                         font-size: 1.5rem;
                         font-weight: 700;
                     }
-                    
+
                     .menu-toggle {
                         background: none;
                         border: none;
@@ -422,7 +422,7 @@ export default function AdminLayout() {
                         width: 24px;
                         height: 24px;
                     }
-                    
+
                     .sidebar-overlay {
                         position: fixed;
                         inset: 0;

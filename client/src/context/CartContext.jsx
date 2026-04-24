@@ -28,7 +28,7 @@ export const CartProvider = ({ children }) => {
                     .from('coupons')
                     .select('*')
                     .eq('is_active', true)
-                    .order('min_order_value', { ascending: true }); // Show easier-to-reach ones first
+                    .order('min_order_value', { ascending: true });
 
                 if (!error && data) {
                     setAvailableCoupons(data);
@@ -75,7 +75,7 @@ export const CartProvider = ({ children }) => {
                     variant: variant,
                     price: finalPrice,
                     qty: existing ? existing.qty + 1 : 1,
-                    image: product.images?.[0], // Ensure image is captured
+                    image: product.images?.[0],
                     preferences: preferences
                 }
             };

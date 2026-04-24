@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
     logger.warn('Performing hard reset of auth state');
     const cart = localStorage.getItem('frioo_cart');
 
-    try { await supabase.auth.signOut(); } catch (_) { /* ignore */ }
+    try { await supabase.auth.signOut(); } catch (_) {  }
 
     localStorage.clear();
 
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
 
     setUser(null);
     setProfile(null);
-    setLoading(false); // Ensure we don't hang
+    setLoading(false);
   };
 
   const fetchProfile = async (userId) => {
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
           logger.warn('Auth initialization timed out - forcing load');
           setLoading(false);
         }
-      }, 3000); // 3 seconds max wait
+      }, 3000);
 
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -112,9 +112,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
 
-
-
-
     const refreshInterval = setInterval(async () => {
       try {
         const { data: { session }, error } = await supabase.auth.refreshSession();
@@ -127,7 +124,7 @@ export const AuthProvider = ({ children }) => {
       } catch (err) {
         logger.error('Session refresh error:', err);
       }
-    }, 50 * 60 * 1000); // 50 minutes in milliseconds
+    }, 50 * 60 * 1000);
 
     const handleVisibilityChange = async () => {
       if (document.visibilityState === 'visible') {

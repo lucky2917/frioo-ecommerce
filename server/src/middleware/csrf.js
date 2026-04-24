@@ -1,4 +1,3 @@
-
 const crypto = require('crypto');
 
 function generateToken() {
@@ -11,10 +10,10 @@ const csrfProtection = (req, res, next) => {
     if (!token) {
         token = generateToken();
         res.cookie('csrfToken', token, {
-            httpOnly: false, // Must be accessible to JavaScript for form submission
-            secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Allow cross-origin in production
-            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+            httpOnly: false,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 24 * 60 * 60 * 1000
         });
     }
 

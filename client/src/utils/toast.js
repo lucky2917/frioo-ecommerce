@@ -1,4 +1,3 @@
-
 let toastTimeoutId = null;
 
 export const showToast = (message, type = 'info', duration = 3000) => {

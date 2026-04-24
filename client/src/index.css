@@ -1,10 +1,8 @@
-/* 1. IMPORT PREMIUM TYPEFACES */
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Michroma&family=Inter:wght@300;400;500;700&family=Space+Mono&display=swap');
 
-/* 2. LUXURY VARIABLES */
 :root {
-  /* Palette */
+
   --bg-body: #FAFAFA;
   --bg-card: #FFFFFF;
   --bg-glass: rgba(255, 255, 255, 0.95);
@@ -20,29 +18,18 @@
   --border-subtle: #EAEAEA;
   --border-focus: #111111;
 
-  /* Dimensions - CALCULATED PRECISELY */
-  /* Navbar Component Heights:
-     - Announcement/Tracker Bar: 30px
-     - Main Navbar: 63px
-     - Secondary Nav (desktop only): 52px
-     - Mobile Search Bar: ~50px (collapsible)
-  */
   --announcement-bar-height: 30px;
   --main-navbar-height: 63px;
   --secondary-nav-height: 52px;
-  /* Desktop only */
-  --mobile-search-height: 50px;
-  /* Variable, hidden on scroll */
 
-  /* Total Heights */
+  --mobile-search-height: 50px;
+
   --navbar-height-desktop: 145px;
-  /* 30 + 63 + 52 */
+
   --navbar-height-mobile: 115px;
-  /* 30 + 63 + ~22 (collapsed search) */
 
   --container-width: 1600px;
 
-  /* Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
@@ -52,7 +39,6 @@
   --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* 3. RESET */
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -73,7 +59,6 @@ body {
   line-height: 1.5;
 }
 
-/* 4. TYPOGRAPHY */
 h1,
 h2,
 h3,
@@ -105,7 +90,6 @@ a:hover {
   opacity: 0.7;
 }
 
-/* 5. GRID & LAYOUT */
 .container-fluid {
   width: 94%;
   max-width: var(--container-width);
@@ -148,13 +132,6 @@ a:hover {
   margin: 0 auto;
 }
 
-
-/* 6. UTILITIES */
-/* 
- * CRITICAL: Use this class on page wrappers to ensure consistent navbar clearance
- * Desktop: 145px (announcement + main + secondary nav)
- * Mobile: 115px (announcement + main navbar + collapsed search)
- */
 .page-content {
   padding-top: var(--navbar-height-mobile);
 }
@@ -212,7 +189,6 @@ a:hover {
   transform: scale(1.05);
 }
 
-/* 7. ANIMATIONS */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -271,7 +247,6 @@ a:hover {
   animation-delay: 0.3s;
 }
 
-/* 8. MOBILE OPTIMIZATION */
 @media (max-width: 600px) {
   body {
     font-size: 14px;
@@ -290,7 +265,6 @@ a:hover {
   }
 }
 
-/* 9. SCROLLBAR */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -309,7 +283,6 @@ a:hover {
   background: #9CA3AF;
 }
 
-/* 10. GLOBAL ANIMATIONS */
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -320,7 +293,6 @@ a:hover {
   }
 }
 
-/* 11. TOAST NOTIFICATION */
 .toast-notification {
   position: fixed;
   top: 100px;
@@ -387,7 +359,6 @@ a:hover {
   }
 }
 
-/* 12. APP LOADING */
 .app-loading {
   height: 100vh;
   width: 100vw;
@@ -399,7 +370,6 @@ a:hover {
   gap: 20px;
 }
 
-/* SEO: Visually hidden H1 — accessible to crawlers & screen readers */
 .seo-h1 {
   position: absolute;
   width: 1px;
@@ -413,10 +383,6 @@ a:hover {
   font-size: 1px;
 }
 
-/* =========================================
-   HOME PAGE STYLES (Moved from Home.jsx)
-   ========================================= */
-
 * {
   box-sizing: border-box;
 }
@@ -425,7 +391,6 @@ a:hover {
   background: #ffffff;
 }
 
-/* ===== PROMO BANNERS ===== */
 .promo-banners {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -458,7 +423,6 @@ a:hover {
   font-size: 1.1rem;
 }
 
-/* ===== HERO CAROUSEL ===== */
 .hero-carousel {
   position: relative;
   height: 500px;
@@ -527,7 +491,6 @@ a:hover {
   text-align: center;
 }
 
-/* HERO OVERLAY */
 .hero-overlay-text {
   position: absolute;
   top: 50%;
@@ -537,7 +500,7 @@ a:hover {
   width: 100%;
   z-index: 10;
   pointer-events: none;
-  /* Let clicks pass through if needed, but button needs pointer-events-auto */
+
 }
 
 .hero-main-title {
@@ -571,7 +534,7 @@ a:hover {
   text-transform: uppercase;
   letter-spacing: 1px;
   pointer-events: auto;
-  /* Re-enable clicks */
+
   transition: all 0.3s ease;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
@@ -651,7 +614,6 @@ a:hover {
   background: rgba(0, 0, 0, 0.7);
 }
 
-/* ===== SECTIONS ===== */
 .featured-section,
 .categories-section,
 .product-carousel-section {
@@ -678,7 +640,6 @@ a:hover {
   margin: 0 0 40px 0;
 }
 
-/* ===== PRODUCTS SCROLL ===== */
 .products-scroll-wrapper {
   display: flex;
   gap: 20px;
@@ -845,7 +806,6 @@ a:hover {
   transform: translateY(-2px);
 }
 
-/* ===== PROMO BANNER ===== */
 .promo-banner {
   background: #3E2723;
   color: white;
@@ -909,7 +869,6 @@ a:hover {
   font-weight: 700;
 }
 
-/* ===== CATEGORIES GRID ===== */
 .section-header-center {
   text-align: center;
   max-width: 680px;
@@ -946,7 +905,6 @@ a:hover {
   margin: 0;
 }
 
-/* ===== CATEGORY CAROUSEL (Mobile) / GRID (Desktop) ===== */
 .category-carousel-wrapper {
   position: relative;
   margin-top: 50px;
@@ -1009,7 +967,6 @@ a:hover {
   color: white !important;
 }
 
-/* Navigation Arrows - Hidden on Desktop */
 .category-nav-btn {
   display: none;
   position: absolute;
@@ -1044,7 +1001,6 @@ a:hover {
   transform: translateY(-50%) scale(1.05);
 }
 
-/* Dot Indicators - Hidden on Desktop */
 .category-dots {
   display: none;
   position: absolute;
@@ -1071,7 +1027,6 @@ a:hover {
   background: rgba(0, 0, 0, 0.7);
 }
 
-/* ===== PRODUCT CAROUSEL ===== */
 .product-carousel-section {
   padding: 60px 0;
 }
@@ -1241,7 +1196,6 @@ a:hover {
   transform: translateY(0);
 }
 
-/* ===== STORY SECTION ===== */
 .story-section {
   position: relative;
   height: 500px;
@@ -1300,7 +1254,6 @@ a:hover {
   color: white;
 }
 
-/* ===== TEXT BANNER ===== */
 .text-banner {
   background: #f9f9f9;
   padding: 30px 0;
@@ -1337,7 +1290,6 @@ a:hover {
   }
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .promo-banners {
     grid-template-columns: 1fr;
@@ -1496,11 +1448,6 @@ a:hover {
   }
 }
 
-/* =========================================
-   CART PAGE STYLES (Moved from Cart.jsx)
-   ========================================= */
-
-/* --- LAYOUT --- */
 .cart-page {
   background: #fff;
   min-height: 100vh;
@@ -1540,7 +1487,6 @@ a:hover {
   gap: 60px;
 }
 
-/* --- ITEMS LIST --- */
 .cart-items {
   display: flex;
   flex-direction: column;
@@ -1691,7 +1637,6 @@ a:hover {
   font-weight: 600;
 }
 
-/* --- SUMMARY SIDEBAR --- */
 .cart-sidebar {
   position: sticky;
   top: 120px;
@@ -1857,7 +1802,6 @@ a:hover {
   color: #888;
 }
 
-/* --- EMPTY STATE --- */
 .empty-state {
   text-align: center;
   padding: 100px 20px;
@@ -1893,7 +1837,6 @@ a:hover {
   font-weight: 600;
 }
 
-/* --- MODAL --- */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1938,7 +1881,6 @@ a:hover {
   color: white;
 }
 
-/* --- RESPONSIVE --- */
 @media (max-width: 900px) {
   .cart-page {
     padding-top: 140px;
@@ -1978,11 +1920,6 @@ a:hover {
   }
 }
 
-/* =========================================
-   FRIOO AI PAGE STYLES (Moved from FriooAI.jsx)
-   ========================================= */
-
-/* NAVIGATION */
 .aeva-nav {
   position: fixed;
   top: 0;
@@ -1994,7 +1931,7 @@ a:hover {
   align-items: center;
   z-index: 1000;
   mix-blend-mode: difference;
-  /* Ensures visibility over any bg */
+
 }
 
 .nav-logo {
@@ -2083,7 +2020,6 @@ a:hover {
   width: 100%;
 }
 
-/* SECTION LAYOUTS */
 .section {
   height: 100vh;
   width: 100%;
@@ -2096,22 +2032,21 @@ a:hover {
 .hero-section {
   justify-content: flex-start;
   margin-bottom: 40vh;
-  /* EXTRA SPACER SEPARATION */
+
 }
 
 .feature-section {
   justify-content: flex-end;
   align-items: flex-start;
-  /* FIX VERTICAL POSITION */
+
   padding-top: 25vh;
-  /* ENSURE ALL CARDS START AT SAME HEIGHT */
+
 }
 
 .form-section {
   justify-content: flex-start;
 }
 
-/* TEXT BLOCKS */
 .content-block {
   max-width: 650px;
   z-index: 10;
@@ -2131,9 +2066,6 @@ a:hover {
   align-items: flex-start;
 }
 
-/* FORCE LEFT ALIGNMENT */
-
-/* HERO STYLES */
 .nav-badge {
   display: inline-flex;
   align-items: center;
@@ -2171,7 +2103,7 @@ a:hover {
   letter-spacing: 0px;
   color: #fff;
   text-transform: none;
-  /* Keep "Meet Frioo" mixed case if desired, or uppercase in HTML */
+
 }
 
 .hero-sub {
@@ -2203,7 +2135,6 @@ a:hover {
   background: #fff;
 }
 
-/* FEATURE STYLES */
 .feature-header {
   color: #0088ff;
   font-weight: 700;
@@ -2271,7 +2202,6 @@ a:hover {
   transform: translateY(-5px);
 }
 
-/* FORM STYLES */
 .form-section {
   padding-left: 10%;
 }
@@ -2366,7 +2296,6 @@ a:hover {
   border-radius: 4px;
 }
 
-/* ANIMATIONS */
 @keyframes blink {
 
   0%,
@@ -2383,7 +2312,6 @@ a:hover {
   animation: blink 1s infinite;
 }
 
-/* MOBILE */
 @media (max-width: 768px) {
 
   .hero-title,
@@ -2403,7 +2331,6 @@ a:hover {
     display: none;
   }
 
-  /* Hide middle nav on mobile */
   .nav-right {
     gap: 15px;
   }
@@ -2411,8 +2338,6 @@ a:hover {
   .nav-preorder {
     display: none;
   }
-
-  /* Show only hamburger on mobile? */
 
   .section {
     justify-content: center;
@@ -2443,7 +2368,7 @@ a:hover {
     padding-bottom: 50px;
   }
 }
-/* Info Links Section */
+
 .info-links-section {
   padding: 80px 20px;
   background: linear-gradient(to bottom, #fff 0%, #faf5ed 100%);
@@ -2539,10 +2464,9 @@ a:hover {
   .info-links-section {
     padding: 60px 16px;
   }
-  
+
   .info-cards-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
 }
-

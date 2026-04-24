@@ -1,10 +1,10 @@
 export const COLORS = {
     primary: {
-        green: '#4CAF50',        // Health, freshness, nature
-        orange: '#FF9800',       // Energy, appetite, warmth
-        yellow: '#FFC107',       // Joy, optimism, sunshine
-        blue: '#03A9F4',         // Trust, calm, refreshing
-        pink: '#E91E63',         // Love, excitement, berries
+        green: '#4CAF50',
+        orange: '#FF9800',
+        yellow: '#FFC107',
+        blue: '#03A9F4',
+        pink: '#E91E63',
     },
 
     gradients: {

@@ -80,7 +80,7 @@ const SEO = ({
         };
     }, [title, description, canonical, ogImage, ogType, structuredData, keywords]);
 
-    return null; // This component renders nothing in the UI
+    return null;
 };
 
 export default SEO;

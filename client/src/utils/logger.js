@@ -1,4 +1,3 @@
-
 import * as Sentry from '@sentry/react';
 
 const isDev = import.meta.env.DEV;

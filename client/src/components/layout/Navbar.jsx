@@ -7,7 +7,7 @@ import { logger } from '../../utils/logger';
 
 export default function Navbar() {
   const { user, signInWithGoogle, signOut } = useAuth();
-  const { cartCount } = useCart(); // [NEW] Use global cart count
+  const { cartCount } = useCart();
   const [showDropdown, setShowDropdown] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -116,8 +116,6 @@ export default function Navbar() {
     return () => supabase.removeChannel(channel);
   }, [user]);
 
-
-
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -177,7 +175,6 @@ export default function Navbar() {
             <Link to="/" className="logo-link">
               <h1 className="logo">Frioo.</h1>
             </Link>
-
 
             <div className="search-wrapper desktop-only">
               <form className="search-form" onSubmit={handleSearch}>
@@ -545,7 +542,7 @@ export default function Navbar() {
           color: #2D2D2D;
           font-weight: 500;
         }
-        
+
         .search-input::placeholder { color: #aaa; }
 
         .search-dropdown {
@@ -738,7 +735,7 @@ export default function Navbar() {
           justify-content: center;
           border: 2px solid white; /* Clean improved badge */
         }
-        
+
         .cart-label {
           font-size: 0.9rem;
         }
@@ -814,7 +811,7 @@ export default function Navbar() {
         .nav-link-shop:hover {
           color: #111;
         }
-        
+
         .nav-link-shop::after {
           content: '';
           position: absolute;
@@ -850,8 +847,8 @@ export default function Navbar() {
           font-weight: 600;
           transition: color 0.2s;
         }
-        .nav-link-utility:hover { 
-          color: #D4AF7A; 
+        .nav-link-utility:hover {
+          color: #D4AF7A;
         }
 
         .nav-separator-line {
@@ -860,7 +857,7 @@ export default function Navbar() {
           background: #E0E0E0;
           margin: 0 10px;
         }
-        
+
         .nav-link:hover::after {
           width: 100%;
         }
@@ -873,7 +870,7 @@ export default function Navbar() {
         .nav-link.highlight-link::after {
           background: #D32F2F;
         }
-        
+
         .mobile-menu-panel {
           position: fixed;
           top: 0;
@@ -943,11 +940,11 @@ export default function Navbar() {
           position: relative;
           transition: color 0.2s;
         }
-        
+
         .mobile-link:hover {
           color: #111;
         }
-        
+
         .mobile-link::after {
           content: '';
           position: absolute;
@@ -983,7 +980,7 @@ export default function Navbar() {
           font-weight: 600;
           transition: color 0.2s;
         }
-        
+
         .mobile-link-small:hover {
           color: #D4AF7A;
         }
@@ -999,7 +996,7 @@ export default function Navbar() {
           color: #999;
           transition: color 0.2s;
         }
-        
+
         .social-icon:hover { color: #111; }
 
         .mobile-menu-overlay {

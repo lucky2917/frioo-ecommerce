@@ -1,4 +1,3 @@
-
 import * as Sentry from '@sentry/react';
 
 export function initSentry() {
@@ -16,15 +15,15 @@ export function initSentry() {
             Sentry.browserTracingIntegration(),
 
             Sentry.replayIntegration({
-                maskAllText: true, // Privacy: mask all text content
-                blockAllMedia: true, // Privacy: block all media elements
+                maskAllText: true,
+                blockAllMedia: true,
             }),
         ],
 
-        tracesSampleRate: import.meta.env.MODE === 'production' ? 0.1 : 1.0, // 10% in prod
+        tracesSampleRate: import.meta.env.MODE === 'production' ? 0.1 : 1.0,
 
-        replaysSessionSampleRate: 0.1, // 10% of sessions
-        replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
+        replaysSessionSampleRate: 0.1,
+        replaysOnErrorSampleRate: 1.0,
 
         ignoreErrors: [
             /chrome-extension/,

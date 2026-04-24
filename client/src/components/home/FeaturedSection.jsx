@@ -5,7 +5,7 @@ export default function FeaturedSection({ products }) {
     <section style={styles.section}>
       <h2 style={styles.header}>Seasonal Favorites</h2>
       <p style={styles.sub}>Picked just for you this morning.</p>
-      
+
       <div style={styles.grid}>
         {products.slice(0, 4).map(p => (
           <div key={p.id} style={styles.card}>

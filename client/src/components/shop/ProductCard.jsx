@@ -19,7 +19,7 @@ export default function ProductCard({ product, onAdd }) {
     { label: '500g', multiplier: 0.50 },
     { label: '1kg', multiplier: 1.0 }
   ];
-  const [selectedWeight, setSelectedWeight] = useState(WEIGHT_OPTIONS[2]); // Default 1kg
+  const [selectedWeight, setSelectedWeight] = useState(WEIGHT_OPTIONS[2]);
 
   const hasOptions = (product.nutrition?.exclusions?.length > 0 || product.nutrition?.ingredients?.length > 0);
 
@@ -101,8 +101,6 @@ export default function ProductCard({ product, onAdd }) {
           <h3 className="card-title">
             <Link to={`/product/${product.id}`}>{product.title}</Link>
           </h3>
-
-
 
           <p className="card-desc">
             {product.description?.substring(0, 40)}...
@@ -290,8 +288,6 @@ export default function ProductCard({ product, onAdd }) {
         .card-title a { color: #1a1a1a; text-decoration: none; transition: color 0.2s; }
         .card-title a:hover { color: #4CAF50; }
 
-
-
         .card-desc {
           font-size: 0.85rem;
           color: #888;
@@ -335,7 +331,7 @@ export default function ProductCard({ product, onAdd }) {
           box-shadow: 0 20px 50px rgba(0,0,0,0.3);
           animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
+
         .product-card-shop {
           background: #FFFFFF;
           border-radius: 12px;
@@ -347,17 +343,17 @@ export default function ProductCard({ product, onAdd }) {
           will-change: transform;
           transform: translateZ(0);
         }
-        
+
         .product-card-shop:hover {
           transform: translateY(-6px) scale(1.01);
           box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
         }
-        
+
         .product-card-shop:active {
           transform: translateY(-2px) scale(0.99);
           transition-duration: 0.1s;
         }
-        
+
         .cust-header {
           padding: 15px 20px;
           border-bottom: 1px solid #eee;
@@ -370,12 +366,12 @@ export default function ProductCard({ product, onAdd }) {
         .close-btn { border: none; background: none; font-size: 1.5rem; cursor: pointer; }
 
         .cust-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
-        
+
         .cust-section { margin-bottom: 20px; }
         .cust-section label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; color: #333; }
-        
+
         .chip-grid, .weight-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-        
+
         .opt-chip {
           padding: 8px 16px;
           border: 1px solid #e0e0e0;

@@ -1,29 +1,38 @@
 import React, { useState } from 'react';
 
+const CATEGORY_MAP = {
+  'Pure Juices': 'Pure Fruit Juice',
+  'Fruit Shakes': 'Fruit Milkshake',
+  'Salads': 'Salad',
+  'Fresh Fruits': 'Fresh Fruit',
+  'Daily Deals': null
+};
+
 export default function ShopFilters({
   activeTab,
   setActiveTab,
   tabs,
-  showFilters // controlled by parent
+  products,
+  priceRange,
+  onPriceChange,
+  maxPrice
 }) {
-  const [openSections, setOpenSections] = useState({
-    categories: true,
-    availability: true,
-    price: true
-  });
+  const [openSections, setOpenSections] = useState({ categories: true, price: true });
 
   const toggleSection = (section) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  return (
-    <div className={`shop-sidebar ${showFilters ? 'visible' : 'hidden'}`}>
+  const getCategoryCount = (tab) => {
+    const cat = CATEGORY_MAP[tab];
+    if (!cat) return products.filter(p => p.featured).length;
+    return products.filter(p => p.category === cat).length;
+  };
 
+  return (
+    <div className="shop-sidebar">
       <div className="filter-group">
-        <button
-          className="accordion-header"
-          onClick={() => toggleSection('categories')}
-        >
+        <button className="accordion-header" onClick={() => toggleSection('categories')}>
           <span>Category</span>
           <span className={`arrow ${openSections.categories ? 'open' : ''}`}>▼</span>
         </button>
@@ -40,9 +49,7 @@ export default function ShopFilters({
                   className="custom-radio"
                 />
                 <span className="filter-label">{tab}</span>
-                <span className="count-badge">
-                  {(tab.length * 3) % 20 + 2}
-                </span>
+                <span className="count-badge">{getCategoryCount(tab)}</span>
               </label>
             ))}
           </div>
@@ -52,53 +59,34 @@ export default function ShopFilters({
       <div className="divider"></div>
 
       <div className="filter-group">
-        <button
-          className="accordion-header"
-          onClick={() => toggleSection('availability')}
-        >
-          <span>Availability</span>
-          <span className={`arrow ${openSections.availability ? 'open' : ''}`}>▼</span>
-        </button>
-
-        {openSections.availability && (
-          <div className="accordion-content">
-            <label className="filter-checkbox-row">
-              <input type="checkbox" defaultChecked className="custom-checkbox" />
-              <span className="filter-label">In stock</span>
-              <span className="count-badge">42</span>
-            </label>
-            <label className="filter-checkbox-row">
-              <input type="checkbox" className="custom-checkbox" />
-              <span className="filter-label">Out of stock</span>
-              <span className="count-badge">5</span>
-            </label>
-          </div>
-        )}
-      </div>
-
-      <div className="divider"></div>
-
-      <div className="filter-group">
-        <button
-          className="accordion-header"
-          onClick={() => toggleSection('price')}
-        >
+        <button className="accordion-header" onClick={() => toggleSection('price')}>
           <span>Price</span>
           <span className={`arrow ${openSections.price ? 'open' : ''}`}>▼</span>
         </button>
 
         {openSections.price && (
           <div className="accordion-content">
-            <p className="price-info">The highest price is ₹500.00</p>
+            <p className="price-info">Up to ₹{maxPrice.toFixed(0)}</p>
             <div className="price-inputs">
               <div className="price-field">
                 <span>₹</span>
-                <input type="number" placeholder="0" min="0" />
+                <input
+                  type="number"
+                  placeholder="0"
+                  min="0"
+                  value={priceRange[0] || ''}
+                  onChange={e => onPriceChange([Number(e.target.value) || 0, priceRange[1]])}
+                />
               </div>
               <span className="to">to</span>
               <div className="price-field">
                 <span>₹</span>
-                <input type="number" placeholder="500" max="500" />
+                <input
+                  type="number"
+                  placeholder={maxPrice.toFixed(0)}
+                  value={priceRange[1] === maxPrice ? '' : priceRange[1]}
+                  onChange={e => onPriceChange([priceRange[0], Number(e.target.value) || maxPrice])}
+                />
               </div>
             </div>
           </div>
@@ -107,16 +95,8 @@ export default function ShopFilters({
 
       <style jsx>{`
         .shop-sidebar {
-          width: 250px; /* Fixed width matching reference */
+          width: 250px;
           padding-right: 30px;
-          transition: width 0.3s ease, opacity 0.3s ease;
-          overflow: hidden;
-        }
-
-        .shop-sidebar.hidden {
-          width: 0;
-          padding-right: 0;
-          opacity: 0;
         }
 
         .divider {
@@ -167,32 +147,21 @@ export default function ShopFilters({
           color: #4a4a4a;
         }
 
-        .filter-checkbox-row:hover .filter-label {
-          color: #4CAF50;
-        }
+        .filter-checkbox-row:hover .filter-label { color: #C5A065; }
 
-        .custom-radio, .custom-checkbox {
-          accent-color: #4CAF50;
+        .custom-radio {
+          accent-color: #C5A065;
           margin-right: 10px;
           width: 16px;
           height: 16px;
           cursor: pointer;
         }
 
-        .filter-label {
-          flex: 1;
-        }
+        .filter-label { flex: 1; }
 
-        .count-badge {
-          color: #999;
-          font-size: 0.85rem;
-        }
+        .count-badge { color: #999; font-size: 0.85rem; }
 
-        .price-info {
-          font-size: 0.85rem;
-          color: #666;
-          margin-bottom: 15px;
-        }
+        .price-info { font-size: 0.85rem; color: #666; margin-bottom: 15px; }
 
         .price-inputs {
           display: flex;
@@ -209,10 +178,7 @@ export default function ShopFilters({
           flex: 1;
         }
 
-        .price-field span {
-          color: #666;
-          margin-right: 5px;
-        }
+        .price-field span { color: #666; margin-right: 5px; }
 
         .price-field input {
           width: 100%;
@@ -223,10 +189,7 @@ export default function ShopFilters({
           color: #333;
         }
 
-        .to {
-          font-size: 0.9rem;
-          color: #666;
-        }
+        .to { font-size: 0.9rem; color: #666; }
       `}</style>
     </div>
   );

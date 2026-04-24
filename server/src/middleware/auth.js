@@ -1,4 +1,3 @@
-
 const { supabaseAdmin } = require('../db');
 const { sendUnauthorized, sendForbidden, sendError } = require('../utils/responses');
 
@@ -11,7 +10,7 @@ const requireAdmin = async (req, res, next) => {
             return sendUnauthorized(res, 'No authorization token provided');
         }
 
-        const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+        const token = authHeader.substring(7);
 
         const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
@@ -22,7 +21,6 @@ const requireAdmin = async (req, res, next) => {
         if (!user) {
             return sendUnauthorized(res, 'Invalid or expired token');
         }
-
 
         const { data: profile, error: profileError } = await supabaseAdmin
             .from('profiles')

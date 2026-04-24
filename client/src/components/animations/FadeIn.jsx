@@ -9,7 +9,7 @@ export default function FadeIn({ children, delay = 0, duration = 0.4, className 
             transition={{
                 duration,
                 delay,
-                ease: [0.16, 1, 0.3, 1] // Framer's expo out
+                ease: [0.16, 1, 0.3, 1]
             }}
             className={className}
         >

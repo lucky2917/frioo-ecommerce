@@ -60,10 +60,6 @@ export default function Home() {
     loadProducts();
   }, []);
 
-
-
-
-
   const filteredProducts = useMemo(() => ({
     featured: products.filter(p => p.featured).slice(0, 6),
     juices: products.filter(p => p.category === 'Pure Fruit Juice').slice(0, 6),
@@ -78,8 +74,6 @@ export default function Home() {
       default: return filteredProducts.juices;
     }
   };
-
-
 
   const homeSchema = {
     "@context": "https://schema.org",
@@ -348,7 +342,6 @@ export default function Home() {
           ))}
         </div>
       </div>
-
 
       <Footer />
 

@@ -11,8 +11,6 @@ export default function Profile() {
   const { addToCart } = useCart();
   const { profile, user, loading: authLoading } = useAuth();
 
-
-
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('saved');
@@ -291,7 +289,7 @@ export default function Profile() {
             text-align: center;
             margin-bottom: 50px;
         }
-        
+
         .avatar-wrapper {
             width: 120px;
             height: 120px;
@@ -437,7 +435,7 @@ export default function Profile() {
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 30px;
         }
-        
+
         .recipe-card-modern {
             background: white;
             border-radius: 16px;
@@ -491,7 +489,7 @@ export default function Profile() {
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-        
+
         .btn-add-cart {
             font-size: 0.8rem;
             font-weight: 700;
@@ -520,7 +518,6 @@ export default function Profile() {
             line-height: 1;
         }
         .btn-remove-x:hover { color: #d32f2f; }
-
 
         .btn-gold {
             background: #D4AF7A;

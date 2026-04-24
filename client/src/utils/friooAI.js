@@ -1,4 +1,3 @@
-
 const FRUITS = {
     apple: { id: "apple", tier: "low", hydration: 6, fiber: 7, gi: 5, antioxidant: 6, digestion: 7, title: "Apple", price: 20 },
     banana: { id: "banana", tier: "low", hydration: 5, fiber: 6, gi: 7, antioxidant: 5, digestion: 8, title: "Banana", price: 10 },
@@ -73,7 +72,7 @@ function buildBestSalad(allowedFruits, scores, min = 4, max = 7) {
 
 export function runFriooAI(user) {
     const signals = computeUserSignals(user);
-    const allergies = (user.allergies || []).map(a => a.toLowerCase()); // Ensure lower case match
+    const allergies = (user.allergies || []).map(a => a.toLowerCase());
 
     const safeFruits = Object.keys(FRUITS).filter(f => !allergies.includes(f));
 
@@ -83,8 +82,8 @@ export function runFriooAI(user) {
     });
 
     const low = safeFruits.filter(f => FRUITS[f].tier === "low");
-    const mid = safeFruits.filter(f => FRUITS[f].tier !== "high"); // Low + Mid
-    const high = safeFruits; // All
+    const mid = safeFruits.filter(f => FRUITS[f].tier !== "high");
+    const high = safeFruits;
 
     const saladLow = buildBestSalad(low, scores, 4, 5);
     const saladMid = buildBestSalad(mid, scores, 5, 6);

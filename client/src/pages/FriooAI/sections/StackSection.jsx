@@ -6,7 +6,7 @@ import KnowledgeCard from '../components/KnowledgeCard';
 function StackSection({ activeCard, replayObj, setReplayObj }) {
     const transitionConfig = {
         duration: 0.6,
-        ease: [0.22, 1, 0.36, 1] // iOS-style ease
+        ease: [0.22, 1, 0.36, 1]
     };
 
     return (
