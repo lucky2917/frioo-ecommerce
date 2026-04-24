@@ -66,7 +66,7 @@ function CapabilitiesSection() {
                     ref={ref0}
                     className={`capability-block ${activeCapability === 0 ? 'active' : ''}`}
                 >
-                    <div className="capability-number">SYS_01
+                    <div className="capability-number">SYS_01</div>
                     <h3 className="capability-title">Neural Processing</h3>
                     <div className="capability-divider"></div>
                     <p className="capability-description">
@@ -104,7 +104,7 @@ function CapabilitiesSection() {
                     ref={ref1}
                     className={`capability-block ${activeCapability === 1 ? 'active' : ''}`}
                 >
-                    <div className="capability-number">SYS_02
+                    <div className="capability-number">SYS_02</div>
                     <h3 className="capability-title">Benchmark Performance</h3>
                     <div className="capability-divider"></div>
                     <p className="capability-description">
@@ -146,7 +146,7 @@ function CapabilitiesSection() {
                     ref={ref2}
                     className={`capability-block ${activeCapability === 2 ? 'active' : ''}`}
                 >
-                    <div className="capability-number">SYS_03
+                    <div className="capability-number">SYS_03</div>
                     <h3 className="capability-title">Global Data Network</h3>
                     <div className="capability-divider"></div>
                     <p className="capability-description">
