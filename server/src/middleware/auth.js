@@ -50,4 +50,23 @@ const requireAdmin = async (req, res, next) => {
     }
 };
 
-module.exports = { requireAdmin };
+const requireAuth = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader?.startsWith('Bearer ')) {
+            return sendUnauthorized(res, 'No authorization token provided');
+        }
+        const token = authHeader.substring(7);
+        const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+        if (error || !user) {
+            return sendUnauthorized(res, 'Invalid or expired token');
+        }
+        req.user = user;
+        next();
+    } catch (err) {
+        console.error('Auth middleware error:', err);
+        return sendError(res, 'Authentication failed', 500);
+    }
+};
+
+module.exports = { requireAdmin, requireAuth };

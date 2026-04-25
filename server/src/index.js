@@ -212,7 +212,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api', (req, res, next) => {
-  if (req.path.startsWith('/admin/') || req.path.startsWith('/upload') || req.path.startsWith('/orders')) {
+  if (req.path.startsWith('/admin/') || req.path.startsWith('/upload')) {
     return next();
   }
   validateCsrfToken(req, res, next);

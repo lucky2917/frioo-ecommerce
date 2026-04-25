@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { logger } from '../../utils/logger';
 
@@ -23,8 +23,7 @@ const NAV_ITEMS = [
 
 export default function AdminLayout() {
     const location = useLocation();
-    const navigate = useNavigate();
-    const { logout, profile } = useAuth();
+    const { signOut, profile } = useAuth();
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const sidebarRef = useRef(null);
@@ -45,8 +44,7 @@ export default function AdminLayout() {
 
     const handleLogout = async () => {
         try {
-            await logout();
-            navigate('/auth');
+            await signOut();
         } catch (err) {
             logger.error(err);
         }

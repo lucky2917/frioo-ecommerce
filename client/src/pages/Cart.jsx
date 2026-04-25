@@ -184,17 +184,15 @@ export default function Cart() {
         preferences: item.preferences
       }));
 
+      const { data: { session } } = await supabase.auth.getSession();
+
       const orderPayload = {
-        user_id: user?.id,
-        profile_id: user?.id,
         items: cleanedItems,
         total_amount: finalTotal,
         order_type: orderType,
         delivery_address: orderType === 'delivery' ? sanitizeText(deliveryAddress.trim()) : null,
-        phone_number: user?.phone || '0000000000',
         distance_km: distance,
         coupon_code: appliedCoupon?.code || null,
-        discount_amount: appliedCoupon ? discountAmount : 0
       };
 
       const response = await fetch(`${API_BASE_URL}/api/orders`, {
@@ -202,7 +200,8 @@ export default function Cart() {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken
+          'X-CSRF-Token': csrfToken,
+          'Authorization': `Bearer ${session?.access_token || ''}`
         },
         body: JSON.stringify(orderPayload)
       });

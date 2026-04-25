@@ -3,6 +3,7 @@ const router = express.Router();
 const { validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const { supabaseAdmin } = require('../db');
+const { requireAuth } = require('../middleware/auth');
 const { orderValidators } = require('../utils/validators');
 const { sendError, sendValidationError, sendSuccess } = require('../utils/responses');
 
@@ -14,6 +15,7 @@ const strictLimiter = rateLimit({
 
 router.post('/',
     strictLimiter,
+    requireAuth,
     orderValidators(),
     async (req, res) => {
         const errors = validationResult(req);
@@ -23,8 +25,6 @@ router.post('/',
 
         try {
             const {
-                user_id,
-                profile_id,
                 items,
                 total_amount,
                 order_type,
@@ -34,36 +34,7 @@ router.post('/',
                 notes
             } = req.body;
 
-            const isInvalidUser = !user_id || user_id === 'undefined' || user_id === 'null';
-            const isInvalidProfile = !profile_id || profile_id === 'undefined' || profile_id === 'null';
-
-            if (isInvalidUser || isInvalidProfile) {
-                return res.status(401).json({
-                    success: false,
-                    error: {
-                        message: 'Please login to place an order',
-                        code: 401,
-                        requiresAuth: true
-                    }
-                });
-            }
-
-            const { data: userProfile, error: profileError } = await supabaseAdmin
-                .from('profiles')
-                .select('id')
-                .eq('id', user_id)
-                .single();
-
-            if (profileError || !userProfile) {
-                return res.status(401).json({
-                    success: false,
-                    error: {
-                        message: 'Invalid user session. Please login again.',
-                        code: 401,
-                        requiresAuth: true
-                    }
-                });
-            }
+            const user_id = req.user.id;
 
             if (order_type === 'delivery') {
                 if (!delivery_address) {
@@ -77,29 +48,28 @@ router.post('/',
             const productIds = items.map(item => item.id);
             const { data: products, error: productsError } = await supabaseAdmin
                 .from('products')
-                .select('id, price_cents')
+                .select('id, price_cents, stock')
                 .in('id', productIds);
 
             if (productsError) {
-                console.error('Error fetching products for price verification:');
-                console.error('Error details:', JSON.stringify(productsError, null, 2));
-                console.error('Product IDs attempted:', productIds);
                 return sendError(res, `Failed to verify product prices: ${productsError.message || 'Unknown error'}`, 500);
             }
 
             let serverCalculatedSubtotal = 0;
             for (const item of items) {
                 const product = products.find(p => p.id === item.id);
-
                 if (!product) {
                     return sendError(res, `Product ${item.id} not found or unavailable`, 400);
                 }
-
-                const itemTotal = (product.price_cents / 100) * item.qty;
-                serverCalculatedSubtotal += itemTotal;
+                if (product.stock !== null && product.stock < item.qty) {
+                    return sendError(res, `"${item.title}" only has ${product.stock} in stock`, 400);
+                }
+                serverCalculatedSubtotal += (product.price_cents / 100) * item.qty;
             }
 
             let serverCalculatedDiscount = 0;
+            let appliedCoupon = null;
+
             if (coupon_code) {
                 const { data: coupon, error: couponError } = await supabaseAdmin
                     .from('coupons')
@@ -110,6 +80,10 @@ router.post('/',
 
                 if (couponError || !coupon) {
                     return sendError(res, 'Invalid or expired coupon code', 400);
+                }
+
+                if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+                    return sendError(res, 'This coupon has expired', 400);
                 }
 
                 if (serverCalculatedSubtotal < coupon.min_order_value) {
@@ -125,25 +99,14 @@ router.post('/',
                     serverCalculatedDiscount = coupon.value;
                 }
 
+                appliedCoupon = coupon;
             }
 
             const serverCalculatedTotal = serverCalculatedSubtotal - serverCalculatedDiscount;
-
             const priceDifference = Math.abs(serverCalculatedTotal - total_amount);
-            if (priceDifference > 0.5) {
-                console.warn('SECURITY ALERT: Price mismatch detected', {
-                    user_id,
-                    client_total: total_amount,
-                    server_total: serverCalculatedTotal,
-                    difference: priceDifference,
-                    items: items,
-                    coupon_code
-                });
 
-                return sendError(res,
-                    'Price verification failed. Please refresh and try again.',
-                    400
-                );
+            if (priceDifference > 0.5) {
+                return sendError(res, 'Price verification failed. Please refresh and try again.', 400);
             }
 
             const { data, error } = await supabaseAdmin
@@ -166,10 +129,20 @@ router.post('/',
 
             if (error) throw error;
 
-            return sendSuccess(res, {
-                order: data,
-                message: 'Order placed successfully'
-            }, 201);
+            await Promise.all(items.map(async ({ id, qty }) => {
+                const product = products.find(p => p.id === id);
+                const newStock = Math.max(0, (product?.stock ?? 0) - qty);
+                await supabaseAdmin.from('products').update({ stock: newStock }).eq('id', id);
+            }));
+
+            if (appliedCoupon) {
+                await supabaseAdmin
+                    .from('coupons')
+                    .update({ used_count: (appliedCoupon.used_count || 0) + 1 })
+                    .eq('id', appliedCoupon.id);
+            }
+
+            return sendSuccess(res, { order: data, message: 'Order placed successfully' }, 201);
         } catch (err) {
             console.error('Order placement error:', err);
             return sendError(res, 'Failed to place order. Please try again.', 500);
