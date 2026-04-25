@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { showToast } from '../../utils/toast';
@@ -19,28 +19,31 @@ export default function AdminDashboard() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const loadAll = async () => {
-            try {
-                const [oRes, pRes, uRes] = await Promise.all([
-                    supabase.from('orders').select('id, total_amount, status, order_type, created_at, profiles(full_name)').order('created_at', { ascending: false }),
-                    supabase.from('products').select('id, featured, category'),
-                    supabase.from('profiles').select('id, created_at, role')
-                ]);
-                if (oRes.error) throw oRes.error;
-                if (pRes.error) throw pRes.error;
-                if (uRes.error) throw uRes.error;
-                setOrders(oRes.data || []);
-                setProducts(pRes.data || []);
-                setUsers(uRes.data || []);
-            } catch (err) {
-                showToast('Failed to load dashboard: ' + err.message, 'error');
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadAll();
+    const loadAll = useCallback(async () => {
+        try {
+            const [oRes, pRes, uRes] = await Promise.all([
+                supabase.from('orders').select('id, total_amount, status, order_type, created_at, profiles(full_name)').order('created_at', { ascending: false }),
+                supabase.from('products').select('id, featured, category'),
+                supabase.from('profiles').select('id, created_at, role')
+            ]);
+            if (oRes.error) throw oRes.error;
+            if (pRes.error) throw pRes.error;
+            if (uRes.error) throw uRes.error;
+            setOrders(oRes.data || []);
+            setProducts(pRes.data || []);
+            setUsers(uRes.data || []);
+        } catch (err) {
+            showToast('Failed to load dashboard: ' + err.message, 'error');
+        } finally {
+            setLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        loadAll();
+        const interval = setInterval(loadAll, 30000);
+        return () => clearInterval(interval);
+    }, [loadAll]);
 
     const stats = useMemo(() => {
         const now = new Date();

@@ -83,15 +83,37 @@ router.patch('/orders/:orderId',
 
 );
 
-router.get('/users', async (_req, res) => {
+router.get('/users', async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+        const offset = (page - 1) * limit;
+
+        const { count, error: countError } = await supabaseAdmin
+            .from('profiles')
+            .select('*', { count: 'exact', head: true });
+
+        if (countError) throw countError;
+
         const { data, error } = await supabaseAdmin
             .from('profiles')
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1);
 
         if (error) throw error;
-        res.json({ users: data });
+
+        res.json({
+            users: data,
+            pagination: {
+                page,
+                limit,
+                total: count,
+                pages: Math.ceil(count / limit),
+                hasNext: page < Math.ceil(count / limit),
+                hasPrev: page > 1
+            }
+        });
     } catch (err) {
         console.error('Admin users fetch error:', err);
         res.status(500).json({ error: err.message });

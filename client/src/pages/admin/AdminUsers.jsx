@@ -8,25 +8,28 @@ export default function AdminUsers() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [formData, setFormData] = useState({ full_name: '', phone_number: '', role: 'customer' });
 
     useEffect(() => {
-        fetchUsers();
-    }, []);
+        fetchUsers(page);
+    }, [page]);
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (p = 1) => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setUsers(data || []);
+            const { data: { session } } = await supabase.auth.getSession();
+            const res = await fetch(`${API_BASE_URL}/api/admin/users?page=${p}&limit=20`, {
+                headers: { 'Authorization': `Bearer ${session?.access_token || ''}` }
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.error || 'Failed to fetch users');
+            setUsers(json.users || []);
+            setPagination(json.pagination || null);
         } catch (err) {
             showToast("Error fetching users: " + err.message, 'error');
         } finally {
@@ -189,7 +192,9 @@ export default function AdminUsers() {
                         <option value="admin">Admins</option>
                         <option value="customer">Customers</option>
                     </select>
-                    <span className="result-count">{filteredUsers.length} users</span>
+                    <span className="result-count">
+                        {pagination ? `${pagination.total} total` : `${filteredUsers.length} users`}
+                    </span>
                 </div>
             </div>
 
@@ -261,6 +266,26 @@ export default function AdminUsers() {
                     </div>
                 )}
             </div>
+
+            {pagination && pagination.pages > 1 && (
+                <div className="pagination-bar">
+                    <button
+                        className="page-btn"
+                        onClick={() => setPage(p => p - 1)}
+                        disabled={!pagination.hasPrev}
+                    >
+                        ← Prev
+                    </button>
+                    <span className="page-info">Page {pagination.page} of {pagination.pages}</span>
+                    <button
+                        className="page-btn"
+                        onClick={() => setPage(p => p + 1)}
+                        disabled={!pagination.hasNext}
+                    >
+                        Next →
+                    </button>
+                </div>
+            )}
 
             {isModalOpen && (
                 <div className="modal-overlay" onClick={(e) => e.target.className === 'modal-overlay' && setIsModalOpen(false)}>
@@ -739,6 +764,44 @@ export default function AdminUsers() {
                     background: #1e293b;
                     transform: translateY(-1px);
                     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+                }
+
+                .pagination-bar {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 16px;
+                    margin-top: 24px;
+                }
+
+                .page-btn {
+                    padding: 8px 20px;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    background: white;
+                    color: #334155;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .page-btn:hover:not(:disabled) {
+                    background: #0f172a;
+                    color: white;
+                    border-color: #0f172a;
+                }
+
+                .page-btn:disabled {
+                    opacity: 0.4;
+                    cursor: not-allowed;
+                }
+
+                .page-info {
+                    font-size: 0.9rem;
+                    color: #64748b;
+                    font-weight: 500;
+                    white-space: nowrap;
                 }
 
                 .loading-state {

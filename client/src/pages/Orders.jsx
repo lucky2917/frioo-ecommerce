@@ -18,12 +18,12 @@ export default function Orders() {
   if (authLoading) return <LoadingSpinner fullScreen />;
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      if (!user?.id) {
-        setLoading(false);
-        return;
-      }
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
 
+    const fetchOrders = async () => {
       try {
         const { data, error } = await supabase
           .from('orders')
@@ -41,12 +41,29 @@ export default function Orders() {
     };
 
     fetchOrders();
-  }, [user]);
+
+    const channel = supabase
+      .channel(`orders-user-${user.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'orders',
+        filter: `user_id=eq.${user.id}`
+      }, (payload) => {
+        setOrders(prev => prev.map(o => o.id === payload.new.id ? { ...o, ...payload.new } : o));
+      })
+      .subscribe();
+
+    return () => supabase.removeChannel(channel);
+  }, [user?.id]);
 
   const getStatusColor = (status) => {
     const statusMap = {
       'pending': 'status-orange',
       'confirmed': 'status-blue',
+      'preparing': 'status-blue',
+      'ready': 'status-blue',
+      'out-for-delivery': 'status-purple',
       'delivered': 'status-green',
       'cancelled': 'status-red'
     };
@@ -247,6 +264,7 @@ export default function Orders() {
         .status-blue { background: #e3f2fd; color: #1565c0; }
         .status-orange { background: #fff3e0; color: #ef6c00; }
         .status-red { background: #ffebee; color: #c62828; }
+        .status-purple { background: #f3e8ff; color: #7e22ce; }
 
         .card-body {
             padding: 20px 25px;
