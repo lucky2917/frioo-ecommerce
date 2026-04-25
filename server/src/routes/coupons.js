@@ -33,6 +33,11 @@ router.post('/validate',
                 return sendError(res, 'Coupon has expired', 400);
             }
 
+            if (data.usage_limit !== null && data.usage_limit !== undefined &&
+                (data.used_count || 0) >= data.usage_limit) {
+                return sendError(res, 'This coupon has reached its usage limit', 400);
+            }
+
             if (cartTotal < data.min_order_value) {
                 return sendError(
                     res,

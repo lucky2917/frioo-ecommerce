@@ -146,7 +146,8 @@ router.post('/',
 
             await Promise.all(items.map(async ({ id, qty }) => {
                 const product = products.find(p => p.id === id);
-                const newStock = Math.max(0, (product?.stock ?? 0) - qty);
+                if (product?.stock === null) return;
+                const newStock = Math.max(0, product.stock - qty);
                 await supabaseAdmin.from('products').update({ stock: newStock }).eq('id', id);
             }));
 
