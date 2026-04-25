@@ -86,6 +86,21 @@ router.post('/',
                     return sendError(res, 'This coupon has expired', 400);
                 }
 
+                if (coupon.usage_limit !== null && coupon.usage_limit !== undefined &&
+                    (coupon.used_count || 0) >= coupon.usage_limit) {
+                    return sendError(res, 'This coupon has reached its usage limit', 400);
+                }
+
+                const { count: userUseCount, error: useCountError } = await supabaseAdmin
+                    .from('orders')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('user_id', user_id)
+                    .eq('coupon_code', coupon_code);
+
+                if (!useCountError && userUseCount > 0) {
+                    return sendError(res, 'You have already used this coupon', 400);
+                }
+
                 if (serverCalculatedSubtotal < coupon.min_order_value) {
                     return sendError(res,
                         `Minimum order value of ₹${coupon.min_order_value} required for this coupon`,

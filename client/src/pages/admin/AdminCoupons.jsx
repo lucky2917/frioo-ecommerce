@@ -8,7 +8,8 @@ const INITIAL_FORM = {
     type: 'percentage',
     min_order: '',
     description: '',
-    expires_at: ''
+    expires_at: '',
+    usage_limit: ''
 };
 
 export default function AdminCoupons() {
@@ -45,7 +46,8 @@ export default function AdminCoupons() {
         const expired = coupons.filter(c => c.expires_at && new Date(c.expires_at) < new Date()).length;
         const percentage = coupons.filter(c => c.discount_type === 'percentage').length;
         const fixed = coupons.filter(c => c.discount_type === 'fixed').length;
-        return { total, active, expired, percentage, fixed };
+        const totalUses = coupons.reduce((sum, c) => sum + (c.used_count || 0), 0);
+        return { total, active, expired, percentage, fixed, totalUses };
     }, [coupons]);
 
     const filteredCoupons = useMemo(() => {
@@ -70,7 +72,8 @@ export default function AdminCoupons() {
             type: coupon.discount_type || 'percentage',
             min_order: coupon.min_order_value?.toString() || '',
             description: coupon.description || '',
-            expires_at: coupon.expires_at ? coupon.expires_at.slice(0, 10) : ''
+            expires_at: coupon.expires_at ? coupon.expires_at.slice(0, 10) : '',
+            usage_limit: coupon.usage_limit != null ? coupon.usage_limit.toString() : ''
         });
         setEditingId(coupon.id);
         setIsModalOpen(true);
@@ -87,7 +90,8 @@ export default function AdminCoupons() {
                 value: parseFloat(form.value),
                 min_order_value: parseFloat(form.min_order) || 0,
                 description: form.description.trim() || null,
-                expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null
+                expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
+                usage_limit: form.usage_limit !== '' ? parseInt(form.usage_limit, 10) : null
             };
 
             const { data: saved, error } = editingId
@@ -179,6 +183,10 @@ export default function AdminCoupons() {
                     <div className="metric-label">Fixed Discounts</div>
                     <div className="metric-value">{metrics.fixed}</div>
                 </div>
+                <div className="metric-card">
+                    <div className="metric-label">Total Uses</div>
+                    <div className="metric-value">{metrics.totalUses}</div>
+                </div>
             </div>
 
             <div className="search-bar">
@@ -225,6 +233,14 @@ export default function AdminCoupons() {
                                 </div>
                                 <div className="coupon-info-row">
                                     <span className="info-chip">Min ₹{coupon.min_order_value || 0}</span>
+                                    {coupon.usage_limit != null && (
+                                        <span className={`info-chip ${(coupon.used_count || 0) >= coupon.usage_limit ? 'chip-exhausted' : ''}`}>
+                                            {coupon.used_count || 0}/{coupon.usage_limit} uses
+                                        </span>
+                                    )}
+                                    {coupon.usage_limit == null && (coupon.used_count || 0) > 0 && (
+                                        <span className="info-chip">{coupon.used_count} uses</span>
+                                    )}
                                 </div>
                                 {coupon.expires_at && (
                                     <div className={`expiry-row ${expired ? 'expired-text' : ''}`}>
@@ -333,6 +349,17 @@ export default function AdminCoupons() {
                                         value={form.expires_at}
                                         onChange={e => setField('expires_at', e.target.value)}
                                         min={new Date().toISOString().slice(0, 10)}
+                                    />
+                                </div>
+
+                                <div className="form-field">
+                                    <label>Usage Limit (Optional)</label>
+                                    <input
+                                        type="number"
+                                        value={form.usage_limit}
+                                        onChange={e => setField('usage_limit', e.target.value)}
+                                        placeholder="Unlimited"
+                                        min="1"
                                     />
                                 </div>
                             </div>
@@ -551,6 +578,13 @@ export default function AdminCoupons() {
                     font-size: 0.8rem;
                     color: #475569;
                     font-weight: 500;
+                }
+
+                .info-chip.chip-exhausted {
+                    background: #fee2e2;
+                    border-color: #fca5a5;
+                    color: #dc2626;
+                    font-weight: 600;
                 }
 
                 .expiry-row {
