@@ -6,14 +6,15 @@ const INITIAL_FORM = {
     code: '',
     value: '',
     type: 'percentage',
-    min_order: ''
+    min_order: '',
+    description: '',
+    expires_at: ''
 };
 
 export default function AdminCoupons() {
     const [coupons, setCoupons] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [form, setForm] = useState(INITIAL_FORM);
@@ -30,31 +31,29 @@ export default function AdminCoupons() {
             if (error) throw error;
             setCoupons(data || []);
         } catch (err) {
-            showToast("Error fetching coupons: " + err.message, 'error');
+            showToast('Error fetching coupons: ' + err.message, 'error');
         } finally {
             setLoading(false);
         }
     }, []);
 
-    useEffect(() => {
-        fetchCoupons();
-    }, [fetchCoupons]);
+    useEffect(() => { fetchCoupons(); }, [fetchCoupons]);
 
     const metrics = useMemo(() => {
         const total = coupons.length;
         const active = coupons.filter(c => c.is_active).length;
+        const expired = coupons.filter(c => c.expires_at && new Date(c.expires_at) < new Date()).length;
         const percentage = coupons.filter(c => c.discount_type === 'percentage').length;
         const fixed = coupons.filter(c => c.discount_type === 'fixed').length;
-
-        return { total, active, percentage, fixed };
+        return { total, active, expired, percentage, fixed };
     }, [coupons]);
 
     const filteredCoupons = useMemo(() => {
         if (!searchQuery) return coupons;
-
-        const query = searchQuery.toLowerCase();
+        const q = searchQuery.toLowerCase();
         return coupons.filter(c =>
-            c.code?.toLowerCase().includes(query)
+            c.code?.toLowerCase().includes(q) ||
+            c.description?.toLowerCase().includes(q)
         );
     }, [coupons, searchQuery]);
 
@@ -69,7 +68,9 @@ export default function AdminCoupons() {
             code: coupon.code || '',
             value: coupon.value?.toString() || '',
             type: coupon.discount_type || 'percentage',
-            min_order: coupon.min_order_value?.toString() || ''
+            min_order: coupon.min_order_value?.toString() || '',
+            description: coupon.description || '',
+            expires_at: coupon.expires_at ? coupon.expires_at.slice(0, 10) : ''
         });
         setEditingId(coupon.id);
         setIsModalOpen(true);
@@ -81,34 +82,30 @@ export default function AdminCoupons() {
 
         try {
             const payload = {
-                code: form.code.toUpperCase(),
+                code: form.code.toUpperCase().trim(),
                 discount_type: form.type,
                 value: parseFloat(form.value),
                 min_order_value: parseFloat(form.min_order) || 0,
-                is_active: true
+                description: form.description.trim() || null,
+                expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null
             };
 
-            let result;
-            if (editingId) {
-                result = await supabase
-                    .from('coupons')
-                    .update(payload)
-                    .eq('id', editingId);
-            } else {
-                result = await supabase
-                    .from('coupons')
-                    .insert([payload]);
-            }
-
-            const { error } = result;
+            const { data: saved, error } = editingId
+                ? await supabase.from('coupons').update(payload).eq('id', editingId).select().single()
+                : await supabase.from('coupons').insert([{ ...payload, is_active: true }]).select().single();
 
             if (error) throw error;
+
+            setCoupons(prev =>
+                editingId
+                    ? prev.map(c => c.id === editingId ? saved : c)
+                    : [saved, ...prev]
+            );
 
             showToast(`Coupon ${editingId ? 'updated' : 'created'} successfully!`, 'success');
             setIsModalOpen(false);
             setForm(INITIAL_FORM);
             setEditingId(null);
-            fetchCoupons();
         } catch (err) {
             showToast(err.message || 'Operation failed', 'error');
         } finally {
@@ -117,22 +114,34 @@ export default function AdminCoupons() {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Delete this coupon?")) return;
+        if (!window.confirm('Delete this coupon?')) return;
 
         try {
-            const { error } = await supabase
-                .from('coupons')
-                .delete()
-                .eq('id', id);
-
+            const { error } = await supabase.from('coupons').delete().eq('id', id);
             if (error) throw error;
-
-            showToast("Coupon deleted successfully", 'success');
-            fetchCoupons();
+            setCoupons(prev => prev.filter(c => c.id !== id));
+            showToast('Coupon deleted successfully', 'success');
         } catch (err) {
-            showToast("Error deleting coupon: " + err.message, 'error');
+            showToast('Error deleting coupon: ' + err.message, 'error');
         }
     };
+
+    const toggleActive = async (coupon) => {
+        const { error } = await supabase
+            .from('coupons')
+            .update({ is_active: !coupon.is_active })
+            .eq('id', coupon.id);
+
+        if (error) {
+            showToast('Failed to update coupon status', 'error');
+        } else {
+            setCoupons(prev => prev.map(c => c.id === coupon.id ? { ...c, is_active: !c.is_active } : c));
+        }
+    };
+
+    const isExpired = (coupon) => coupon.expires_at && new Date(coupon.expires_at) < new Date();
+
+    const setField = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
 
     if (loading) return <div className="loading-state">Loading coupons...</div>;
 
@@ -154,12 +163,16 @@ export default function AdminCoupons() {
                     <div className="metric-label">Total Coupons</div>
                     <div className="metric-value">{metrics.total}</div>
                 </div>
-                <div className="metric-card active">
-                    <div className="metric-label">Active Coupons</div>
+                <div className="metric-card active-card">
+                    <div className="metric-label">Active</div>
                     <div className="metric-value">{metrics.active}</div>
                 </div>
                 <div className="metric-card">
-                    <div className="metric-label">Percentage Discounts</div>
+                    <div className="metric-label">Expired</div>
+                    <div className="metric-value expired-val">{metrics.expired}</div>
+                </div>
+                <div className="metric-card">
+                    <div className="metric-label">% Discounts</div>
                     <div className="metric-value">{metrics.percentage}</div>
                 </div>
                 <div className="metric-card">
@@ -172,45 +185,71 @@ export default function AdminCoupons() {
                 <input
                     type="text"
                     className="search-input"
-                    placeholder="Search by coupon code..."
+                    placeholder="Search by code or description..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                 />
-                <span className="result-count">{filteredCoupons.length} coupons</span>
+                <span className="result-count">{filteredCoupons.length} coupon{filteredCoupons.length !== 1 ? 's' : ''}</span>
             </div>
 
             <div className="coupons-grid">
-                {filteredCoupons.map(coupon => (
-                    <div key={coupon.id} className={`coupon-card ${coupon.is_active ? 'active' : 'inactive'}`}>
-                        <div className="coupon-header">
-                            <div className="coupon-code">{coupon.code}</div>
-                            {coupon.is_active && <div className="active-indicator">Active</div>}
-                        </div>
+                {filteredCoupons.map(coupon => {
+                    const expired = isExpired(coupon);
+                    return (
+                        <div key={coupon.id} className={`coupon-card ${coupon.is_active && !expired ? 'active' : 'inactive'}`}>
+                            <div className="coupon-header">
+                                <div className="coupon-code">{coupon.code}</div>
+                                <div className="coupon-status-badges">
+                                    {expired ? (
+                                        <span className="badge expired">Expired</span>
+                                    ) : coupon.is_active ? (
+                                        <span className="badge active">Active</span>
+                                    ) : (
+                                        <span className="badge inactive">Inactive</span>
+                                    )}
+                                </div>
+                            </div>
 
-                        <div className="coupon-details">
-                            <div className="discount-value">
-                                {coupon.discount_type === 'percentage'
-                                    ? `${coupon.value}% OFF`
-                                    : `₹${coupon.value} OFF`}
-                            </div>
-                            <div className="discount-type">
-                                {coupon.discount_type === 'percentage' ? 'Percentage Discount' : 'Fixed Amount'}
-                            </div>
-                            <div className="min-order">
-                                Min Order: ₹{coupon.min_order_value || 0}
-                            </div>
-                        </div>
+                            {coupon.description && (
+                                <p className="coupon-description">{coupon.description}</p>
+                            )}
 
-                        <div className="coupon-actions">
-                            <button className="action-edit" onClick={() => handleEdit(coupon)}>
-                                Edit
-                            </button>
-                            <button className="action-delete" onClick={() => handleDelete(coupon.id)}>
-                                Delete
-                            </button>
+                            <div className="coupon-details">
+                                <div className="discount-value">
+                                    {coupon.discount_type === 'percentage'
+                                        ? `${coupon.value}% OFF`
+                                        : `₹${coupon.value} OFF`}
+                                </div>
+                                <div className="discount-meta">
+                                    {coupon.discount_type === 'percentage' ? 'Percentage Discount' : 'Fixed Amount'}
+                                </div>
+                                <div className="coupon-info-row">
+                                    <span className="info-chip">Min ₹{coupon.min_order_value || 0}</span>
+                                </div>
+                                {coupon.expires_at && (
+                                    <div className={`expiry-row ${expired ? 'expired-text' : ''}`}>
+                                        Expires: {new Date(coupon.expires_at).toLocaleDateString('en-IN', {
+                                            day: 'numeric', month: 'short', year: 'numeric'
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="coupon-actions">
+                                <button
+                                    className={`action-toggle ${coupon.is_active ? 'deactivate' : 'activate'}`}
+                                    onClick={() => toggleActive(coupon)}
+                                    disabled={expired}
+                                    title={expired ? 'Coupon is expired' : coupon.is_active ? 'Deactivate' : 'Activate'}
+                                >
+                                    {coupon.is_active ? 'Deactivate' : 'Activate'}
+                                </button>
+                                <button className="action-edit" onClick={() => handleEdit(coupon)}>Edit</button>
+                                <button className="action-delete" onClick={() => handleDelete(coupon.id)}>Delete</button>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
 
                 {filteredCoupons.length === 0 && (
                     <div className="empty-state">
@@ -223,7 +262,7 @@ export default function AdminCoupons() {
             </div>
 
             {isModalOpen && (
-                <div className="modal-overlay" onClick={(e) => e.target.className === 'modal-overlay' && setIsModalOpen(false)}>
+                <div className="modal-overlay" onClick={e => e.target.className === 'modal-overlay' && setIsModalOpen(false)}>
                     <div className="modal-container">
                         <div className="modal-header">
                             <h2 className="modal-title">{editingId ? 'Edit Coupon' : 'Create Coupon'}</h2>
@@ -237,19 +276,26 @@ export default function AdminCoupons() {
                                     <input
                                         type="text"
                                         value={form.code}
-                                        onChange={e => setForm({ ...form, code: e.target.value })}
+                                        onChange={e => setField('code', e.target.value)}
                                         placeholder="e.g. SAVE20"
                                         required
                                         style={{ textTransform: 'uppercase' }}
                                     />
                                 </div>
 
+                                <div className="form-field full">
+                                    <label>Description (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={form.description}
+                                        onChange={e => setField('description', e.target.value)}
+                                        placeholder="e.g. 20% off on orders above ₹200"
+                                    />
+                                </div>
+
                                 <div className="form-field">
                                     <label>Discount Type</label>
-                                    <select
-                                        value={form.type}
-                                        onChange={e => setForm({ ...form, type: e.target.value })}
-                                    >
+                                    <select value={form.type} onChange={e => setField('type', e.target.value)}>
                                         <option value="percentage">Percentage (%)</option>
                                         <option value="fixed">Fixed Amount (₹)</option>
                                     </select>
@@ -261,30 +307,38 @@ export default function AdminCoupons() {
                                         type="number"
                                         step="0.01"
                                         value={form.value}
-                                        onChange={e => setForm({ ...form, value: e.target.value })}
+                                        onChange={e => setField('value', e.target.value)}
                                         placeholder={form.type === 'percentage' ? '20' : '100'}
                                         required
                                         min="0"
                                     />
                                 </div>
 
-                                <div className="form-field full">
-                                    <label>Minimum Order Value (₹)</label>
+                                <div className="form-field">
+                                    <label>Min Order Value (₹)</label>
                                     <input
                                         type="number"
                                         step="0.01"
                                         value={form.min_order}
-                                        onChange={e => setForm({ ...form, min_order: e.target.value })}
+                                        onChange={e => setField('min_order', e.target.value)}
                                         placeholder="0"
                                         min="0"
+                                    />
+                                </div>
+
+                                <div className="form-field">
+                                    <label>Expiry Date (Optional)</label>
+                                    <input
+                                        type="date"
+                                        value={form.expires_at}
+                                        onChange={e => setField('expires_at', e.target.value)}
+                                        min={new Date().toISOString().slice(0, 10)}
                                     />
                                 </div>
                             </div>
 
                             <div className="modal-footer">
-                                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>
-                                    Cancel
-                                </button>
+                                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
                                 <button type="submit" className="btn-save" disabled={submitting}>
                                     {submitting ? 'Saving...' : (editingId ? 'Update Coupon' : 'Create Coupon')}
                                 </button>
@@ -315,11 +369,7 @@ export default function AdminCoupons() {
                     letter-spacing: -0.025em;
                 }
 
-                .page-subtitle {
-                    color: #64748b;
-                    font-size: 0.95rem;
-                    margin: 0;
-                }
+                .page-subtitle { color: #64748b; font-size: 0.95rem; margin: 0; }
 
                 .btn-add-coupon {
                     background: #0f172a;
@@ -339,17 +389,14 @@ export default function AdminCoupons() {
                 .btn-add-coupon:hover {
                     background: #1e293b;
                     transform: translateY(-1px);
-                    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+                    box-shadow: 0 4px 12px rgba(15,23,42,0.2);
                 }
 
-                .btn-icon {
-                    font-size: 1.25rem;
-                    font-weight: 700;
-                }
+                .btn-icon { font-size: 1.25rem; font-weight: 700; }
 
                 .metrics-row {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
                     gap: 16px;
                     margin-bottom: 32px;
                 }
@@ -364,18 +411,16 @@ export default function AdminCoupons() {
 
                 .metric-card:hover {
                     border-color: #cbd5e1;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
                 }
 
-                .metric-card.active {
+                .metric-card.active-card {
                     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
                     border: none;
                 }
 
-                .metric-card.active .metric-label,
-                .metric-card.active .metric-value {
-                    color: white;
-                }
+                .metric-card.active-card .metric-label,
+                .metric-card.active-card .metric-value { color: white; }
 
                 .metric-label {
                     font-size: 0.75rem;
@@ -386,11 +431,8 @@ export default function AdminCoupons() {
                     margin-bottom: 8px;
                 }
 
-                .metric-value {
-                    font-size: 2rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                }
+                .metric-value { font-size: 2rem; font-weight: 700; color: #0f172a; }
+                .expired-val { color: #dc2626; }
 
                 .search-bar {
                     display: flex;
@@ -411,19 +453,15 @@ export default function AdminCoupons() {
                 .search-input:focus {
                     outline: none;
                     border-color: #0f172a;
-                    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+                    box-shadow: 0 0 0 3px rgba(15,23,42,0.1);
                 }
 
-                .result-count {
-                    font-size: 0.9rem;
-                    color: #64748b;
-                    white-space: nowrap;
-                }
+                .result-count { font-size: 0.9rem; color: #64748b; white-space: nowrap; }
 
                 .coupons-grid {
                     display: grid;
-                    grid-template-columns: repeat(4, 1fr);
-                    gap: 40px 30px;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 24px;
                 }
 
                 .coupon-card {
@@ -438,110 +476,120 @@ export default function AdminCoupons() {
 
                 .coupon-card:hover {
                     border-color: #cbd5e1;
-                    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 8px 16px -4px rgba(0,0,0,0.1);
                     transform: translateY(-2px);
                 }
 
-                .coupon-card.active {
-                    border-left: 4px solid #16a34a;
-                }
-
-                .coupon-card.inactive {
-                    opacity: 0.6;
-                }
+                .coupon-card.active { border-left: 4px solid #16a34a; }
+                .coupon-card.inactive { opacity: 0.65; }
 
                 .coupon-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: flex-start;
-                    margin-bottom: 16px;
+                    margin-bottom: 12px;
+                    gap: 8px;
                 }
 
                 .coupon-code {
                     background: #dbeafe;
                     color: #1e40af;
-                    padding: 8px 16px;
+                    padding: 8px 14px;
                     border-radius: 6px;
                     font-weight: 700;
                     font-family: 'Monaco', 'Courier New', monospace;
-                    font-size: 1rem;
+                    font-size: 0.95rem;
                     letter-spacing: 0.5px;
                     border: 1px dashed #93c5fd;
                 }
 
-                .active-indicator {
-                    background: #dcfce7;
-                    color: #166534;
+                .coupon-status-badges { display: flex; gap: 6px; align-items: center; }
+
+                .badge {
                     padding: 4px 10px;
                     border-radius: 12px;
                     font-size: 0.7rem;
                     font-weight: 700;
                     text-transform: uppercase;
+                    letter-spacing: 0.4px;
                 }
 
-                .coupon-details {
-                    flex: 1;
-                    margin-bottom: 16px;
+                .badge.active { background: #dcfce7; color: #166534; }
+                .badge.inactive { background: #f1f5f9; color: #64748b; }
+                .badge.expired { background: #fee2e2; color: #991b1b; }
+
+                .coupon-description {
+                    font-size: 0.85rem;
+                    color: #64748b;
+                    margin: 0 0 14px;
+                    line-height: 1.4;
                 }
+
+                .coupon-details { flex: 1; margin-bottom: 16px; }
 
                 .discount-value {
                     font-size: 1.5rem;
                     font-weight: 700;
                     color: #0f172a;
-                    margin-bottom: 8px;
+                    margin-bottom: 4px;
                 }
 
-                .discount-type {
-                    font-size: 0.85rem;
-                    color: #64748b;
-                    margin-bottom: 12px;
+                .discount-meta { font-size: 0.8rem; color: #64748b; margin-bottom: 12px; }
+
+                .coupon-info-row {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 6px;
+                    margin-bottom: 10px;
                 }
 
-                .min-order {
-                    font-size: 0.9rem;
-                    color: #475569;
-                    padding: 8px 12px;
+                .info-chip {
+                    padding: 4px 10px;
                     background: #f8fafc;
+                    border: 1px solid #e2e8f0;
                     border-radius: 6px;
+                    font-size: 0.8rem;
+                    color: #475569;
+                    font-weight: 500;
                 }
+
+                .expiry-row {
+                    font-size: 0.8rem;
+                    color: #64748b;
+                }
+
+                .expiry-row.expired-text { color: #dc2626; font-weight: 600; }
 
                 .coupon-actions {
                     display: flex;
-                    gap: 8px;
+                    gap: 6px;
                     margin-top: auto;
                     padding-top: 16px;
                     border-top: 1px solid #f1f5f9;
                 }
 
-                .action-edit,
-                .action-delete {
+                .action-toggle, .action-edit, .action-delete {
                     flex: 1;
-                    padding: 8px 16px;
+                    padding: 7px 10px;
                     border-radius: 6px;
-                    font-size: 0.85rem;
+                    font-size: 0.8rem;
                     font-weight: 600;
                     cursor: pointer;
                     border: none;
                     transition: all 0.2s;
+                    white-space: nowrap;
                 }
 
-                .action-edit {
-                    background: #f8fafc;
-                    color: #334155;
-                }
+                .action-toggle.activate { background: #dcfce7; color: #166534; }
+                .action-toggle.activate:hover { background: #bbf7d0; }
+                .action-toggle.deactivate { background: #fef3c7; color: #92400e; }
+                .action-toggle.deactivate:hover { background: #fde68a; }
+                .action-toggle:disabled { opacity: 0.4; cursor: not-allowed; }
 
-                .action-edit:hover {
-                    background: #e2e8f0;
-                }
-
-                .action-delete {
-                    background: #fef2f2;
-                    color: #dc2626;
-                }
-
-                .action-delete:hover {
-                    background: #fee2e2;
-                }
+                .action-edit { background: #f8fafc; color: #334155; }
+                .action-edit:hover { background: #e2e8f0; }
+                .action-delete { background: #fef2f2; color: #dc2626; }
+                .action-delete:hover { background: #fee2e2; }
 
                 .empty-state {
                     grid-column: 1 / -1;
@@ -552,22 +600,13 @@ export default function AdminCoupons() {
                     border-radius: 12px;
                 }
 
-                .empty-title {
-                    font-size: 1.25rem;
-                    font-weight: 600;
-                    color: #334155;
-                    margin-bottom: 8px;
-                }
-
-                .empty-subtitle {
-                    font-size: 0.95rem;
-                    color: #94a3b8;
-                }
+                .empty-title { font-size: 1.25rem; font-weight: 600; color: #334155; margin-bottom: 8px; }
+                .empty-subtitle { font-size: 0.95rem; color: #94a3b8; }
 
                 .modal-overlay {
                     position: fixed;
                     inset: 0;
-                    background: rgba(0, 0, 0, 0.5);
+                    background: rgba(0,0,0,0.5);
                     backdrop-filter: blur(4px);
                     z-index: 1000;
                     display: flex;
@@ -581,7 +620,9 @@ export default function AdminCoupons() {
                     border-radius: 16px;
                     width: 100%;
                     max-width: 500px;
-                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+                    max-height: 90vh;
+                    overflow-y: auto;
                 }
 
                 .modal-header {
@@ -590,14 +631,13 @@ export default function AdminCoupons() {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    position: sticky;
+                    top: 0;
+                    background: white;
+                    z-index: 1;
                 }
 
-                .modal-title {
-                    font-size: 1.5rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                    margin: 0;
-                }
+                .modal-title { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0; }
 
                 .modal-close {
                     background: none;
@@ -616,14 +656,9 @@ export default function AdminCoupons() {
                     transition: all 0.2s;
                 }
 
-                .modal-close:hover {
-                    background: #f1f5f9;
-                    color: #334155;
-                }
+                .modal-close:hover { background: #f1f5f9; color: #334155; }
 
-                .modal-form {
-                    padding: 24px;
-                }
+                .modal-form { padding: 24px; }
 
                 .form-grid {
                     display: grid;
@@ -632,15 +667,8 @@ export default function AdminCoupons() {
                     margin-bottom: 0;
                 }
 
-                .form-field {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 8px;
-                }
-
-                .form-field.full {
-                    grid-column: 1 / -1;
-                }
+                .form-field { display: flex; flex-direction: column; gap: 8px; }
+                .form-field.full { grid-column: 1 / -1; }
 
                 .form-field label {
                     font-size: 0.875rem;
@@ -662,7 +690,7 @@ export default function AdminCoupons() {
                 .form-field select:focus {
                     outline: none;
                     border-color: #0f172a;
-                    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+                    box-shadow: 0 0 0 3px rgba(15,23,42,0.1);
                 }
 
                 .modal-footer {
@@ -673,8 +701,7 @@ export default function AdminCoupons() {
                     justify-content: flex-end;
                 }
 
-                .btn-cancel,
-                .btn-save {
+                .btn-cancel, .btn-save {
                     padding: 10px 24px;
                     border-radius: 8px;
                     font-size: 0.95rem;
@@ -684,30 +711,17 @@ export default function AdminCoupons() {
                     transition: all 0.2s;
                 }
 
-                .btn-cancel {
-                    background: #f1f5f9;
-                    color: #475569;
-                }
-
-                .btn-cancel:hover {
-                    background: #e2e8f0;
-                }
-
-                .btn-save {
-                    background: #0f172a;
-                    color: white;
-                }
+                .btn-cancel { background: #f1f5f9; color: #475569; }
+                .btn-cancel:hover { background: #e2e8f0; }
+                .btn-save { background: #0f172a; color: white; }
 
                 .btn-save:hover:not(:disabled) {
                     background: #1e293b;
                     transform: translateY(-1px);
-                    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+                    box-shadow: 0 4px 12px rgba(15,23,42,0.2);
                 }
 
-                .btn-save:disabled {
-                    opacity: 0.5;
-                    cursor: not-allowed;
-                }
+                .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
 
                 .loading-state {
                     display: flex;
@@ -718,39 +732,18 @@ export default function AdminCoupons() {
                     font-size: 1.1rem;
                 }
 
+                @media (max-width: 900px) {
+                    .coupons-grid { grid-template-columns: repeat(2, 1fr); }
+                }
+
                 @media (max-width: 768px) {
-                    .coupons-header {
-                        flex-direction: column;
-                        align-items: stretch;
-                        gap: 16px;
-                    }
-
-                    .btn-add-coupon {
-                        width: 100%;
-                        justify-content: center;
-                    }
-
-                    .metrics-row {
-                        grid-template-columns: repeat(2, 1fr);
-                    }
-
-                    .coupons-grid {
-                        grid-template-columns: repeat(2, 1fr) !important;
-                        gap: 20px 10px;
-                    }
-
-                    .form-grid {
-                        grid-template-columns: 1fr;
-                    }
-
-                    .modal-footer {
-                        flex-direction: column-reverse;
-                    }
-
-                    .btn-cancel,
-                    .btn-save {
-                        width: 100%;
-                    }
+                    .coupons-header { flex-direction: column; align-items: stretch; gap: 16px; }
+                    .btn-add-coupon { width: 100%; justify-content: center; }
+                    .metrics-row { grid-template-columns: repeat(2, 1fr); }
+                    .coupons-grid { grid-template-columns: 1fr !important; }
+                    .form-grid { grid-template-columns: 1fr; }
+                    .modal-footer { flex-direction: column-reverse; }
+                    .btn-cancel, .btn-save { width: 100%; }
                 }
             `}</style>
         </div>

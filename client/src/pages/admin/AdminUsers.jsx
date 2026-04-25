@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { showToast } from '../../utils/toast';
+import { API_BASE_URL } from '../../config/constants';
 
 export default function AdminUsers() {
     const [users, setUsers] = useState([]);
@@ -85,7 +86,7 @@ export default function AdminUsers() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("No active session");
 
-            const res = await fetch(`/api/admin/users/${editingUser.id}`, {
+            const res = await fetch(`${API_BASE_URL}/api/admin/users/${editingUser.id}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -100,10 +101,10 @@ export default function AdminUsers() {
 
             const data = await res.json();
             if (data.success) {
+                setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...formData } : u));
                 showToast("User updated successfully!", 'success');
                 setIsModalOpen(false);
                 setEditingUser(null);
-                fetchUsers();
             } else {
                 throw new Error(data.error);
             }
@@ -119,15 +120,15 @@ export default function AdminUsers() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("No active session");
 
-            const res = await fetch(`/api/admin/users/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/api/admin/users/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${session.access_token}` }
             });
 
             const data = await res.json();
             if (data.success) {
+                setUsers(prev => prev.filter(u => u.id !== id));
                 showToast("User deleted successfully", 'success');
-                fetchUsers();
             } else {
                 throw new Error(data.error);
             }

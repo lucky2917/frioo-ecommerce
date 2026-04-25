@@ -64,3 +64,6 @@ tmp/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Claude Code
+claude.md

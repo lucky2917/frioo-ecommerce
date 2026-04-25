@@ -83,7 +83,7 @@ router.patch('/orders/:orderId',
 
 );
 
-router.get('/users', async (req, res) => {
+router.get('/users', async (_req, res) => {
     try {
         const { data, error } = await supabaseAdmin
             .from('profiles')
@@ -132,12 +132,12 @@ router.post('/products',
         if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
         try {
-            const { title, description, price_cents, category, images, nutrition, featured, unit } = req.body;
+            const { title, description, price_cents, category, images, nutrition, featured, unit, stock, discount, perfect_for, video_url } = req.body;
             const slug = generateSlug(title);
 
             const { data, error } = await supabaseAdmin
                 .from('products')
-                .insert([{ title, slug, description, price_cents, category, images, nutrition, featured, unit }])
+                .insert([{ title, slug, description, price_cents, category, images, nutrition, featured, unit, stock: stock ?? 0, discount: discount ?? 0, perfect_for: perfect_for || '', video_url: video_url || '' }])
                 .select()
                 .single();
 
@@ -161,7 +161,7 @@ router.patch('/products/:id',
 
         try {
             const { id } = req.params;
-            const allowedFields = ['title', 'description', 'price_cents', 'category', 'images', 'nutrition', 'featured', 'unit'];
+            const allowedFields = ['title', 'description', 'price_cents', 'category', 'images', 'nutrition', 'featured', 'unit', 'stock', 'discount', 'perfect_for', 'video_url'];
             const updates = {};
 
             for (const field of allowedFields) {

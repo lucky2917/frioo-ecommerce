@@ -29,10 +29,8 @@ router.post('/',
                 total_amount,
                 order_type,
                 delivery_address,
-                phone_number,
                 distance_km,
                 coupon_code,
-                discount_amount,
                 notes
             } = req.body;
 
@@ -127,9 +125,6 @@ router.post('/',
                     serverCalculatedDiscount = coupon.value;
                 }
 
-                if (coupon.max_discount_value && serverCalculatedDiscount > coupon.max_discount_value) {
-                    serverCalculatedDiscount = coupon.max_discount_value;
-                }
             }
 
             const serverCalculatedTotal = serverCalculatedSubtotal - serverCalculatedDiscount;
@@ -162,6 +157,7 @@ router.post('/',
                     distance: distance_km || 0,
                     coupon_code: coupon_code || null,
                     discount: serverCalculatedDiscount,
+                    notes: notes || null,
                     status: 'pending',
                     created_at: new Date().toISOString()
                 }])

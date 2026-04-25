@@ -19,6 +19,7 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const AdminRoute = lazy(() => import('./components/admin/AdminRoute'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
 const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
@@ -82,7 +83,8 @@ const AppInner = () => {
                 <AdminLayout />
               </AdminRoute>
             }>
-              <Route index element={<Navigate to="orders" replace />} />
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="orders" element={<AdminOrders />} />
               <Route path="products" element={<AdminProducts />} />
               <Route path="users" element={<AdminUsers />} />

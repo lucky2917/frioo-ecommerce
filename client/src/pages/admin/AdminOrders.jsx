@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { logger } from '../../utils/logger';
 import { showToast } from '../../utils/toast';
+
+const STATUS_ORDER = ['pending', 'confirmed', 'preparing', 'ready', 'out-for-delivery', 'delivered', 'cancelled'];
 
 export default function AdminOrders() {
     const [orders, setOrders] = useState([]);
@@ -14,13 +16,9 @@ export default function AdminOrders() {
 
     const toggleOrder = (orderId) => {
         setExpandedOrders(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(orderId)) {
-                newSet.delete(orderId);
-            } else {
-                newSet.add(orderId);
-            }
-            return newSet;
+            const next = new Set(prev);
+            next.has(orderId) ? next.delete(orderId) : next.add(orderId);
+            return next;
         });
     };
 
@@ -34,8 +32,8 @@ export default function AdminOrders() {
             if (error) throw error;
             setOrders(data || []);
         } catch (err) {
-            logger.error("Error fetching orders:", err.message);
-            showToast("Failed to fetch orders", 'error');
+            logger.error('Error fetching orders:', err.message);
+            showToast('Failed to fetch orders', 'error');
         } finally {
             setLoading(false);
         }
@@ -45,16 +43,14 @@ export default function AdminOrders() {
         fetchOrders();
         const channel = supabase
             .channel('admin-orders')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
-                fetchOrders();
-            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchOrders)
             .subscribe();
 
         return () => supabase.removeChannel(channel);
     }, [fetchOrders]);
 
     const updateStatus = async (id, newStatus) => {
-        const previousOrders = [...orders];
+        const previous = [...orders];
         setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
 
         const { error } = await supabase
@@ -63,45 +59,70 @@ export default function AdminOrders() {
             .eq('id', id);
 
         if (error) {
-            setOrders(previousOrders);
-            showToast("Failed to update status", 'error');
+            setOrders(previous);
+            showToast('Failed to update status', 'error');
         } else {
             showToast(`Order updated to ${newStatus}`, 'success');
         }
     };
 
-    const getFilteredByCategory = () => {
+    const metrics = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return {
+            total: orders.length,
+            active: orders.filter(o => !['delivered', 'cancelled'].includes(o.status)).length,
+            completed: orders.filter(o => ['delivered', 'cancelled'].includes(o.status)).length,
+            pending: orders.filter(o => o.status === 'pending').length,
+            outForDelivery: orders.filter(o => o.status === 'out-for-delivery').length,
+            todayRevenue: orders
+                .filter(o => o.status !== 'cancelled' && new Date(o.created_at) >= today)
+                .reduce((sum, o) => sum + (o.total_amount || 0), 0),
+            totalRevenue: orders
+                .filter(o => o.status !== 'cancelled')
+                .reduce((sum, o) => sum + (o.total_amount || 0), 0)
+        };
+    }, [orders]);
+
+    const filteredOrders = useMemo(() => {
+        let base = orders;
+
         if (categoryFilter === 'active') {
-            return orders.filter(o => !['delivered', 'cancelled'].includes(o.status));
+            base = orders.filter(o => !['delivered', 'cancelled'].includes(o.status));
         } else if (categoryFilter === 'completed') {
-            return orders.filter(o => ['delivered', 'cancelled'].includes(o.status));
+            base = orders.filter(o => ['delivered', 'cancelled'].includes(o.status));
         }
-        return orders;
+
+        return base.filter(order => {
+            const q = searchTerm.toLowerCase();
+            const matchesSearch = !searchTerm ||
+                order.id?.toString().toLowerCase().includes(q) ||
+                order.profiles?.full_name?.toLowerCase().includes(q) ||
+                order.profiles?.phone_number?.includes(searchTerm) ||
+                order.address?.toLowerCase().includes(q);
+
+            const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+            const matchesType = orderTypeFilter === 'all' || order.order_type === orderTypeFilter;
+
+            return matchesSearch && matchesStatus && matchesType;
+        });
+    }, [orders, categoryFilter, searchTerm, statusFilter, orderTypeFilter]);
+
+    const parseItems = (raw) => {
+        if (Array.isArray(raw)) return raw;
+        if (typeof raw === 'string') {
+            try { return JSON.parse(raw); } catch { return []; }
+        }
+        return [];
     };
 
-    const filteredOrders = getFilteredByCategory().filter(order => {
-        const matchesSearch = searchTerm === '' ||
-            order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.profiles?.phone_number?.includes(searchTerm);
-
-        const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-        const matchesType = orderTypeFilter === 'all' || order.order_type === orderTypeFilter;
-
-        return matchesSearch && matchesStatus && matchesType;
-    });
-
-    const activeOrders = orders.filter(o => !['delivered', 'cancelled'].includes(o.status));
-    const completedOrders = orders.filter(o => ['delivered', 'cancelled'].includes(o.status));
-
-    const metrics = {
-        total: orders.length,
-        active: activeOrders.length,
-        completed: completedOrders.length,
-        pending: orders.filter(o => o.status === 'pending').length,
-        confirmed: orders.filter(o => o.status === 'confirmed').length,
-        preparing: orders.filter(o => o.status === 'preparing').length,
-        revenue: orders.reduce((sum, o) => sum + (o.total_amount || 0), 0)
+    const openDirections = (order) => {
+        if (!order.address) {
+            showToast('No delivery address available', 'error');
+            return;
+        }
+        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`, '_blank');
     };
 
     if (loading) return <div className="loading-state">Loading orders...</div>;
@@ -117,27 +138,20 @@ export default function AdminOrders() {
                 </div>
 
                 <div className="category-tabs">
-                    <button
-                        className={`category-tab ${categoryFilter === 'active' ? 'active' : ''}`}
-                        onClick={() => setCategoryFilter('active')}
-                    >
-                        Active Orders
-                        <span className="tab-count">{metrics.active}</span>
-                    </button>
-                    <button
-                        className={`category-tab ${categoryFilter === 'completed' ? 'active' : ''}`}
-                        onClick={() => setCategoryFilter('completed')}
-                    >
-                        Completed
-                        <span className="tab-count">{metrics.completed}</span>
-                    </button>
-                    <button
-                        className={`category-tab ${categoryFilter === 'all' ? 'active' : ''}`}
-                        onClick={() => setCategoryFilter('all')}
-                    >
-                        All Orders
-                        <span className="tab-count">{metrics.total}</span>
-                    </button>
+                    {[
+                        { key: 'active', label: 'Active Orders', count: metrics.active },
+                        { key: 'completed', label: 'Completed', count: metrics.completed },
+                        { key: 'all', label: 'All Orders', count: metrics.total }
+                    ].map(({ key, label, count }) => (
+                        <button
+                            key={key}
+                            className={`category-tab ${categoryFilter === key ? 'active' : ''}`}
+                            onClick={() => setCategoryFilter(key)}
+                        >
+                            {label}
+                            <span className="tab-count">{count}</span>
+                        </button>
+                    ))}
                 </div>
 
                 <div className="metrics-grid">
@@ -150,38 +164,34 @@ export default function AdminOrders() {
                         <div className="metric-value pending">{metrics.pending}</div>
                     </div>
                     <div className="metric-card">
-                        <div className="metric-label">Confirmed</div>
-                        <div className="metric-value confirmed">{metrics.confirmed}</div>
+                        <div className="metric-label">Out for Delivery</div>
+                        <div className="metric-value out-delivery">{metrics.outForDelivery}</div>
                     </div>
                     <div className="metric-card">
-                        <div className="metric-label">Preparing</div>
-                        <div className="metric-value preparing">{metrics.preparing}</div>
+                        <div className="metric-label">Today's Revenue</div>
+                        <div className="metric-value">₹{metrics.todayRevenue.toFixed(0)}</div>
                     </div>
                     <div className="metric-card revenue">
                         <div className="metric-label">Total Revenue</div>
-                        <div className="metric-value">₹{metrics.revenue.toFixed(0)}</div>
+                        <div className="metric-value">₹{metrics.totalRevenue.toFixed(0)}</div>
                     </div>
                 </div>
 
                 <div className="filters-bar">
                     <input
                         type="text"
-                        placeholder="Search by order ID, customer name, or phone..."
+                        placeholder="Search by order ID, name, phone, or address..."
                         className="search-input"
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={e => setSearchTerm(e.target.value)}
                     />
-                    <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                    <select className="filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
                         <option value="all">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="confirmed">Confirmed</option>
-                        <option value="preparing">Preparing</option>
-                        <option value="ready">Ready</option>
-                        <option value="out-for-delivery">Out for Delivery</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
+                        {STATUS_ORDER.map(s => (
+                            <option key={s} value={s}>{s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</option>
+                        ))}
                     </select>
-                    <select className="filter-select" value={orderTypeFilter} onChange={(e) => setOrderTypeFilter(e.target.value)}>
+                    <select className="filter-select" value={orderTypeFilter} onChange={e => setOrderTypeFilter(e.target.value)}>
                         <option value="all">All Types</option>
                         <option value="delivery">Delivery</option>
                         <option value="takeaway">Pickup</option>
@@ -192,6 +202,9 @@ export default function AdminOrders() {
             <div className="orders-grid">
                 {filteredOrders.map(order => {
                     const isExpanded = expandedOrders.has(order.id);
+                    const items = parseItems(order.items);
+                    const totalItems = items.reduce((s, i) => s + (i.qty || 1), 0);
+                    const subtotal = (order.total_amount || 0) + (order.discount || 0);
 
                     return (
                         <div key={order.id} className={`order-card status-${order.status}`}>
@@ -202,6 +215,9 @@ export default function AdminOrders() {
                                         <span className={`status-badge-small ${order.status}`}>
                                             {order.status.replace(/-/g, ' ')}
                                         </span>
+                                        <span className={`type-badge ${order.order_type}`}>
+                                            {order.order_type === 'delivery' ? '🛵 Delivery' : '🏪 Pickup'}
+                                        </span>
                                     </div>
                                     <div className="customer-row">
                                         <div className="customer-avatar-small">
@@ -209,21 +225,18 @@ export default function AdminOrders() {
                                         </div>
                                         <div className="customer-info-compact">
                                             <div className="customer-name-small">{order.profiles?.full_name || 'Guest'}</div>
-                                            <div className="order-time-small">{new Date(order.created_at).toLocaleString('en-IN', {
-                                                month: 'short',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}</div>
+                                            <div className="order-meta-row">
+                                                <span className="order-time-small">{new Date(order.created_at).toLocaleString('en-IN', {
+                                                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                                })}</span>
+                                                <span className="items-pill">{totalItems} item{totalItems !== 1 ? 's' : ''}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="compact-right">
                                     <div className="total-amount-compact">₹{order.total_amount}</div>
-                                    <button
-                                        className="expand-btn"
-                                        onClick={() => toggleOrder(order.id)}
-                                    >
+                                    <button className="expand-btn" onClick={() => toggleOrder(order.id)}>
                                         {isExpanded ? '▲ Collapse' : '▼ Expand'}
                                     </button>
                                 </div>
@@ -232,68 +245,109 @@ export default function AdminOrders() {
                             {isExpanded && (
                                 <div className="order-details">
                                     <div className="details-section">
-                                        <div className="section-title">Order Details</div>
-                                        <div className="detail-row">
-                                            <span className="detail-label">Type:</span>
-                                            <span className="detail-value">{order.order_type || 'delivery'}</span>
-                                        </div>
+                                        <div className="section-title">Customer & Order Info</div>
                                         <div className="detail-row">
                                             <span className="detail-label">Phone:</span>
                                             <a href={`tel:${order.profiles?.phone_number}`} className="detail-link">
                                                 {order.profiles?.phone_number || 'No phone'}
                                             </a>
                                         </div>
+                                        <div className="detail-row">
+                                            <span className="detail-label">Email:</span>
+                                            <span className="detail-value">{order.profiles?.email || '—'}</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="detail-label">Type:</span>
+                                            <span className="detail-value" style={{ textTransform: 'capitalize' }}>{order.order_type || 'delivery'}</span>
+                                        </div>
+                                        {order.order_type === 'delivery' && order.address && (
+                                            <div className="detail-row">
+                                                <span className="detail-label">Address:</span>
+                                                <span className="detail-value address-value">{order.address}</span>
+                                            </div>
+                                        )}
+                                        {order.order_type === 'delivery' && order.distance > 0 && (
+                                            <div className="detail-row">
+                                                <span className="detail-label">Distance:</span>
+                                                <span className="detail-value">{Number(order.distance).toFixed(1)} km</span>
+                                            </div>
+                                        )}
                                     </div>
+
+                                    {order.order_type === 'delivery' && order.address && (
+                                        <div className="details-section directions-section">
+                                            <button className="directions-btn" onClick={() => openDirections(order)}>
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <polygon points="3 11 22 2 13 21 11 13 3 11" />
+                                                </svg>
+                                                Get Directions
+                                            </button>
+                                        </div>
+                                    )}
 
                                     <div className="details-section">
                                         <div className="section-title">Order Items</div>
-                                        {(() => {
-                                            let items = order.items;
-                                            if (typeof items === 'string') {
-                                                try { items = JSON.parse(items); } catch (e) { items = []; }
-                                            }
-                                            if (!Array.isArray(items)) items = [];
-
-                                            return items.map((item, idx) => (
-                                                <div key={idx} className="item-row">
-                                                    <div className="item-main">
-                                                        <span className="item-qty">{item.qty}×</span>
-                                                        <div className="item-info">
-                                                            <div className="item-title-row">
-                                                                <span className="item-title">{item.title}</span>
-                                                                {item.isVirtual && <span className="ai-label">AI</span>}
-                                                            </div>
-                                                            <span className="item-variant">{item.variant}</span>
+                                        {items.map((item, idx) => (
+                                            <div key={idx} className="item-row">
+                                                <div className="item-main">
+                                                    <span className="item-qty">{item.qty}×</span>
+                                                    <div className="item-info">
+                                                        <div className="item-title-row">
+                                                            <span className="item-title">{item.title}</span>
+                                                            {item.isVirtual && <span className="ai-label">AI</span>}
                                                         </div>
-                                                        <span className="item-price">₹{(item.price * item.qty).toFixed(0)}</span>
+                                                        <span className="item-variant">{item.variant}</span>
                                                     </div>
-
-                                                    {item.preferences && (
-                                                        <div className="item-customizations">
-                                                            {item.preferences.exclusions?.length > 0 && (
-                                                                <div className="custom-row allergies">
-                                                                    <span className="custom-label">Allergies:</span>
-                                                                    <span className="custom-value">No {item.preferences.exclusions.join(', ')}</span>
-                                                                </div>
-                                                            )}
-                                                            {item.preferences.removedIngredients?.length > 0 && (
-                                                                <div className="custom-row removed">
-                                                                    <span className="custom-label">Removed:</span>
-                                                                    <span className="custom-value">{item.preferences.removedIngredients.join(', ')}</span>
-                                                                </div>
-                                                            )}
-                                                            {item.preferences.note && (
-                                                                <div className="custom-row note">
-                                                                    <span className="custom-label">Note:</span>
-                                                                    <span className="custom-value">{item.preferences.note}</span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
+                                                    <span className="item-price">₹{((item.price || 0) * (item.qty || 1)).toFixed(0)}</span>
                                                 </div>
-                                            ));
-                                        })()}
+
+                                                {item.preferences && (item.preferences.exclusions?.length > 0 || item.preferences.removedIngredients?.length > 0 || item.preferences.note) && (
+                                                    <div className="item-customizations">
+                                                        {item.preferences.exclusions?.length > 0 && (
+                                                            <div className="custom-row allergies">
+                                                                <span className="custom-label">Allergies:</span>
+                                                                <span className="custom-value">No {item.preferences.exclusions.join(', ')}</span>
+                                                            </div>
+                                                        )}
+                                                        {item.preferences.removedIngredients?.length > 0 && (
+                                                            <div className="custom-row removed">
+                                                                <span className="custom-label">Removed:</span>
+                                                                <span className="custom-value">{item.preferences.removedIngredients.join(', ')}</span>
+                                                            </div>
+                                                        )}
+                                                        {item.preferences.note && (
+                                                            <div className="custom-row note">
+                                                                <span className="custom-label">Note:</span>
+                                                                <span className="custom-value">{item.preferences.note}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
+
+                                    {order.discount > 0 && (
+                                        <div className="details-section">
+                                            <div className="section-title">Price Breakdown</div>
+                                            <div className="price-breakdown">
+                                                <div className="price-line">
+                                                    <span>Subtotal</span>
+                                                    <span>₹{subtotal.toFixed(0)}</span>
+                                                </div>
+                                                <div className="price-line discount">
+                                                    <span>
+                                                        Discount {order.coupon_code && <span className="coupon-chip">{order.coupon_code}</span>}
+                                                    </span>
+                                                    <span>−₹{Number(order.discount).toFixed(0)}</span>
+                                                </div>
+                                                <div className="price-line total">
+                                                    <span>Total</span>
+                                                    <span>₹{Number(order.total_amount).toFixed(0)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {order.notes && (
                                         <div className="details-section">
@@ -304,47 +358,18 @@ export default function AdminOrders() {
                                         </div>
                                     )}
 
-                                    {order.order_type === 'delivery' && order.distance && (
-                                        <div className="details-section">
-                                            <div className="delivery-section">
-                                                <span className="delivery-distance">Distance: {order.distance.toFixed(1)} km</span>
-                                                <button
-                                                    className="directions-btn"
-                                                    onClick={() => {
-                                                        const phone = order.profiles?.phone_number || '';
-                                                        const name = order.profiles?.full_name || 'Customer';
-                                                        let mapsUrl;
-                                                        if (order.customer_lat && order.customer_lng) {
-                                                            mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${order.customer_lat},${order.customer_lng}`;
-                                                        } else if (phone) {
-                                                            mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(phone + ' ' + name)}`;
-                                                        } else {
-                                                            showToast('No location data available', 'error');
-                                                            return;
-                                                        }
-                                                        window.open(mapsUrl, '_blank');
-                                                    }}
-                                                >
-                                                    Get Directions
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-
                                     <div className="details-section">
                                         <div className="section-title">Update Status</div>
                                         <select
                                             className="status-select"
                                             value={order.status}
-                                            onChange={(e) => updateStatus(order.id, e.target.value)}
+                                            onChange={e => updateStatus(order.id, e.target.value)}
                                         >
-                                            <option value="pending">Pending</option>
-                                            <option value="confirmed">Confirmed</option>
-                                            <option value="preparing">Preparing</option>
-                                            <option value="ready">Ready</option>
-                                            <option value="out-for-delivery">Out for Delivery</option>
-                                            <option value="delivered">Delivered</option>
-                                            <option value="cancelled">Cancelled</option>
+                                            {STATUS_ORDER.map(s => (
+                                                <option key={s} value={s}>
+                                                    {s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>
@@ -376,34 +401,25 @@ export default function AdminOrders() {
                     font-size: 1.1rem;
                 }
 
-                .orders-header {
-                    margin-bottom: 32px;
-                }
+                .orders-header { margin-bottom: 32px; }
 
-                .header-top {
-                    margin-bottom: 24px;
-                }
+                .header-top { margin-bottom: 24px; }
 
                 .page-title {
                     font-size: 1.875rem;
                     font-weight: 700;
                     color: #0f172a;
-                    margin: 0 0 4px 0;
+                    margin: 0 0 4px;
                     letter-spacing: -0.025em;
                 }
 
-                .page-subtitle {
-                    color: #64748b;
-                    font-size: 0.95rem;
-                    margin: 0;
-                }
+                .page-subtitle { color: #64748b; font-size: 0.95rem; margin: 0; }
 
                 .category-tabs {
                     display: flex;
                     gap: 8px;
                     margin-bottom: 24px;
                     border-bottom: 2px solid #e2e8f0;
-                    padding-bottom: 0;
                 }
 
                 .category-tab {
@@ -422,14 +438,8 @@ export default function AdminOrders() {
                     gap: 8px;
                 }
 
-                .category-tab:hover {
-                    color: #3b82f6;
-                }
-
-                .category-tab.active {
-                    color: #3b82f6;
-                    border-bottom-color: #3b82f6;
-                }
+                .category-tab:hover { color: #3b82f6; }
+                .category-tab.active { color: #3b82f6; border-bottom-color: #3b82f6; }
 
                 .tab-count {
                     background: #e2e8f0;
@@ -440,14 +450,11 @@ export default function AdminOrders() {
                     font-weight: 700;
                 }
 
-                .category-tab.active .tab-count {
-                    background: #dbeafe;
-                    color: #1e40af;
-                }
+                .category-tab.active .tab-count { background: #dbeafe; color: #1e40af; }
 
                 .metrics-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
                     gap: 16px;
                     margin-bottom: 24px;
                 }
@@ -462,7 +469,7 @@ export default function AdminOrders() {
 
                 .metric-card:hover {
                     border-color: #cbd5e1;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
                 }
 
                 .metric-card.revenue {
@@ -471,9 +478,7 @@ export default function AdminOrders() {
                 }
 
                 .metric-card.revenue .metric-label,
-                .metric-card.revenue .metric-value {
-                    color: white;
-                }
+                .metric-card.revenue .metric-value { color: white; }
 
                 .metric-label {
                     font-size: 0.75rem;
@@ -491,8 +496,7 @@ export default function AdminOrders() {
                 }
 
                 .metric-value.pending { color: #ea580c; }
-                .metric-value.confirmed { color: #2563eb; }
-                .metric-value.preparing { color: #ca8a04; }
+                .metric-value.out-delivery { color: #9333ea; }
 
                 .filters-bar {
                     display: flex;
@@ -511,24 +515,15 @@ export default function AdminOrders() {
                     background: white;
                 }
 
-                .search-input {
-                    flex: 1;
-                    min-width: 280px;
-                }
+                .search-input { flex: 1; min-width: 280px; }
 
                 .search-input:focus {
                     border-color: #2563eb;
-                    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+                    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
                 }
 
-                .filter-select {
-                    min-width: 150px;
-                    cursor: pointer;
-                }
-
-                .filter-select:hover {
-                    border-color: #94a3b8;
-                }
+                .filter-select { min-width: 150px; cursor: pointer; }
+                .filter-select:hover { border-color: #94a3b8; }
 
                 .orders-grid {
                     display: grid;
@@ -547,8 +542,7 @@ export default function AdminOrders() {
                 }
 
                 .order-card:hover {
-                    border-left-color: #3b82f6;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
                     transform: translateY(-2px);
                 }
 
@@ -567,16 +561,14 @@ export default function AdminOrders() {
                     gap: 16px;
                 }
 
-                .compact-left {
-                    flex: 1;
-                    min-width: 0;
-                }
+                .compact-left { flex: 1; min-width: 0; }
 
                 .order-id-row {
                     display: flex;
                     align-items: center;
-                    gap: 10px;
+                    gap: 8px;
                     margin-bottom: 10px;
+                    flex-wrap: wrap;
                 }
 
                 .order-id {
@@ -604,6 +596,18 @@ export default function AdminOrders() {
                 .status-badge-small.delivered { background: #ecfccb; color: #3f6212; }
                 .status-badge-small.cancelled { background: #fee2e2; color: #991b1b; }
 
+                .type-badge {
+                    padding: 3px 8px;
+                    border-radius: 4px;
+                    font-size: 0.65rem;
+                    font-weight: 600;
+                    background: #f1f5f9;
+                    color: #475569;
+                }
+
+                .type-badge.delivery { background: #eff6ff; color: #1d4ed8; }
+                .type-badge.takeaway { background: #f0fdf4; color: #15803d; }
+
                 .customer-row {
                     display: flex;
                     align-items: center;
@@ -624,24 +628,33 @@ export default function AdminOrders() {
                     flex-shrink: 0;
                 }
 
-                .customer-info-compact {
-                    flex: 1;
-                    min-width: 0;
-                }
+                .customer-info-compact { flex: 1; min-width: 0; }
 
                 .customer-name-small {
                     font-weight: 600;
                     color: #0f172a;
                     font-size: 0.9rem;
-                    margin-bottom: 2px;
+                    margin-bottom: 3px;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
                 }
 
-                .order-time-small {
-                    font-size: 0.75rem;
-                    color: #94a3b8;
+                .order-meta-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                .order-time-small { font-size: 0.75rem; color: #94a3b8; }
+
+                .items-pill {
+                    font-size: 0.7rem;
+                    padding: 2px 7px;
+                    background: #f1f5f9;
+                    color: #64748b;
+                    border-radius: 10px;
+                    font-weight: 600;
                 }
 
                 .compact-right {
@@ -670,10 +683,7 @@ export default function AdminOrders() {
                     white-space: nowrap;
                 }
 
-                .expand-btn:hover {
-                    background: #e2e8f0;
-                    color: #334155;
-                }
+                .expand-btn:hover { background: #e2e8f0; color: #334155; }
 
                 .order-details {
                     margin-top: 16px;
@@ -681,7 +691,7 @@ export default function AdminOrders() {
                     border-top: 1px solid #e2e8f0;
                     display: flex;
                     flex-direction: column;
-                    gap: 16px;
+                    gap: 12px;
                 }
 
                 .details-section {
@@ -690,358 +700,183 @@ export default function AdminOrders() {
                     border-radius: 8px;
                 }
 
+                .directions-section {
+                    background: #eff6ff;
+                    padding: 12px 14px;
+                    border: 1px solid #bfdbfe;
+                }
+
                 .section-title {
-                    font-size: 0.75rem;
+                    font-size: 0.7rem;
                     font-weight: 700;
                     text-transform: uppercase;
-                    letter-spacing: 0.05em;
+                    letter-spacing: 0.06em;
                     color: #64748b;
-                    margin-bottom: 12px;
+                    margin-bottom: 10px;
                 }
 
                 .detail-row {
                     display: flex;
                     gap: 8px;
                     font-size: 0.85rem;
-                    margin-bottom: 8px;
+                    margin-bottom: 7px;
+                    align-items: flex-start;
                 }
 
-                .detail-row:last-child {
-                    margin-bottom: 0;
-                }
+                .detail-row:last-child { margin-bottom: 0; }
 
                 .detail-label {
                     font-weight: 700;
                     color: #475569;
-                    min-width: 60px;
-                }
-
-                .detail-value {
-                    color: #1e293b;
-                }
-
-                .detail-link {
-                    color: #3b82f6;
-                    text-decoration: none;
-                }
-
-                .detail-link:hover {
-                    text-decoration: underline;
-                }
-
-                .card-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    margin-bottom: 16px;
-                    padding-bottom: 16px;
-                    border-bottom: 1px solid #f1f5f9;
-                }
-
-                .order-meta {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 4px;
-                }
-
-                .order-id {
-                    font-family: 'Monaco', 'Courier New', monospace;
-                    font-size: 0.875rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                    letter-spacing: 0.5px;
-                }
-
-                .order-time {
-                    font-size: 0.75rem;
-                    color: #94a3b8;
-                }
-
-                .header-badges {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 6px;
-                    align-items: flex-end;
-                }
-
-                .status-badge {
-                    padding: 4px 10px;
-                    border-radius: 6px;
-                    font-size: 0.7rem;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-
-                .status-badge.pending { background: #ffedd5; color: #9a3412; }
-                .status-badge.confirmed { background: #dbeafe; color: #1e40af; }
-                .status-badge.preparing { background: #fef3c7; color: #92400e; }
-                .status-badge.ready { background: #dcfce7; color: #166534; }
-                .status-badge.out-for-delivery { background: #f3e8ff; color: #6b21a8; }
-                .status-badge.delivered { background: #ecfccb; color: #3f6212; }
-                .status-badge.cancelled { background: #fee2e2; color: #991b1b; }
-
-                .type-badge {
-                    padding: 3px 8px;
-                    background: #f1f5f9;
-                    color: #475569;
-                    border-radius: 4px;
-                    font-size: 0.7rem;
-                    font-weight: 600;
-                    text-transform: capitalize;
-                }
-
-                .customer-section {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    margin-bottom: 16px;
-                }
-
-                .customer-avatar {
-                    width: 44px;
-                    height: 44px;
-                    background: linear-gradient(135deg, #3b82f6, #2563eb);
-                    color: white;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 700;
-                    font-size: 1.1rem;
+                    min-width: 65px;
                     flex-shrink: 0;
                 }
 
-                .customer-details {
-                    flex: 1;
-                }
+                .detail-value { color: #1e293b; }
+                .address-value { line-height: 1.4; }
 
-                .customer-name {
-                    font-weight: 600;
-                    color: #0f172a;
-                    font-size: 0.95rem;
-                    margin-bottom: 2px;
-                }
+                .detail-link { color: #3b82f6; text-decoration: none; }
+                .detail-link:hover { text-decoration: underline; }
 
-                .customer-phone {
+                .directions-btn {
+                    background: #3b82f6;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 6px;
                     font-size: 0.85rem;
-                    color: #3b82f6;
-                    text-decoration: none;
-                    display: inline-block;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
                 }
 
-                .customer-phone:hover {
-                    text-decoration: underline;
-                }
-
-                .items-section {
-                    margin-bottom: 16px;
-                }
-
-                .section-label {
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.05em;
-                    color: #64748b;
-                    margin-bottom: 12px;
+                .directions-btn:hover {
+                    background: #2563eb;
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 8px rgba(59,130,246,0.25);
                 }
 
                 .item-row {
-                    background: #f8fafc;
-                    padding: 12px;
+                    background: white;
+                    padding: 10px 12px;
                     border-radius: 8px;
+                    border: 1px solid #e2e8f0;
                     margin-bottom: 8px;
                 }
 
-                .item-row:last-child {
-                    margin-bottom: 0;
-                }
+                .item-row:last-child { margin-bottom: 0; }
 
                 .item-main {
                     display: flex;
                     align-items: flex-start;
                     gap: 10px;
-                    margin-bottom: 8px;
                 }
 
-                .item-qty {
-                    font-weight: 700;
-                    color: #0f172a;
-                    flex-shrink: 0;
-                    min-width: 28px;
-                }
-
-                .item-info {
-                    flex: 1;
-                }
+                .item-qty { font-weight: 700; color: #0f172a; flex-shrink: 0; min-width: 26px; }
+                .item-info { flex: 1; }
 
                 .item-title-row {
                     display: flex;
                     align-items: center;
                     gap: 8px;
                     flex-wrap: wrap;
-                    margin-bottom: 4px;
+                    margin-bottom: 3px;
                 }
 
-                .item-title {
-                    font-weight: 600;
-                    color: #1e293b;
-                    font-size: 0.9rem;
-                }
+                .item-title { font-weight: 600; color: #1e293b; font-size: 0.9rem; }
 
                 .ai-label {
                     padding: 2px 6px;
                     background: linear-gradient(135deg, #06b6d4, #3b82f6);
                     color: white;
                     border-radius: 4px;
-                    font-size: 0.65rem;
+                    font-size: 0.6rem;
                     font-weight: 700;
                     text-transform: uppercase;
-                    letter-spacing: 0.5px;
                 }
 
-                .item-variant {
-                    font-size: 0.8rem;
-                    color: #64748b;
-                }
+                .item-variant { font-size: 0.8rem; color: #64748b; }
 
                 .item-price {
                     font-weight: 700;
                     color: #0f172a;
-                    font-size: 0.95rem;
+                    font-size: 0.9rem;
                     margin-left: auto;
                     flex-shrink: 0;
                 }
 
                 .item-customizations {
-                    background: white;
-                    padding: 10px;
+                    margin-top: 8px;
+                    padding: 8px 10px;
+                    background: #f8fafc;
                     border-radius: 6px;
                     border: 1px solid #e5e7eb;
                     display: flex;
                     flex-direction: column;
-                    gap: 8px;
+                    gap: 6px;
                 }
 
-                .custom-row {
-                    display: flex;
-                    gap: 8px;
-                    font-size: 0.8rem;
-                }
-
-                .custom-label {
-                    font-weight: 700;
-                    color: #475569;
-                    min-width: 80px;
-                }
-
-                .custom-value {
-                    color: #1e293b;
-                }
-
-                .custom-row.allergies .custom-label { color: #dc2626; }
+                .custom-row { display: flex; gap: 8px; font-size: 0.8rem; }
+                .custom-label { font-weight: 700; color: #475569; min-width: 75px; }
+                .custom-value { color: #1e293b; }
+                .custom-row.allergies .custom-label,
                 .custom-row.allergies .custom-value { color: #dc2626; }
-
-                .custom-row.removed .custom-label { color: #ea580c; }
+                .custom-row.removed .custom-label,
                 .custom-row.removed .custom-value { color: #ea580c; }
-
-                .custom-row.note {
-                    background: #f0f9ff;
-                    padding: 8px;
-                    border-radius: 4px;
-                    border-left: 3px solid #0ea5e9;
-                }
-
+                .custom-row.note { background: #f0f9ff; padding: 6px 8px; border-radius: 4px; border-left: 3px solid #0ea5e9; }
                 .custom-row.note .custom-label { color: #0369a1; }
                 .custom-row.note .custom-value { color: #0c4a6e; }
+
+                .price-breakdown { display: flex; flex-direction: column; gap: 8px; }
+
+                .price-line {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 0.875rem;
+                    color: #475569;
+                }
+
+                .price-line.discount { color: #16a34a; }
+
+                .price-line.total {
+                    font-weight: 700;
+                    color: #0f172a;
+                    font-size: 1rem;
+                    padding-top: 8px;
+                    border-top: 1px solid #e2e8f0;
+                }
+
+                .coupon-chip {
+                    display: inline-block;
+                    background: #dcfce7;
+                    color: #166534;
+                    padding: 2px 7px;
+                    border-radius: 4px;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    font-family: 'Monaco', monospace;
+                    margin-left: 6px;
+                }
 
                 .order-notes-section {
                     background: #fffbeb;
                     padding: 12px;
                     border-radius: 6px;
-                    border: 1px solid #fde047;
                     border-left: 3px solid #eab308;
-                    margin-bottom: 12px;
                     display: flex;
                     gap: 8px;
                     font-size: 0.85rem;
                 }
 
-                .notes-label {
-                    font-weight: 700;
-                    color: #92400e;
-                }
-
-                .notes-text {
-                    color: #713f12;
-                }
-
-                .delivery-section {
-                background: #eff6ff;
-                    padding: 12px;
-                    border-radius: 6px;
-                    border: 1px solid #bfdbfe;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    gap: 12px;
-                    margin-bottom: 12px;
-                }
-
-                .delivery-distance {
-                    font-size: 0.85rem;
-                    color: #1e40af;
-                    font-weight: 600;
-                }
-
-                .directions-btn {
-                    background: #3b82f6;
-                    color: white;
-                    border: none;
-                    padding: 6px 14px;
-                    border-radius: 6px;
-                    font-size: 0.8rem;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    white-space: nowrap;
-                }
-
-                .directions-btn:hover {
-                    background: #2563eb;
-                    transform: translateY(-1px);
-                    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.25);
-                }
-
-                .card-footer {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    gap: 12px;
-                    padding-top: 16px;
-                    border-top: 1px solid #f1f5f9;
-                }
-
-                .order-total {
-                    display: flex;
-                    align-items: baseline;
-                    gap: 6px;
-                }
-
-                .total-label {
-                    font-size: 0.85rem;
-                    font-weight: 600;
-                    color: #64748b;
-                }
-
-                .total-amount {
-                    font-size: 1.25rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                }
+                .notes-label { font-weight: 700; color: #92400e; }
+                .notes-text { color: #713f12; }
 
                 .status-select {
+                    width: 100%;
                     padding: 8px 12px;
                     border: 1px solid #cbd5e1;
                     border-radius: 6px;
@@ -1054,14 +889,8 @@ export default function AdminOrders() {
                     transition: all 0.2s;
                 }
 
-                .status-select:hover {
-                    border-color: #94a3b8;
-                }
-
-                .status-select:focus {
-                    border-color: #3b82f6;
-                    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-                }
+                .status-select:hover { border-color: #94a3b8; }
+                .status-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
 
                 .empty-state {
                     grid-column: 1 / -1;
@@ -1072,79 +901,20 @@ export default function AdminOrders() {
                     border: 1px solid #e2e8f0;
                 }
 
-                .empty-title {
-                    font-size: 1.25rem;
-                    font-weight: 600;
-                    color: #334155;
-                    margin-bottom: 8px;
-                }
-
-                .empty-subtitle {
-                    font-size: 0.95rem;
-                    color: #94a3b8;
-                }
+                .empty-title { font-size: 1.25rem; font-weight: 600; color: #334155; margin-bottom: 8px; }
+                .empty-subtitle { font-size: 0.95rem; color: #94a3b8; }
 
                 @media (max-width: 768px) {
-                    .orders-grid {
-                        grid-template-columns: 1fr;
-                    }
-
-                    .metrics-grid {
-                        grid-template-columns: repeat(2, 1fr);
-                    }
-
-                    .category-tabs {
-                        overflow-x: auto;
-                        -webkit-overflow-scrolling: touch;
-                    }
-
-                    .category-tab {
-                        white-space: nowrap;
-                    }
-
-                    .filters-bar {
-                        flex-direction: column;
-                    }
-
-                    .search-input,
-                    .filter-select {
-                        width: 100%;
-                    }
-
-                    .card-header-compact {
-                        flex-direction: column;
-                        align-items: stretch;
-                    }
-
-                    .compact-right {
-                        flex-direction: row;
-                        justify-content: space-between;
-                        align-items: center;
-                    }
-
-                    .expand-btn {
-                        flex-shrink: 0;
-                    }
-
-                    .card-footer {
-                        flex-direction: column;
-                        align-items: stretch;
-                    }
-
-                    .status-select {
-                        width: 100%;
-                    }
-
-                    .delivery-section {
-                        flex-direction: column;
-                        align-items: stretch;
-                    }
-
-                    .directions-btn {
-                        width: 100%;
-                    }
+                    .orders-grid { grid-template-columns: 1fr; }
+                    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+                    .category-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+                    .category-tab { white-space: nowrap; }
+                    .filters-bar { flex-direction: column; }
+                    .search-input, .filter-select { width: 100%; }
+                    .card-header-compact { flex-direction: column; align-items: stretch; }
+                    .compact-right { flex-direction: row; justify-content: space-between; align-items: center; }
                 }
             `}</style>
-        </div >
+        </div>
     );
 }
