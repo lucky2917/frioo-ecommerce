@@ -12,11 +12,11 @@ export const DELIVERY_STATUS_DURATION_MS = 30 * 60 * 1000;
 export const DEFAULT_ORDER_TYPE = 'delivery';
 export const DEFAULT_PRODUCT_UNIT = 'kg';
 
-if (!import.meta.env.VITE_API_URL) {
-    throw new Error('VITE_API_URL is not set. Check your .env file.');
+if (!import.meta.env.VITE_API_URL && import.meta.env.PROD) {
+    throw new Error('VITE_API_URL is not set. Check your Vercel environment variables.');
 }
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL;
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 export const ENDPOINTS = {
     PRODUCTS: '/api/products',
