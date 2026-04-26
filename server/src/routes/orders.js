@@ -6,6 +6,7 @@ const { supabaseAdmin } = require('../db');
 const { requireAuth } = require('../middleware/auth');
 const { orderValidators } = require('../utils/validators');
 const { sendError, sendValidationError, sendSuccess } = require('../utils/responses');
+const logger = require('../utils/logger');
 
 const strictLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -52,7 +53,8 @@ router.post('/',
                 .in('id', productIds);
 
             if (productsError) {
-                return sendError(res, `Failed to verify product prices: ${productsError.message || 'Unknown error'}`, 500);
+                logger.error('Failed to verify product prices:', productsError);
+                return sendError(res, 'Failed to verify product prices', 500);
             }
 
             let serverCalculatedSubtotal = 0;
@@ -147,20 +149,36 @@ router.post('/',
             await Promise.all(items.map(async ({ id, qty }) => {
                 const product = products.find(p => p.id === id);
                 if (product?.stock === null) return;
-                const newStock = Math.max(0, product.stock - qty);
-                await supabaseAdmin.from('products').update({ stock: newStock }).eq('id', id);
+                await supabaseAdmin
+                    .from('products')
+                    .update({ stock: product.stock - qty })
+                    .eq('id', id)
+                    .gte('stock', qty);
             }));
 
             if (appliedCoupon) {
-                await supabaseAdmin
-                    .from('coupons')
-                    .update({ used_count: (appliedCoupon.used_count || 0) + 1 })
-                    .eq('id', appliedCoupon.id);
+                if (appliedCoupon.usage_limit === null || appliedCoupon.usage_limit === undefined) {
+                    await supabaseAdmin
+                        .from('coupons')
+                        .update({ used_count: (appliedCoupon.used_count || 0) + 1 })
+                        .eq('id', appliedCoupon.id);
+                } else {
+                    const { data: updated } = await supabaseAdmin
+                        .from('coupons')
+                        .update({ used_count: (appliedCoupon.used_count || 0) + 1 })
+                        .eq('id', appliedCoupon.id)
+                        .eq('used_count', appliedCoupon.used_count || 0)
+                        .select('id');
+
+                    if (!updated || updated.length === 0) {
+                        logger.warn(`Coupon ${appliedCoupon.id} usage count changed during order placement for order ${data.id}`);
+                    }
+                }
             }
 
             return sendSuccess(res, { order: data, message: 'Order placed successfully' }, 201);
         } catch (err) {
-            console.error('Order placement error:', err);
+            logger.error('Order placement error:', err);
             return sendError(res, 'Failed to place order. Please try again.', 500);
         }
     }

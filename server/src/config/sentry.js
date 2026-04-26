@@ -11,36 +11,26 @@ function initSentry(app) {
 
     Sentry.init({
         dsn: process.env.SENTRY_DSN,
-
         environment: process.env.NODE_ENV || 'development',
-
         release: process.env.npm_package_version || '1.0.0',
-
         tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-
         profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-
         integrations: [
             new Sentry.Integrations.Http({ tracing: true }),
-
             new Sentry.Integrations.Express({ app }),
-
             new ProfilingIntegration(),
         ],
-
         ignoreErrors: [
             'ECONNRESET',
             'EPIPE',
             'ENOENT',
             'NetworkError',
         ],
-
-        beforeSend(event, hint) {
+        beforeSend(event) {
             if (event.request && event.request.headers) {
                 delete event.request.headers['authorization'];
                 delete event.request.headers['cookie'];
             }
-
             if (event.request && event.request.data) {
                 const sensitiveFields = ['password', 'token', 'secret', 'creditCard'];
                 sensitiveFields.forEach(field => {
@@ -49,7 +39,6 @@ function initSentry(app) {
                     }
                 });
             }
-
             return event;
         },
     });
@@ -60,7 +49,7 @@ function initSentry(app) {
     }
 }
 
-const noopMiddleware = (req, res, next) => next();
+const noopMiddleware = (_req, _res, next) => next();
 
 const requestHandler = () => {
     if (!sentryInitialized) return noopMiddleware;
@@ -94,37 +83,11 @@ const captureError = (error, context = {}) => {
     });
 };
 
-const captureMessage = (message, level = 'info', context = {}) => {
-    if (!sentryInitialized) return;
-    Sentry.captureMessage(message, {
-        level,
-        tags: context.tags,
-        extra: context.extra,
-    });
-};
-
-const setUser = (user) => {
-    if (!sentryInitialized) return;
-    Sentry.setUser({
-        id: user.id,
-        email: user.email,
-        username: user.username,
-    });
-};
-
-const clearUser = () => {
-    if (!sentryInitialized) return;
-    Sentry.setUser(null);
-};
-
 module.exports = {
     initSentry,
     requestHandler,
     tracingHandler,
     errorHandler,
     captureError,
-    captureMessage,
-    setUser,
-    clearUser,
     Sentry,
 };

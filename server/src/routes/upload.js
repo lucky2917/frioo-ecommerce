@@ -3,6 +3,27 @@ const router = express.Router();
 const multer = require('multer');
 const { supabaseAdmin } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
+const logger = require('../utils/logger');
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+
+function matchesMagicBytes(buffer, mimetype) {
+    if (!buffer || buffer.length < 12) return false;
+    if (mimetype === 'image/jpeg') {
+        return buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF;
+    }
+    if (mimetype === 'image/png') {
+        return buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
+    }
+    if (mimetype === 'image/webp') {
+        return (
+            buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
+            buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50
+        );
+    }
+    return false;
+}
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -15,9 +36,6 @@ router.post('/', requireAdmin, upload.single('file'), async (req, res) => {
         if (!file) {
             return res.status(400).json({ success: false, error: 'No file uploaded' });
         }
-
-        const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-        const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 
         if (!ALLOWED_TYPES.includes(file.mimetype)) {
             return res.status(400).json({
@@ -34,9 +52,16 @@ router.post('/', requireAdmin, upload.single('file'), async (req, res) => {
             });
         }
 
+        if (!matchesMagicBytes(file.buffer, file.mimetype)) {
+            return res.status(400).json({
+                success: false,
+                error: 'File content does not match the declared type.'
+            });
+        }
+
         const fileName = `${Date.now()}_${Math.round(Math.random() * 1E9)}.${fileExt}`;
 
-        const { data, error: uploadError } = await supabaseAdmin.storage
+        const { error: uploadError } = await supabaseAdmin.storage
             .from('frioo-assets')
             .upload(fileName, file.buffer, {
                 contentType: file.mimetype,
@@ -44,7 +69,7 @@ router.post('/', requireAdmin, upload.single('file'), async (req, res) => {
             });
 
         if (uploadError) {
-            console.error('Supabase Upload Error:', uploadError);
+            logger.error('Supabase Upload Error:', uploadError);
             return res.status(500).json({ success: false, error: 'Storage upload failed' });
         }
 
@@ -52,14 +77,11 @@ router.post('/', requireAdmin, upload.single('file'), async (req, res) => {
             .from('frioo-assets')
             .getPublicUrl(fileName);
 
-        res.json({
-            success: true,
-            url: urlData.publicUrl
-        });
+        return res.json({ success: true, url: urlData.publicUrl });
 
     } catch (err) {
-        console.error('Server Upload Error:', err);
-        res.status(500).json({ success: false, error: 'Server error during upload' });
+        logger.error('Server Upload Error:', err);
+        return res.status(500).json({ success: false, error: 'Server error during upload' });
     }
 });
 

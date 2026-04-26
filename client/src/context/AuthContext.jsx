@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext } from 'react';
 import { logger } from '../utils/logger';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }) => {
       if (session?.user) {
         setUser(session.user);
         if (!profile || profile.id !== session.user.id) {
-          fetchProfile(session.user.id).catch(console.error);
+          fetchProfile(session.user.id).catch(e => logger.error('Background profile fetch failed:', e));
         }
       } else if (!loading) {
         setUser(null);

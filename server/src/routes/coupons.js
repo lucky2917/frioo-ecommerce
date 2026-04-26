@@ -1,14 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { body, validationResult } = require('express-validator');
+const { body, query, validationResult } = require('express-validator');
 const { supabaseAdmin } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 const { sendSuccess, sendError, sendValidationError, sendNotFound } = require('../utils/responses');
+const logger = require('../utils/logger');
 
-router.post('/validate',
+router.get('/validate',
     [
-        body('code').isString().trim().isLength({ min: 3, max: 20 }),
-        body('cartTotal').isFloat({ min: 0 })
+        query('code').isString().trim().isLength({ min: 3, max: 20 }),
+        query('cartTotal').isFloat({ min: 0 })
     ],
     async (req, res) => {
         const errors = validationResult(req);
@@ -17,7 +18,7 @@ router.post('/validate',
         }
 
         try {
-            const { code, cartTotal } = req.body;
+            const { code, cartTotal } = req.query;
             const { data, error } = await supabaseAdmin
                 .from('coupons')
                 .select('*')
@@ -38,21 +39,22 @@ router.post('/validate',
                 return sendError(res, 'This coupon has reached its usage limit', 400);
             }
 
-            if (cartTotal < data.min_order_value) {
+            const total = parseFloat(cartTotal);
+            if (total < data.min_order_value) {
                 return sendError(
                     res,
-                    `Add items worth ₹${data.min_order_value - cartTotal} more to apply this coupon!`,
+                    `Add items worth ₹${data.min_order_value - total} more to apply this coupon!`,
                     400,
                     {
                         minOrderValue: data.min_order_value,
-                        required: data.min_order_value - cartTotal
+                        required: data.min_order_value - total
                     }
                 );
             }
 
             return sendSuccess(res, { valid: true, coupon: data });
         } catch (err) {
-            console.error('Coupon validation error:', err);
+            logger.error('Coupon validation error:', err);
             return sendError(res, 'Failed to validate coupon', 500);
         }
     }
@@ -60,7 +62,7 @@ router.post('/validate',
 
 router.use(requireAdmin);
 
-router.get('/', async (req, res) => {
+router.get('/', async (_req, res) => {
     try {
         const { data, error } = await supabaseAdmin
             .from('coupons')
@@ -70,7 +72,7 @@ router.get('/', async (req, res) => {
         if (error) throw error;
         return sendSuccess(res, { coupons: data });
     } catch (err) {
-        console.error('Error fetching coupons:', err);
+        logger.error('Error fetching coupons:', err);
         return sendError(res, 'Failed to fetch coupons', 500);
     }
 });
@@ -109,7 +111,7 @@ router.post('/',
             if (error) throw error;
             return sendSuccess(res, { coupon: data }, 201);
         } catch (err) {
-            console.error('Error creating coupon:', err);
+            logger.error('Error creating coupon:', err);
             if (err.code === '23505') {
                 return sendError(res, 'Coupon code already exists', 409);
             }
@@ -133,7 +135,7 @@ router.patch('/:id/toggle', async (req, res) => {
         if (error) throw error;
         return sendSuccess(res, { coupon: data });
     } catch (err) {
-        console.error('Error updating coupon:', err);
+        logger.error('Error updating coupon:', err);
         return sendError(res, 'Failed to update coupon', 500);
     }
 });
@@ -149,7 +151,7 @@ router.delete('/:id', async (req, res) => {
         if (error) throw error;
         return sendSuccess(res, { message: 'Coupon deleted successfully' });
     } catch (err) {
-        console.error('Error deleting coupon:', err);
+        logger.error('Error deleting coupon:', err);
         return sendError(res, 'Failed to delete coupon', 500);
     }
 });

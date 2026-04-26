@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { logger } from '../utils/logger';
+import { API_BASE_URL } from '../config/constants';
 
 const CartContext = createContext();
 
@@ -26,7 +27,7 @@ export const CartProvider = ({ children }) => {
             try {
                 const { data, error } = await supabase
                     .from('coupons')
-                    .select('*')
+                    .select('id, code, discount_type, value, min_order_value, is_active')
                     .eq('is_active', true)
                     .order('min_order_value', { ascending: true });
 
@@ -123,31 +124,19 @@ export const CartProvider = ({ children }) => {
 
     const verifyCoupon = async (code) => {
         try {
-            const { data, error } = await supabase
-                .from('coupons')
-                .select('*')
-                .eq('code', code.toUpperCase())
-                .single();
-
-            if (error || !data) {
-                showToast('❌ Invalid Coupon');
-                return false;
-            }
-
-            if (data.is_active === false) {
-                showToast('❌ Coupon Expired');
-                return false;
-            }
-
             const currentTotal = Object.values(cart).reduce((acc, item) => acc + item.price * item.qty, 0);
+            const url = `${API_BASE_URL}/api/coupons/validate?code=${encodeURIComponent(code.toUpperCase())}&cartTotal=${currentTotal}`;
 
-            if (currentTotal < data.min_order_value) {
-                showToast(`⚠️ Add items worth ₹${data.min_order_value - currentTotal} more`);
+            const res = await fetch(url, { credentials: 'include' });
+            const result = await res.json();
+
+            if (!res.ok) {
+                showToast(`❌ ${result.error?.message || 'Invalid coupon'}`);
                 return false;
             }
 
-            setAppliedCoupon(data);
-            showToast(`✅ ${data.code} Applied!`);
+            setAppliedCoupon(result.data?.coupon);
+            showToast(`✅ ${result.data?.coupon?.code} Applied!`);
             return true;
         } catch (err) {
             logger.error('Coupon verification failed:', err);

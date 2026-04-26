@@ -12,10 +12,13 @@ export const DELIVERY_STATUS_DURATION_MS = 30 * 60 * 1000;
 export const DEFAULT_ORDER_TYPE = 'delivery';
 export const DEFAULT_PRODUCT_UNIT = 'kg';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+if (!import.meta.env.VITE_API_URL) {
+    throw new Error('VITE_API_URL is not set. Check your .env file.');
+}
+
+export const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export const ENDPOINTS = {
     PRODUCTS: '/api/products',
-    ORDERS: '/api/orders',
-    COUPONS: '/api/coupons/validate'
+    ORDERS: '/api/orders'
 };

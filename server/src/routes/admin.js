@@ -5,13 +5,14 @@ const { supabaseAdmin } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 const { phoneValidator } = require('../utils/validators');
 const { sendError, sendValidationError, sendSuccess } = require('../utils/responses');
+const logger = require('../utils/logger');
 
 router.use(requireAdmin);
 
 router.get('/orders', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 50;
+        const limit = Math.min(parseInt(req.query.limit) || 50, 100);
         const offset = (page - 1) * limit;
 
         const { count, error: countError } = await supabaseAdmin
@@ -47,8 +48,8 @@ router.get('/orders', async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('Admin orders fetch error:', err);
-        res.status(500).json({ error: err.message });
+        logger.error('Admin orders fetch error:', err);
+        return sendError(res, 'Failed to fetch orders', 500);
     }
 });
 
@@ -59,7 +60,7 @@ router.patch('/orders/:orderId',
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
+            return sendValidationError(res, errors);
         }
 
         try {
@@ -74,13 +75,12 @@ router.patch('/orders/:orderId',
                 .single();
 
             if (error) throw error;
-            res.json({ success: true, order: data });
+            return sendSuccess(res, { order: data });
         } catch (err) {
-            console.error('Order update error:', err);
-            res.status(500).json({ error: err.message });
+            logger.error('Order update error:', err);
+            return sendError(res, 'Failed to update order', 500);
         }
     }
-
 );
 
 router.get('/users', async (req, res) => {
@@ -115,8 +115,8 @@ router.get('/users', async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('Admin users fetch error:', err);
-        res.status(500).json({ error: err.message });
+        logger.error('Admin users fetch error:', err);
+        return sendError(res, 'Failed to fetch users', 500);
     }
 });
 
@@ -129,10 +129,10 @@ router.delete('/users/:id', async (req, res) => {
         const { error: dbError } = await supabaseAdmin.from('profiles').delete().eq('id', id);
         if (dbError) throw dbError;
 
-        res.json({ success: true, message: 'User deleted successfully' });
+        return sendSuccess(res, { message: 'User deleted successfully' });
     } catch (err) {
-        console.error('Admin delete user error:', err);
-        res.status(500).json({ error: err.message });
+        logger.error('Admin delete user error:', err);
+        return sendError(res, 'Failed to delete user', 500);
     }
 });
 
@@ -151,7 +151,7 @@ router.post('/products',
     ],
     async (req, res) => {
         const errors = validationResult(req);
-        if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+        if (!errors.isEmpty()) return sendValidationError(res, errors);
 
         try {
             const { title, description, price_cents, category, images, nutrition, featured, unit, stock, discount, perfect_for, video_url } = req.body;
@@ -164,10 +164,10 @@ router.post('/products',
                 .single();
 
             if (error) throw error;
-            res.json({ success: true, product: data });
+            return sendSuccess(res, { product: data }, 201);
         } catch (err) {
-            console.error('Admin create product error:', err);
-            res.status(500).json({ error: err.message });
+            logger.error('Admin create product error:', err);
+            return sendError(res, 'Failed to create product', 500);
         }
     }
 );
@@ -179,7 +179,7 @@ router.patch('/products/:id',
     ],
     async (req, res) => {
         const errors = validationResult(req);
-        if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+        if (!errors.isEmpty()) return sendValidationError(res, errors);
 
         try {
             const { id } = req.params;
@@ -204,10 +204,10 @@ router.patch('/products/:id',
                 .single();
 
             if (error) throw error;
-            res.json({ success: true, product: data });
+            return sendSuccess(res, { product: data });
         } catch (err) {
-            console.error('Admin update product error:', err);
-            res.status(500).json({ error: err.message });
+            logger.error('Admin update product error:', err);
+            return sendError(res, 'Failed to update product', 500);
         }
     }
 );
@@ -217,10 +217,10 @@ router.delete('/products/:id', async (req, res) => {
         const { id } = req.params;
         const { error } = await supabaseAdmin.from('products').delete().eq('id', id);
         if (error) throw error;
-        res.json({ success: true, message: 'Product deleted' });
+        return sendSuccess(res, { message: 'Product deleted' });
     } catch (err) {
-        console.error('Admin delete product error:', err);
-        res.status(500).json({ error: err.message });
+        logger.error('Admin delete product error:', err);
+        return sendError(res, 'Failed to delete product', 500);
     }
 });
 
@@ -246,7 +246,7 @@ router.patch('/users/:id',
             if (error) throw error;
             return sendSuccess(res, { user: data });
         } catch (err) {
-            console.error('Admin update user error:', err);
+            logger.error('Admin update user error:', err);
             return sendError(res, 'Failed to update user profile', 500);
         }
     }

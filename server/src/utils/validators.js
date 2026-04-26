@@ -3,6 +3,7 @@ const { body, param } = require('express-validator');
 const phoneValidator = () =>
     body('phone_number')
         .trim()
+        .customSanitizer(value => (typeof value === 'string' ? value.replace(/\s/g, '') : value))
         .matches(/^(\+91|91)?[6-9]\d{9}$/)
         .withMessage('Invalid phone number. Must be a valid Indian mobile number starting with 6-9');
 
@@ -34,11 +35,6 @@ const nameValidator = (fieldName = 'full_name') =>
         .matches(/^[a-zA-Z\s'.,-]+$/)
         .withMessage('Name can only contain letters, spaces, and common punctuation');
 
-const uuidValidator = (fieldName) =>
-    body(fieldName)
-        .isUUID(4)
-        .withMessage(`${fieldName} must be a valid UUID`);
-
 const priceValidator = (fieldName = 'price_cents', min = 0, max = 100000000) =>
     body(fieldName)
         .isInt({ min, max })
@@ -68,11 +64,6 @@ const couponCodeValidator = () =>
         .withMessage('Coupon code must be 3-20 characters')
         .matches(/^[A-Z0-9_-]+$/)
         .withMessage('Coupon code can only contain uppercase letters, numbers, hyphens, and underscores');
-
-const discountTypeValidator = () =>
-    body('discount_type')
-        .isIn(['percentage', 'fixed'])
-        .withMessage('Discount type must be either "percentage" or "fixed"');
 
 const discountValueValidator = () =>
     body('value')
@@ -121,8 +112,11 @@ const idParamValidator = (paramName = 'id') =>
 const sanitizeHtml = (value) => {
     if (typeof value !== 'string') return value;
     return value
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        .replace(/<[^>]+>/g, '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
         .trim();
 };
 
@@ -133,7 +127,7 @@ const orderValidators = () => [
     body('total_amount').isFloat({ min: 0, max: 1000000 }).withMessage('total_amount must be a number between 0 and 1000000'),
     orderTypeValidator(),
     addressValidator('delivery_address', false),
-    body('phone_number').optional().trim(), // Make phone optional for orders
+    body('phone_number').optional().trim(),
     distanceValidator(),
     body('coupon_code').optional().trim().toUpperCase(),
     body('discount_amount').optional().isFloat({ min: 0 }).withMessage('Discount amount must be non-negative')
@@ -148,35 +142,21 @@ const productValidators = () => [
     body('featured').optional().isBoolean().withMessage('Featured must be true or false')
 ];
 
-const couponValidators = () => [
-    couponCodeValidator(),
-    discountTypeValidator(),
-    discountValueValidator(),
-    body('min_order_value').isFloat({ min: 0 }).withMessage('Minimum order value must be non-negative'),
-    body('expires_at').optional().isISO8601().withMessage('Invalid expiry date format'),
-    body('description').optional().trim().isLength({ max: 500 }).withMessage('Description too long')
-];
-
 module.exports = {
     phoneValidator,
     emailValidator,
     addressValidator,
     nameValidator,
-    uuidValidator,
     priceValidator,
     arrayValidator,
     orderTypeValidator,
     distanceValidator,
     couponCodeValidator,
-    discountTypeValidator,
     discountValueValidator,
     orderItemsValidator,
     orderStatusValidator,
     idParamValidator,
-
     orderValidators,
     productValidators,
-    couponValidators,
-
     sanitizeHtml
 };
