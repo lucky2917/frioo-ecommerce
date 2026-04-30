@@ -1,9 +1,5 @@
-# ==============================================
 # Robots.txt — Frioo E-Commerce (frioo.in)
-# Fresh Fruits, Juices & Salads in Vizag
-# ==============================================
 
-# Allow all search engines to crawl public pages
 User-agent: *
 Allow: /
 Allow: /shop
@@ -15,8 +11,6 @@ Allow: /privacy
 Allow: /terms
 Allow: /shipping
 Allow: /returns
-
-# Block admin, cart, and API routes from indexing
 Disallow: /admin
 Disallow: /admin/*
 Disallow: /api/*
@@ -26,25 +20,32 @@ Disallow: /profile
 Disallow: /orders
 Disallow: /onboarding
 
-# Sitemap location
 Sitemap: https://frioo.in/sitemap.xml
 
-# Google-specific
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 1
-
-# Bing
 User-agent: Bingbot
 Allow: /
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/*
+Disallow: /cart
+Disallow: /checkout
+Disallow: /profile
+Disallow: /orders
+Disallow: /onboarding
 Crawl-delay: 2
 
-# Yandex
 User-agent: Yandex
 Allow: /
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/*
+Disallow: /cart
+Disallow: /checkout
+Disallow: /profile
+Disallow: /orders
+Disallow: /onboarding
 Crawl-delay: 2
 
-# Block AI scrapers from content scraping
 User-agent: GPTBot
 Disallow: /
 

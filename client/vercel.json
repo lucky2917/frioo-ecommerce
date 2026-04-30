@@ -1,4 +1,12 @@
 {
+    "redirects": [
+        {
+            "source": "/(.*)",
+            "has": [{ "type": "host", "value": "www.frioo.in" }],
+            "destination": "https://frioo.in/$1",
+            "permanent": true
+        }
+    ],
     "rewrites": [
         {
             "source": "/(.*)",

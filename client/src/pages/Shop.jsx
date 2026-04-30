@@ -129,13 +129,43 @@ export default function Shop() {
 
   const safeCart = cart || {};
 
+  const CATEGORY_SEO = {
+    juices: {
+      title: 'Buy Fresh Fruit Juices in Vizag — Pure, No Preservatives',
+      description: 'Order pure fresh fruit juices in Visakhapatnam. Cold-pressed, 100% natural, no added sugar or preservatives. Delivered same day within 6km in Vizag.',
+      keywords: 'fresh fruit juice vizag, pure juice order vizag, cold pressed juice visakhapatnam, buy juice online vizag',
+    },
+    shakes: {
+      title: 'Buy Fresh Fruit Milkshakes in Vizag — Order Online',
+      description: 'Thick, creamy fruit milkshakes made fresh daily in Vizag. No artificial flavors. Order online and get delivery within 6km in Visakhapatnam.',
+      keywords: 'fruit milkshake vizag, fresh milkshake order vizag, buy milkshake online visakhapatnam',
+    },
+    salads: {
+      title: 'Buy Fresh Fruit Salads in Vizag — Healthy & Delivered',
+      description: 'Fresh fruit salads cut and packed daily in Visakhapatnam. Healthy, natural, no dressings. Order online for same-day delivery within 6km in Vizag.',
+      keywords: 'fresh fruit salad vizag, healthy salad order vizag, buy salad online visakhapatnam',
+    },
+    fruits: {
+      title: 'Buy Fresh Fruits Online in Vizag — Delivered Same Day',
+      description: 'Order the freshest farm fruits in Visakhapatnam. Sourced daily from local Vizag markets. Delivery within 6km. 100% natural, no preservatives.',
+      keywords: 'buy fresh fruits vizag, order fruits online vizag, fresh fruit delivery visakhapatnam, local fruits vizag',
+    },
+    deals: {
+      title: "Today's Deals — Fresh Fruits & Juices at Best Prices in Vizag",
+      description: "Grab today's best deals on fresh fruits, juices, shakes and salads in Vizag. Limited-time offers on 100% natural produce. Same-day delivery in Visakhapatnam.",
+      keywords: 'fresh fruit deals vizag, juice offers vizag, discount fruits visakhapatnam',
+    },
+  };
+
+  const activeSeo = categoryParam ? CATEGORY_SEO[categoryParam] : null;
+
   return (
     <div className="shop-page">
       <SEO
-        title="Buy Fresh Fruits, Juices & Salads Online in Vizag"
-        description="Shop the freshest fruits, pure juices, fruit milkshakes & healthy salads in Visakhapatnam. Order online for delivery in Vizag within 6km. 100% natural, no preservatives."
-        canonical="/shop"
-        keywords="buy fruits online vizag, fresh juice shop vizag, fruit delivery visakhapatnam, order fruits online vizag, fresh salad vizag, fruit milkshake order vizag"
+        title={activeSeo?.title || 'Buy Fresh Fruits, Juices & Salads Online in Vizag'}
+        description={activeSeo?.description || 'Shop the freshest fruits, pure juices, fruit milkshakes & healthy salads in Visakhapatnam. Order online for delivery in Vizag within 6km. 100% natural, no preservatives.'}
+        canonical={categoryParam ? `/shop?category=${categoryParam}` : '/shop'}
+        keywords={activeSeo?.keywords || 'buy fruits online vizag, fresh juice shop vizag, fruit delivery visakhapatnam, order fruits online vizag, fresh salad vizag, fruit milkshake order vizag'}
       />
       <Navbar />
 
