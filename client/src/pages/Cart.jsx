@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import { useAuth } from '../context/AuthContext';
@@ -60,20 +60,14 @@ export default function Cart() {
   const [editRemovedIngredients, setEditRemovedIngredients] = useState([]);
   const [editNote, setEditNote] = useState('');
 
-  const [deliveryAddress, setDeliveryAddress] = useState('');
   const [isChecking, setIsChecking] = useState(false);
   const [warningModal, setWarningModal] = useState({ show: false, distance: 0, lat: null, lng: null });
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [csrfToken, setCsrfToken] = useState('');
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
 
-  if (authLoading) return <div className="cart-page"><Navbar /><div style={{ padding: '100px', textAlign: 'center' }}>Loading...</div></div>;
-
-  const amountToMin = Math.max(0, MIN_CART_VALUE - finalTotal);
-  const isBelowMin = orderType === 'delivery' && finalTotal < MIN_CART_VALUE;
-
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchCsrfToken = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/csrf-token`, {
@@ -89,6 +83,11 @@ export default function Cart() {
     };
     fetchCsrfToken();
   }, []);
+
+  if (authLoading) return <div className="cart-page"><Navbar /><div style={{ padding: '100px', textAlign: 'center' }}>Loading...</div></div>;
+
+  const amountToMin = Math.max(0, MIN_CART_VALUE - finalTotal);
+  const isBelowMin = orderType === 'delivery' && finalTotal < MIN_CART_VALUE;
 
   const handleApplyCoupon = () => {
     if (!couponInput.trim()) return;
@@ -190,8 +189,10 @@ export default function Cart() {
         items: cleanedItems,
         total_amount: finalTotal,
         order_type: orderType,
-        delivery_address: orderType === 'delivery' ? sanitizeText(deliveryAddress.trim()) : null,
+        delivery_address: orderType === 'delivery' ? sanitizeText(profile?.address?.trim() || '') : null,
         distance_km: distance,
+        customer_lat: userLat,
+        customer_lng: userLng,
         coupon_code: appliedCoupon?.code || null,
       };
 
@@ -246,8 +247,9 @@ export default function Cart() {
       return;
     }
 
-    if (orderType === 'delivery' && !deliveryAddress.trim()) {
-      showToast('Please enter your delivery address', 'error');
+    if (orderType === 'delivery' && !profile?.address?.trim()) {
+      showToast('No delivery address found. Please set one in your Profile.', 'error');
+      navigate('/profile');
       return;
     }
 
@@ -385,14 +387,15 @@ export default function Cart() {
                 </div>
                 {orderType === 'delivery' && (
                   <div className="delivery-address-wrapper">
-                    <label className="address-label">Delivery Address</label>
-                    <textarea
-                      className="address-input"
-                      placeholder="House/Flat No., Street, Landmark..."
-                      value={deliveryAddress}
-                      onChange={e => setDeliveryAddress(e.target.value)}
-                      rows={2}
-                    />
+                    <label className="address-label">Delivering to</label>
+                    {profile?.address ? (
+                      <div className="address-display">
+                        <span className="address-text">{profile.address}</span>
+                        <Link to="/profile" className="address-change-link">Change</Link>
+                      </div>
+                    ) : (
+                      <Link to="/profile" className="address-missing-link">Set your delivery address in Profile</Link>
+                    )}
                   </div>
                 )}
 
@@ -634,9 +637,11 @@ export default function Cart() {
         .coupons-hint { font-size: 0.8rem; color: #888; margin-bottom: 20px; font-style: italic; }
         .secure-badge { text-align: center; font-size: 0.8rem; color: #999; }
         .delivery-address-wrapper { margin-bottom: 20px; }
-        .address-label { display: block; font-size: 0.85rem; font-weight: 600; color: #555; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .address-input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Manrope', sans-serif; font-size: 0.9rem; resize: none; box-sizing: border-box; transition: border-color 0.2s; }
-        .address-input:focus { outline: none; border-color: #3E2723; }
+        .address-label { display: block; font-size: 0.75rem; font-weight: 700; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.6px; }
+        .address-display { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; background: #f9f9f9; border: 1px solid #eee; border-radius: 4px; padding: 10px 12px; }
+        .address-text { font-size: 0.9rem; color: #333; line-height: 1.5; flex: 1; }
+        .address-change-link { font-size: 0.8rem; font-weight: 600; color: #3E2723; text-decoration: underline; white-space: nowrap; flex-shrink: 0; }
+        .address-missing-link { display: block; font-size: 0.85rem; font-weight: 600; color: #c0392b; text-decoration: underline; padding: 8px 0; }
         .mobile-bar-modern { display: none; }
         .coupon-modal { max-width: 450px; width: 90%; padding: 0; overflow: hidden; border-radius: 12px; }
         .cm-header { padding: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: #fff; }

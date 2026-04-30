@@ -129,6 +129,8 @@ const orderValidators = () => [
     addressValidator('delivery_address', false),
     body('phone_number').optional().trim(),
     distanceValidator(),
+    body('customer_lat').optional().isFloat({ min: -90, max: 90 }).withMessage('Invalid latitude'),
+    body('customer_lng').optional().isFloat({ min: -180, max: 180 }).withMessage('Invalid longitude'),
     body('coupon_code').optional().trim().toUpperCase(),
     body('discount_amount').optional().isFloat({ min: 0 }).withMessage('Discount amount must be non-negative')
 ];

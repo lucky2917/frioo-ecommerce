@@ -8,6 +8,21 @@ const { orderValidators } = require('../utils/validators');
 const { sendError, sendValidationError, sendSuccess } = require('../utils/responses');
 const logger = require('../utils/logger');
 
+const SHOP_LAT = 17.721086639920603;
+const SHOP_LNG = 83.29694119604164;
+const MAX_DELIVERY_KM = 6;
+
+const haversineKm = (lat1, lon1, lat2, lon2) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
 const strictLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 10,
@@ -31,6 +46,8 @@ router.post('/',
                 order_type,
                 delivery_address,
                 distance_km,
+                customer_lat,
+                customer_lng,
                 coupon_code,
                 notes
             } = req.body;
@@ -41,8 +58,12 @@ router.post('/',
                 if (!delivery_address) {
                     return sendError(res, 'Delivery address is required for delivery orders', 400);
                 }
-                if (!distance_km) {
-                    return sendError(res, 'Distance calculation is required for delivery orders', 400);
+                if (customer_lat == null || customer_lng == null) {
+                    return sendError(res, 'Location verification is required for delivery orders', 400);
+                }
+                const serverDistance = haversineKm(customer_lat, customer_lng, SHOP_LAT, SHOP_LNG);
+                if (serverDistance > MAX_DELIVERY_KM) {
+                    return sendError(res, `We only deliver within ${MAX_DELIVERY_KM}km. Your location is ${serverDistance.toFixed(1)}km away.`, 400);
                 }
             }
 
@@ -135,6 +156,8 @@ router.post('/',
                     order_type,
                     address: delivery_address,
                     distance: distance_km || 0,
+                    customer_lat: customer_lat || null,
+                    customer_lng: customer_lng || null,
                     coupon_code: coupon_code || null,
                     discount: serverCalculatedDiscount,
                     notes: notes || null,
