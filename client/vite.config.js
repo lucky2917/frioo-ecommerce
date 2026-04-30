@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
+    allowedHosts: ['nonperversive-nondeafly-dorla.ngrok-free.dev'],
     proxy: {
       '/api': {
         target: 'http://localhost:4000',

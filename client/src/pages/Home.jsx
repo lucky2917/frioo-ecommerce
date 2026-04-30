@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import ScrollReveal from '../components/animations/ScrollReveal';
@@ -10,40 +10,60 @@ import { API_BASE_URL } from '../config/constants';
 import previewVideo from '../assets/preview.mp4';
 import preview2Video from '../assets/preview2.mp4';
 
+const TESTIMONIALS = [
+  {
+    name: "Priya Kondapalli",
+    location: "MVP Colony, Vizag",
+    stars: 5,
+    text: "The watermelon juice arrived still cold and tasted exactly like it was just pressed. Nothing else in Vizag comes close to this freshness."
+  },
+  {
+    name: "Ravi Naidu",
+    location: "Dwaraka Nagar, Vizag",
+    stars: 5,
+    text: "Ordered the fruit salad on a Sunday morning and it was at my door in under an hour. The mango was perfectly ripe — not a single bite was disappointing."
+  },
+  {
+    name: "Divya Rao",
+    location: "Rushikonda, Vizag",
+    stars: 5,
+    text: "I switched from a big supermarket to Frioo three months ago and I cannot go back. The difference in freshness is honestly embarrassing for the competition."
+  }
+];
+
+const GUARANTEES = [
+  { title: "100% Natural", desc: "No artificial flavors, colors, or preservatives. Guaranteed on every order." },
+  { title: "Same-Day Delivery", desc: "Order before 5 PM and receive it the same day anywhere in Vizag." },
+  { title: "Freshness Promise", desc: "Not fresh? We refund or replace. No questions asked, no hassle." },
+  { title: "Sourced Daily", desc: "Every item is picked from local Vizag farms and markets each morning." }
+];
+
 export default function Home() {
   const [products, setProducts] = useState([]);
-
   const [categorySlide, setCategorySlide] = useState(0);
   const [activeTab, setActiveTab] = useState('juices');
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    const getTargetTime = () => {
-      const target = new Date();
-      target.setHours(24, 0, 0, 0);
-      return target;
+    const getTarget = () => {
+      const t = new Date();
+      t.setHours(24, 0, 0, 0);
+      return t;
     };
-
-    let target = getTargetTime();
-
-    const interval = setInterval(() => {
+    let target = getTarget();
+    const tick = () => {
       const now = new Date();
-      let difference = target.getTime() - now.getTime();
-
-      if (difference <= 0) {
-        target = getTargetTime();
-        difference = target.getTime() - now.getTime();
-      }
-
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((difference / 1000 / 60) % 60);
-      const seconds = Math.floor((difference / 1000) % 60);
-
-      setTimeLeft({ days, hours, minutes, seconds });
-    }, 1000);
-
-    return () => clearInterval(interval);
+      let diff = target.getTime() - now.getTime();
+      if (diff <= 0) { target = getTarget(); diff = target.getTime() - now.getTime(); }
+      setTimeLeft({
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / 1000 / 60) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
   }, []);
 
   useEffect(() => {
@@ -67,13 +87,11 @@ export default function Home() {
     salads: products.filter(p => p.category === 'Salad').slice(0, 6)
   }), [products]);
 
-  const getActiveProducts = () => {
-    switch (activeTab) {
-      case 'shakes': return filteredProducts.shakes;
-      case 'salads': return filteredProducts.salads;
-      default: return filteredProducts.juices;
-    }
-  };
+  const activeProducts = useMemo(() => {
+    if (activeTab === 'shakes') return filteredProducts.shakes;
+    if (activeTab === 'salads') return filteredProducts.salads;
+    return filteredProducts.juices;
+  }, [activeTab, filteredProducts]);
 
   const homeSchema = {
     "@context": "https://schema.org",
@@ -114,20 +132,47 @@ export default function Home() {
         <video className="hero-video" autoPlay loop muted playsInline>
           <source src={previewVideo} type="video/mp4" />
         </video>
-
+        <div className="hero-video-overlay" />
         <div className="hero-overlay-text">
           <StaggerText
-            text="FRIOO AI"
+            text="FRIOO"
             className="hero-main-title"
             stagger={0.08}
             delay={0.5}
           />
           <ScrollReveal delay={1.2} duration={0.8}>
-            <p className="hero-sub-title">Advanced Nutrition, Decoded for Your Biology.</p>
-            <Link to="/ai-nutritionist" className="hero-cta-btn">Experience AI Nutrition</Link>
+            <p className="hero-sub-title">Fresh Fruits, Juices & Salads Delivered in Vizag.</p>
+            <div className="hero-cta-group">
+              <Link to="/shop" className="hero-cta-btn">Order Fresh Now</Link>
+              <p className="hero-micro-trust">Trusted by 2,400+ families in Vizag</p>
+            </div>
           </ScrollReveal>
         </div>
       </div>
+
+      <section className="trust-stats-bar" aria-label="Why choose Frioo">
+        <div className="trust-stats-inner">
+          <div className="trust-stat-item">
+            <span className="trust-stat-number">2,400+</span>
+            <span className="trust-stat-label">Happy Customers</span>
+          </div>
+          <div className="trust-stat-sep" />
+          <div className="trust-stat-item">
+            <span className="trust-stat-number">100%</span>
+            <span className="trust-stat-label">Natural, No Preservatives</span>
+          </div>
+          <div className="trust-stat-sep" />
+          <div className="trust-stat-item">
+            <span className="trust-stat-number">Same Day</span>
+            <span className="trust-stat-label">Delivery in Vizag</span>
+          </div>
+          <div className="trust-stat-sep" />
+          <div className="trust-stat-item">
+            <span className="trust-stat-number">Daily Fresh</span>
+            <span className="trust-stat-label">From Local Farms</span>
+          </div>
+        </div>
+      </section>
 
       <section className="featured-section" aria-label="Featured fresh juices and fruits in Vizag">
         <div className="section-container">
@@ -151,15 +196,17 @@ export default function Home() {
               {filteredProducts.featured.map((product, idx) => (
                 <ScrollReveal key={product.id} delay={0.1 * (idx + 1)} direction="up" className="inline-block">
                   <div className="product-card-mini">
+                    {idx === 0 && <span className="product-badge product-badge-bestseller">Bestseller</span>}
+                    {idx === 1 && <span className="product-badge product-badge-popular">Popular</span>}
                     <Link to={`/product/${product.id}`} className="product-link">
                       <div className="product-image-wrapper">
                         <img src={product.images[0]} alt={product.title} className="product-image" />
                       </div>
                       <div className="product-info">
-                        <div className="product-price">₹{(product.price_cents / 100).toFixed(2)}</div>
+                        <div className="product-price">&#8377;{(product.price_cents / 100).toFixed(2)}</div>
                         <h4 className="product-name">{product.title}</h4>
                         <div className="product-stock">
-                          <span className="stock-dot"></span>
+                          <span className="stock-dot" />
                           <span className="stock-text">In stock</span>
                         </div>
                         <p className="product-desc">{product.description?.substring(0, 50)}...</p>
@@ -174,16 +221,13 @@ export default function Home() {
 
           <div className="promo-banner">
             <div className="promo-banner-content">
-              <span className="promo-banner-icon">🎉</span>
-              <span className="promo-banner-text">Enjoy 10% Off Your Next Order With Code: FRESH10</span>
+              <span className="promo-banner-eyebrow">First order?</span>
+              <span className="promo-banner-text">
+                10% off with code <strong>FRESH10</strong> — made fresh, delivered the same day.
+              </span>
               <Link to="/shop" className="promo-banner-link">Shop Now</Link>
             </div>
             <div className="promo-timer">
-              <div className="timer-item">
-                <div className="timer-value">{String(timeLeft.days).padStart(2, '0')}</div>
-                <div className="timer-label">Days</div>
-              </div>
-              <div className="timer-divider">:</div>
               <div className="timer-item">
                 <div className="timer-value">{String(timeLeft.hours).padStart(2, '0')}</div>
                 <div className="timer-label">Hours</div>
@@ -229,7 +273,7 @@ export default function Home() {
                 <Link to="/shop?category=shakes" className="category-card" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=600)' }}>
                   <div className="category-overlay">
                     <h3 className="category-title">FRUIT SHAKES</h3>
-                    <p className="category-desc">A shake isn't just dessert—it's the centerpiece of celebration!</p>
+                    <p className="category-desc">A shake is not just dessert — it is the centerpiece of celebration</p>
                     <span className="category-link-text">Custom Shakes</span>
                   </div>
                 </Link>
@@ -252,18 +296,46 @@ export default function Home() {
               </div>
             </ScrollReveal>
 
-            <button className="category-nav-btn category-prev" onClick={() => setCategorySlide(prev => (prev - 1 + 4) % 4)}>‹</button>
-            <button className="category-nav-btn category-next" onClick={() => setCategorySlide(prev => (prev + 1) % 4)}>›</button>
+            <button className="category-nav-btn category-prev" onClick={() => setCategorySlide(prev => (prev - 1 + 4) % 4)}>&#8249;</button>
+            <button className="category-nav-btn category-next" onClick={() => setCategorySlide(prev => (prev + 1) % 4)}>&#8250;</button>
 
             <div className="category-dots">
-              {[0, 1, 2, 3].map((index) => (
+              {[0, 1, 2, 3].map((i) => (
                 <button
-                  key={index}
-                  className={`category-dot ${categorySlide === index ? 'active' : ''}`}
-                  onClick={() => setCategorySlide(index)}
+                  key={i}
+                  className={`category-dot${categorySlide === i ? ' active' : ''}`}
+                  onClick={() => setCategorySlide(i)}
                 />
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="testimonials-section" aria-label="Customer reviews for Frioo Vizag">
+        <div className="section-container">
+          <ScrollReveal>
+            <div className="section-header-center">
+              <span className="section-badge">Real Customers, Real Vizag</span>
+              <h2 className="section-title-center">WHAT OUR CUSTOMERS SAY</h2>
+              <p className="section-subtitle-center">
+                From MVP Colony to Rushikonda, Vizag trusts Frioo for their daily dose of freshness.
+              </p>
+            </div>
+          </ScrollReveal>
+          <div className="testimonials-grid">
+            {TESTIMONIALS.map((t, i) => (
+              <ScrollReveal key={i} delay={0.15 * i} direction="up">
+                <div className="testimonial-card">
+                  <div className="tc-stars">{'★'.repeat(t.stars)}</div>
+                  <p className="tc-body">"{t.text}"</p>
+                  <div className="tc-author">
+                    <span className="tc-name">{t.name}</span>
+                    <span className="tc-location">{t.location}</span>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
           </div>
         </div>
       </section>
@@ -274,20 +346,20 @@ export default function Home() {
             <ScrollReveal direction="right">
               <div>
                 <h2 className="section-title-main">PICK YOUR FRESH PLEASURE</h2>
-                <p className="section-subtitle-main">Our most-loved juices, freshly made daily with the finest ingredients.</p>
+                <p className="section-subtitle-main">Our most-loved choices, freshly made daily with the finest ingredients.</p>
               </div>
             </ScrollReveal>
             <Link to="/shop" className="shop-link-main">Shop All</Link>
           </div>
 
           <div className="product-tabs">
-            <button className={`tab-btn ${activeTab === 'juices' ? 'active' : ''}`} onClick={() => setActiveTab('juices')}>Juices</button>
-            <button className={`tab-btn ${activeTab === 'shakes' ? 'active' : ''}`} onClick={() => setActiveTab('shakes')}>Shakes</button>
-            <button className={`tab-btn ${activeTab === 'salads' ? 'active' : ''}`} onClick={() => setActiveTab('salads')}>Salads</button>
+            <button className={`tab-btn${activeTab === 'juices' ? ' active' : ''}`} onClick={() => setActiveTab('juices')}>Juices</button>
+            <button className={`tab-btn${activeTab === 'shakes' ? ' active' : ''}`} onClick={() => setActiveTab('shakes')}>Shakes</button>
+            <button className={`tab-btn${activeTab === 'salads' ? ' active' : ''}`} onClick={() => setActiveTab('salads')}>Salads</button>
           </div>
 
           <div className="carousel-products">
-            {getActiveProducts().map((product, idx) => (
+            {activeProducts.map((product, idx) => (
               <ScrollReveal key={product.id} delay={0.1 * idx} direction="up" className="carousel-product-card-wrapper">
                 <div className="carousel-product-card">
                   <Link to={`/product/${product.id}`}>
@@ -295,10 +367,10 @@ export default function Home() {
                       <img src={product.images[0]} alt={product.title} className="carousel-product-image" />
                     </div>
                     <div className="carousel-product-info">
-                      <div className="carousel-product-price">₹{(product.price_cents / 100).toFixed(2)}</div>
+                      <div className="carousel-product-price">&#8377;{(product.price_cents / 100).toFixed(2)}</div>
                       <h4 className="carousel-product-name">{product.title}</h4>
                       <div className="product-stock">
-                        <span className="stock-dot"></span>
+                        <span className="stock-dot" />
                         <span className="stock-text">In stock</span>
                       </div>
                       <p className="carousel-product-desc">{product.description?.substring(0, 60)}...</p>
@@ -312,39 +384,96 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="hiw-section" aria-label="How Frioo works">
+        <div className="section-container">
+          <ScrollReveal>
+            <div className="section-header-center">
+              <span className="section-badge">Simple by Design</span>
+              <h2 className="section-title-center">FRESH IN THREE STEPS</h2>
+              <p className="section-subtitle-center">From your first browse to your first sip — it takes minutes.</p>
+            </div>
+          </ScrollReveal>
+          <div className="hiw-grid">
+            <ScrollReveal delay={0.1} direction="up">
+              <div className="hiw-step">
+                <div className="hiw-step-num">01</div>
+                <h3 className="hiw-step-title">Browse the Menu</h3>
+                <p className="hiw-step-desc">Explore our daily range of fresh juices, shakes, salads, and seasonal fruits — all made to order.</p>
+              </div>
+            </ScrollReveal>
+            <div className="hiw-connector" aria-hidden="true" />
+            <ScrollReveal delay={0.2} direction="up">
+              <div className="hiw-step">
+                <div className="hiw-step-num">02</div>
+                <h3 className="hiw-step-title">Place Your Order</h3>
+                <p className="hiw-step-desc">Quick checkout, secure payment. Your order goes straight to our kitchen the moment you confirm.</p>
+              </div>
+            </ScrollReveal>
+            <div className="hiw-connector" aria-hidden="true" />
+            <ScrollReveal delay={0.3} direction="up">
+              <div className="hiw-step">
+                <div className="hiw-step-num">03</div>
+                <h3 className="hiw-step-title">Delivered Fresh</h3>
+                <p className="hiw-step-desc">Made fresh after your order, at your door within hours. Still cold, still perfect.</p>
+              </div>
+            </ScrollReveal>
+          </div>
+          <ScrollReveal delay={0.4}>
+            <div className="hiw-cta-row">
+              <Link to="/shop" className="hiw-cta-btn">Start Your Order</Link>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      <section className="guarantee-section" aria-label="Frioo freshness guarantee">
+        <div className="section-container">
+          <ScrollReveal>
+            <div className="section-header-center">
+              <h2 className="guarantee-section-title">OUR PROMISE TO YOU</h2>
+              <p className="guarantee-section-sub">Four commitments we make with every order we take.</p>
+            </div>
+          </ScrollReveal>
+          <div className="guarantee-grid">
+            {GUARANTEES.map((item, i) => (
+              <ScrollReveal key={i} delay={0.1 * i} direction="up">
+                <div className="guarantee-item">
+                  <div className="guarantee-item-num">{String(i + 1).padStart(2, '0')}</div>
+                  <h3 className="guarantee-item-title">{item.title}</h3>
+                  <p className="guarantee-item-desc">{item.desc}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="story-section" aria-label="Our story - Frioo Vizag">
-        <video
-          className="story-video"
-          autoPlay
-          loop
-          muted
-          playsInline
-        >
+        <video className="story-video" autoPlay loop muted playsInline>
           <source src={preview2Video} type="video/mp4" />
         </video>
-        <div className="story-overlay"></div>
+        <div className="story-overlay" />
         <div className="story-content">
-          <div className="story-badge">ESTD. 2024 • VIZAG</div>
+          <div className="story-badge">ESTD. 2024 &nbsp;&middot;&nbsp; VIZAG</div>
           <h2 className="story-title">ONE DREAM. ONE BLENDER. ENDLESS FRESHNESS IN VIZAG.</h2>
           <p className="story-text">
-            Born in Visakhapatnam, our story began with a simple dream and a deep love for the craft of fresh juicing. We believed that the best fruits and drinks in Vizag should be made from scratch—with patience, passion, and a sprinkle of creativity. What started in a humble kitchen in Allipuram has grown into Vizag's most-loved fruit destination, where every blend, smoothie, and juice still carries the same care and dedication.
+            Born in Visakhapatnam, our story began with a simple dream and a deep love for the craft of fresh juicing. We believed that the best fruits and drinks in Vizag should be made from scratch — with patience, passion, and a sprinkle of creativity. What started in a humble kitchen in Allipuram has grown into Vizag's most-loved fruit destination, where every blend, smoothie, and juice still carries the same care and dedication.
           </p>
         </div>
       </section>
 
       <div className="text-banner">
         <div className="text-banner-scroll">
-          {[...Array(10)].map((_, i) => (
+          {[...Array(12)].map((_, i) => (
             <span key={i} className="banner-text-item">
-              <span className="banner-emoji">🍊</span>
-              Delight in Every Sip
+              <span className="banner-dot" />
+              Farm-Fresh &nbsp;&middot;&nbsp; Made Daily &nbsp;&middot;&nbsp; No Preservatives &nbsp;&middot;&nbsp; Delivered in Hours
             </span>
           ))}
         </div>
       </div>
 
       <Footer />
-
     </div>
   );
 }

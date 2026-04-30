@@ -54,14 +54,6 @@
     <priority>0.85</priority>
   </url>
   
-  <!-- AI Nutritionist — Unique Feature -->
-  <url>
-    <loc>https://frioo.in/ai-nutritionist</loc>
-    <lastmod>2026-04-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.80</priority>
-  </url>
-  
   <!-- About Us -->
   <url>
     <loc>https://frioo.in/about</loc>

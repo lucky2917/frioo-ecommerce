@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
 import { supabase } from '../lib/supabaseClient';
 import Navbar from '../components/layout/Navbar';
 import { showToast } from '../utils/toast';
@@ -8,40 +7,20 @@ import { logger } from '../utils/logger';
 import { Link } from 'react-router-dom';
 
 export default function Profile() {
-  const { addToCart } = useCart();
   const { profile, user, loading: authLoading } = useAuth();
 
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('saved');
 
   const [form, setForm] = useState({
     full_name: profile?.full_name || '',
     phone_number: profile?.phone_number || '',
     address: profile?.address || ''
   });
-  const [savedRecipes, setSavedRecipes] = useState([]);
 
   const nameRef = useRef(null);
   const phoneRef = useRef(null);
   const addressRef = useRef(null);
-
-  useEffect(() => {
-    const fetchSavedRecipes = async () => {
-      if (!user?.id) return;
-      const { data, error } = await supabase
-        .from('saved_recipes')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (!error && data) setSavedRecipes(data);
-    };
-
-    if (user?.id) {
-      fetchSavedRecipes();
-    }
-  }, [user]);
 
   useEffect(() => {
     if (profile) {
@@ -52,27 +31,6 @@ export default function Profile() {
       });
     }
   }, [profile]);
-
-  const handleOrderRecipe = (recipe) => {
-    const ingredientsList = recipe.items.map(i => i.name).join(', ');
-    const virtualProduct = {
-      id: recipe.id,
-      title: `AI Plan: ${recipe.recipe_name}`,
-      price: recipe.price,
-      images: ['/ai-bowl-placeholder.png'],
-      description: `Your saved custom mix: ${ingredientsList}`,
-      isVirtual: true
-    };
-    addToCart(virtualProduct, 'Saved', recipe.price, { note: `Ingredients: ${ingredientsList}` });
-  };
-
-  const handleDeleteRecipe = async (id) => {
-    const { error } = await supabase.from('saved_recipes').delete().eq('id', id);
-    if (!error) {
-      showToast('Recipe removed', 'success');
-      setSavedRecipes(prev => prev.filter(r => r.id !== id));
-    }
-  };
 
   const handleUpdate = async () => {
     if (!user?.id) {
@@ -202,50 +160,12 @@ export default function Profile() {
           )}
         </div>
 
-        <div className="profile-sections">
-          <div className="section-tabs">
-            <button
-              className={`tab-btn ${activeTab === 'saved' ? 'active' : ''}`}
-              onClick={() => setActiveTab('saved')}
-            >
-              Saved Recipes
-            </button>
-            <Link to="/orders" className="tab-link">My Orders ↗</Link>
+        <div className="orders-cta">
+          <div className="orders-cta-text">
+            <h3>Your Orders</h3>
+            <p>Track your deliveries and view past purchases.</p>
           </div>
-
-          {activeTab === 'saved' && (
-            <div className="recipes-grid fade-in">
-              {savedRecipes.length === 0 ? (
-                <div className="empty-state">
-                  <div className="empty-icon">🥗</div>
-                  <h3>Your Cookbook is Empty</h3>
-                  <p>Discover personalized nutrition with our AI.</p>
-                  <Link to="/frioo-ai" className="btn-gold">Create a Plan</Link>
-                </div>
-              ) : (
-                savedRecipes.map(recipe => (
-                  <div key={recipe.id} className="recipe-card-modern">
-                    <div className="rcm-image-placeholder">
-                      <span>🥗</span>
-                    </div>
-                    <div className="rcm-content">
-                      <div className="rcm-top">
-                        <h3 className="rcm-title">{recipe.recipe_name}</h3>
-                        <span className="rcm-price">₹{recipe.price}</span>
-                      </div>
-                      <p className="rcm-desc">
-                        {recipe.items.map(i => i.name).join(', ')}
-                      </p>
-                      <button onClick={() => handleOrderRecipe(recipe)} className="btn-add-cart">
-                        Add To Cart
-                      </button>
-                    </div>
-                    <button onClick={() => handleDeleteRecipe(recipe.id)} className="btn-remove-x">×</button>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
+          <Link to="/orders" className="btn-orders">View Orders</Link>
         </div>
 
       </div>
@@ -263,7 +183,7 @@ export default function Profile() {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding-top: var(--navbar-height-mobile); /* Responsive navbar clearance */
+            padding-top: var(--navbar-height-mobile);
             color: white;
             text-align: center;
         }
@@ -278,7 +198,7 @@ export default function Profile() {
             margin: 0 auto;
             padding: 0 20px 80px;
             position: relative;
-            top: -60px; /* Overlap hero */
+            top: -60px;
         }
 
         .profile-float-card {
@@ -287,13 +207,13 @@ export default function Profile() {
             box-shadow: 0 20px 60px rgba(0,0,0,0.08);
             padding: 40px 60px;
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 30px;
         }
 
         .avatar-wrapper {
             width: 120px;
             height: 120px;
-            margin: -80px auto 30px; /* Pull up partially out of card */
+            margin: -80px auto 30px;
             border-radius: 50%;
             background: white;
             padding: 5px;
@@ -353,8 +273,8 @@ export default function Profile() {
             width: 100%;
         }
         .field-input.active {
-            border-bottom: 2px solid #D4AF7A; /* Highlight when editing */
-            margin-bottom: -1px; /* Overlap existing border */
+            border-bottom: 2px solid #D4AF7A;
+            margin-bottom: -1px;
         }
 
         .icon-pencil {
@@ -391,153 +311,39 @@ export default function Profile() {
             font-weight: 600;
         }
 
-        .section-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-bottom: 40px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-        }
-        .tab-btn {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            font-family: 'Playfair Display', serif;
-            color: #aaa;
-            cursor: pointer;
-            padding-bottom: 5px;
-            position: relative;
-        }
-        .tab-btn.active {
-            color: #111;
-        }
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -16px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: #D4AF7A;
-        }
-        .tab-link {
-            text-decoration: none;
-            font-size: 1rem;
-            color: #666;
-            margin-top: 5px; /* Align slightly */
-            transition: color 0.2s;
-        }
-        .tab-link:hover { color: #111; }
-
-        .recipes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 30px;
-        }
-
-        .recipe-card-modern {
+        .orders-cta {
             background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-            transition: transform 0.3s;
-            position: relative;
-            display: flex;
-        }
-        .recipe-card-modern:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.06);
-        }
-
-        .rcm-image-placeholder {
-            width: 100px;
-            background: #fafaf5;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.05);
+            padding: 30px 40px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-        }
-        .rcm-content {
-            flex: 1;
-            padding: 20px;
-        }
-        .rcm-top {
-            display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
+            gap: 20px;
         }
-        .rcm-title {
+        .orders-cta-text h3 {
             font-family: 'Playfair Display', serif;
-            font-size: 1.1rem;
-            margin: 0;
+            font-size: 1.4rem;
             color: #111;
+            margin: 0 0 6px;
         }
-        .rcm-price {
-            font-weight: 700;
-            color: #D4AF7A;
-            font-size: 1rem;
-        }
-        .rcm-desc {
-            font-size: 0.85rem;
+        .orders-cta-text p {
+            font-size: 0.9rem;
             color: #777;
-            margin-bottom: 15px;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            margin: 0;
         }
-
-        .btn-add-cart {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #111;
-            background: transparent;
-            border: 1px solid #111;
-            padding: 6px 14px;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-add-cart:hover {
-            background: #111;
-            color: white;
-        }
-
-        .btn-remove-x {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: #ccc;
-            cursor: pointer;
-            line-height: 1;
-        }
-        .btn-remove-x:hover { color: #d32f2f; }
-
-        .btn-gold {
-            background: #D4AF7A;
+        .btn-orders {
+            background: #2F4F4F;
             color: white;
             padding: 12px 30px;
             border-radius: 30px;
             text-decoration: none;
             font-weight: 600;
-            display: inline-block;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            transition: background 0.2s;
         }
-
-        .empty-state {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px;
-            background: white;
-            border-radius: 20px;
-            border: 2px dashed #f0f0f0;
-        }
-        .empty-icon { font-size: 3rem; margin-bottom: 15px; }
+        .btn-orders:hover { background: #1a2f2f; }
 
         .fade-in { animation: fadeIn 0.4s ease forwards; }
         @keyframes fadeIn {
@@ -552,6 +358,7 @@ export default function Profile() {
             .field-grid { grid-template-columns: 1fr; }
             .field-group.full { grid-column: span 1; }
             .profile-float-card { padding: 30px 20px; }
+            .orders-cta { flex-direction: column; text-align: center; }
         }
       `}</style>
     </div>

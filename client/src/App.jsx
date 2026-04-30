@@ -13,8 +13,6 @@ const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Orders = lazy(() => import('./pages/Orders'));
-const FriooAI = lazy(() => import('./pages/FriooAI'));
-
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
@@ -72,8 +70,6 @@ const AppInner = () => {
             <Route path="/shop" element={<Shop />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/product/:id" element={<ProductDetails />} />
-            <Route path="/ai-nutritionist" element={<FriooAI />} />
-
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/orders" element={<Orders />} />
