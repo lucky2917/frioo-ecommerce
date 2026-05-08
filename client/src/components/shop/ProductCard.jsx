@@ -23,16 +23,20 @@ export default function ProductCard({ product, onAdd }) {
 
   const hasOptions = (product.nutrition?.exclusions?.length > 0 || product.nutrition?.ingredients?.length > 0);
 
+  const basePrice = product.price_cents / 100;
+  const hasDiscount = product.discount > 0;
+  const originalPrice = hasDiscount
+    ? Math.round(basePrice / (1 - product.discount / 100))
+    : null;
+
   let finalPrice, variantLabel;
   if (isWeightBased) {
-    finalPrice = (product.price_cents / 100) * selectedWeight.multiplier;
+    finalPrice = basePrice * selectedWeight.multiplier;
     variantLabel = selectedWeight.label;
   } else {
-    finalPrice = product.price_cents / 100;
+    finalPrice = basePrice;
     variantLabel = product.unit ? product.unit.charAt(0).toUpperCase() + product.unit.slice(1) : 'Standard';
   }
-
-  const displayPrice = `₹${(product.price_cents / 100).toFixed(0)}`;
 
   const imageSrc = product.images?.[0] || FALLBACK_IMAGE;
 
@@ -78,7 +82,10 @@ export default function ProductCard({ product, onAdd }) {
               alt={product.title}
               className="card-image"
             />
-            {product.featured && <span className="badge-pop">Popular</span>}
+            {hasDiscount
+            ? <span className="badge-pop badge-sale">{product.discount}% OFF</span>
+            : product.featured && <span className="badge-pop">Popular</span>
+          }
           </Link>
 
           {product.video_url && (
@@ -96,7 +103,14 @@ export default function ProductCard({ product, onAdd }) {
         </div>
 
         <div className="card-content">
-          <div className="card-price">{displayPrice}</div>
+          <div className="card-price-group">
+            <span className={`card-price${hasDiscount ? ' card-price-sale' : ''}`}>
+              &#8377;{basePrice.toFixed(0)}
+            </span>
+            {hasDiscount && (
+              <span className="card-price-original">&#8377;{originalPrice}</span>
+            )}
+          </div>
 
           <h3 className="card-title">
             <Link to={`/product/${product.id}`}>{product.title}</Link>
@@ -231,6 +245,10 @@ export default function ProductCard({ product, onAdd }) {
           z-index: 2;
         }
 
+        .badge-sale {
+          background: #D0483A;
+        }
+
         .play-btn {
           position: absolute;
           bottom: 15px;
@@ -270,12 +288,28 @@ export default function ProductCard({ product, onAdd }) {
           flex: 1;
         }
 
+        .card-price-group {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+          margin-bottom: 6px;
+        }
+
         .card-price {
           font-family: 'Playfair Display', serif;
           font-size: 1.25rem;
           font-weight: 700;
           color: #2F4F4F;
-          margin-bottom: 6px;
+        }
+
+        .card-price-sale {
+          color: #D0483A;
+        }
+
+        .card-price-original {
+          font-size: 0.85rem;
+          color: #bbb;
+          text-decoration: line-through;
         }
 
         .card-title {

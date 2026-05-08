@@ -4,8 +4,7 @@ const requiredEnv = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
 const missingEnv = requiredEnv.filter(key => !process.env[key]);
 
 if (missingEnv.length > 0) {
-  console.error(`❌ CRITICAL: Missing required environment variables: ${missingEnv.join(', ')}`);
-  console.error('   Please check your .env file or Vercel project settings.');
+  process.stderr.write(`CRITICAL: Missing required environment variables: ${missingEnv.join(', ')}\n`);
   process.exit(1);
 }
 const express = require('express');
@@ -227,7 +226,7 @@ app.use('/api/upload', authLimiter, uploadRoutes);
 app.use(errorHandler());
 
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
+  logger.error('Unhandled error:', err);
   res.status(err.status || 500).json({
     success: false,
     error: {
@@ -250,33 +249,36 @@ let server = null;
 
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
   server = app.listen(PORT, () => {
-    logger.info(`🚀 Frioo Backend running on port ${PORT}`);
-    logger.info(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`Frioo Backend running on port ${PORT}`);
+    logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 }
 
-module.exports = app;
 let isShuttingDown = false;
 
 function gracefulShutdown(signal) {
   if (isShuttingDown) return;
 
-  console.log(`\n${signal} received. Starting graceful shutdown...`);
+  logger.info(`${signal} received. Starting graceful shutdown...`);
   isShuttingDown = true;
+
+  if (!server) {
+    logger.info('No HTTP server to close (serverless mode). Exiting.');
+    process.exit(0);
+  }
 
   server.close((err) => {
     if (err) {
-      console.error('Error during server close:', err);
+      logger.error('Error during server close:', err);
       process.exit(1);
     }
 
-    console.log('✅ HTTP server closed');
-    console.log('✅ Graceful shutdown complete');
+    logger.info('HTTP server closed. Shutdown complete.');
     process.exit(0);
   });
 
   setTimeout(() => {
-    console.error('❌ Forced shutdown after timeout');
+    logger.error('Forced shutdown after timeout');
     process.exit(1);
   }, 30000);
 }
@@ -285,11 +287,13 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
+  logger.error('Uncaught Exception:', err);
   gracefulShutdown('UNCAUGHT_EXCEPTION');
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
   gracefulShutdown('UNHANDLED_REJECTION');
 });
+
+module.exports = app;

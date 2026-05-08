@@ -12,6 +12,14 @@ export const DELIVERY_STATUS_DURATION_MS = 30 * 60 * 1000;
 export const DEFAULT_ORDER_TYPE = 'delivery';
 export const DEFAULT_PRODUCT_UNIT = 'kg';
 
+export const PRODUCT_CATEGORIES = [
+    { slug: 'juices',  label: 'Pure Juices',   dbValue: 'Pure Fruit Juice'  },
+    { slug: 'shakes',  label: 'Fruit Shakes',  dbValue: 'Fruit Milkshake'   },
+    { slug: 'salads',  label: 'Salads',        dbValue: 'Salad'             },
+    { slug: 'fruits',  label: 'Fresh Fruits',  dbValue: 'Fresh Fruit'       },
+    { slug: 'deals',   label: 'Daily Deals',   dbValue: null                },
+];
+
 if (!import.meta.env.VITE_API_URL && import.meta.env.PROD) {
     throw new Error('VITE_API_URL is not set. Check your Vercel environment variables.');
 }

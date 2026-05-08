@@ -1,7 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { logger } from '../utils/logger';
 import LoadingSpinner from '../components/LoadingSpinner';
-
 import { supabase } from '../lib/supabaseClient';
 
 const AuthContext = createContext();
@@ -83,7 +82,9 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       logger.info('Auth state changed:', event);
 
-      if (event === 'TOKEN_REFRESHED') {
+      if (event === 'SIGNED_IN') {
+        logger.info('User signed in');
+      } else if (event === 'TOKEN_REFRESHED') {
         logger.info('Token refreshed successfully');
       } else if (event === 'SIGNED_OUT') {
         setUser(null);

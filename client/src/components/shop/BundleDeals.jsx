@@ -1,11 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { PRODUCT_CATEGORIES } from '../../config/constants';
+
+const cat = (label) => PRODUCT_CATEGORIES.find(c => c.label === label)?.dbValue;
 
 const BUNDLE_DEFINITIONS = [
   {
     id: 'juice-trio',
     title: 'Juice Trio',
     description: 'Three pure fruit juices — refreshing and natural',
-    category: 'Pure Fruit Juice',
+    category: cat('Pure Juices'),
     count: 3,
     color: '#FF9500'
   },
@@ -13,7 +16,7 @@ const BUNDLE_DEFINITIONS = [
     id: 'shake-pack',
     title: 'Shake Pack',
     description: 'Power up with three of our best milkshakes',
-    category: 'Fruit Milkshake',
+    category: cat('Fruit Shakes'),
     count: 3,
     color: '#9C27B0'
   },
@@ -21,7 +24,7 @@ const BUNDLE_DEFINITIONS = [
     id: 'salad-duo',
     title: 'Salad Duo',
     description: 'Two fresh salad bowls for the wellness pair',
-    category: 'Salad',
+    category: cat('Salads'),
     count: 2,
     color: '#2E7D32'
   }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +16,7 @@ export default function Onboarding() {
     phone_number: '',
     address: ''
   });
+  const [loadingLocation, setLoadingLocation] = useState(false);
 
   useEffect(() => {
     if (user?.user_metadata?.full_name && !formData.full_name) {
@@ -29,7 +30,6 @@ export default function Onboarding() {
       navigate('/');
     }
   }, [user, loading, navigate]);
-  const [loadingLocation, setLoadingLocation] = useState(false);
 
   useEffect(() => {
     if (profile?.phone_number) {
@@ -39,15 +39,7 @@ export default function Onboarding() {
 
   if (loading || !user) {
     return (
-      <div style={{
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: 'sans-serif',
-        color: '#666'
-      }}>
+      <div className="onboarding-verify">
         <h3>Verifying Login...</h3>
         <p>Please wait while we secure your session.</p>
       </div>
@@ -56,7 +48,7 @@ export default function Onboarding() {
 
   const getLocation = () => {
     if (!navigator.geolocation) {
-      showToast("Geolocation is not supported by your browser", 'error');
+      showToast('Geolocation is not supported by your browser', 'error');
       return;
     }
 
@@ -69,12 +61,12 @@ export default function Onboarding() {
         const data = await res.json();
         setFormData(prev => ({ ...prev, address: data.display_name }));
       } catch (error) {
-        logger.error("Error fetching address", error);
-        showToast("Could not fetch address automatically. Please type it manually.", 'warning');
+        logger.error('Error fetching address', error);
+        showToast('Could not fetch address automatically. Please type it manually.', 'warning');
       }
       setLoadingLocation(false);
     }, () => {
-      showToast("Permission denied. Please enable location services.", 'error');
+      showToast('Permission denied. Please enable location services.', 'error');
       setLoadingLocation(false);
     });
   };
@@ -100,7 +92,7 @@ export default function Onboarding() {
 
     const formattedPhone = formatPhoneNumber(formData.phone_number);
 
-    const { error } = await supabase.from('profiles').insert([
+    const { error } = await supabase.from('profiles').upsert([
       {
         id: user.id,
         email: user.email,
@@ -113,7 +105,7 @@ export default function Onboarding() {
 
     if (error) {
       logger.error('Profile creation error:', error);
-      showToast("Error creating profile: " + error.message, 'error');
+      showToast('Error saving profile: ' + error.message, 'error');
     } else {
       await fetchProfile(user.id);
       navigate('/shop');
@@ -121,25 +113,25 @@ export default function Onboarding() {
   };
 
   return (
-    <div style={{ fontFamily: '"Helvetica Neue", sans-serif' }}>
+    <div className="onboarding-page">
       <Navbar />
       <div className="page-content">
-        <div style={styles.container}>
-          <h2 style={styles.title}>Complete Your Profile</h2>
-          <p style={styles.sub}>We need a few more details to deliver your freshness.</p>
+        <div className="onboarding-container">
+          <h2 className="onboarding-title">Complete Your Profile</h2>
+          <p className="onboarding-sub">We need a few more details to deliver your freshness.</p>
 
-          <form onSubmit={handleSubmit} style={styles.form}>
-            <label style={styles.label}>Full Name</label>
+          <form onSubmit={handleSubmit} className="onboarding-form">
+            <label className="onboarding-label">Full Name</label>
             <input
-              style={styles.input}
+              className="onboarding-input"
               value={formData.full_name}
               onChange={e => setFormData({ ...formData, full_name: e.target.value })}
               required
             />
 
-            <label style={styles.label}>Phone Number</label>
+            <label className="onboarding-label">Phone Number</label>
             <input
-              style={styles.input}
+              className="onboarding-input"
               type="tel"
               placeholder="+91 98765 43210"
               value={formData.phone_number}
@@ -147,34 +139,160 @@ export default function Onboarding() {
               required
             />
 
-            <label style={styles.label}>Delivery Address</label>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <label className="onboarding-label">Delivery Address</label>
+            <div className="address-row">
               <textarea
-                style={{ ...styles.input, flex: 1, minHeight: '80px' }}
+                className="onboarding-input address-textarea"
                 value={formData.address}
                 onChange={e => setFormData({ ...formData, address: e.target.value })}
                 required
               />
-              <button type="button" onClick={getLocation} style={styles.locBtn}>
-                {loadingLocation ? '...' : '📍 Detect'}
+              <button type="button" onClick={getLocation} className="detect-btn">
+                {loadingLocation ? '...' : 'Detect'}
               </button>
             </div>
 
-            <button type="submit" style={styles.submitBtn}>Save & Continue &rarr;</button>
+            <button type="submit" className="onboarding-submit">Save &amp; Continue</button>
           </form>
         </div>
       </div>
+
+      <style>{`
+        .onboarding-page {
+          font-family: 'Manrope', sans-serif;
+          min-height: 100vh;
+          background: #FAFAFA;
+        }
+
+        .onboarding-verify {
+          height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Manrope', sans-serif;
+          color: #666;
+        }
+
+        .onboarding-container {
+          max-width: 520px;
+          margin: 100px auto 80px;
+          padding: 50px 40px;
+          background: white;
+          border-radius: 16px;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+          text-align: center;
+        }
+
+        .onboarding-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 2rem;
+          color: #111;
+          margin: 0 0 10px;
+        }
+
+        .onboarding-sub {
+          color: #888;
+          font-size: 1rem;
+          margin: 0 0 35px;
+        }
+
+        .onboarding-form {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          text-align: left;
+        }
+
+        .onboarding-label {
+          font-weight: 700;
+          font-size: 0.8rem;
+          color: #555;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-top: 12px;
+        }
+
+        .onboarding-input {
+          padding: 12px 14px;
+          border-radius: 8px;
+          border: 1px solid #ddd;
+          font-size: 0.95rem;
+          font-family: 'Manrope', sans-serif;
+          background: #fafafa;
+          transition: border-color 0.2s, box-shadow 0.2s;
+          outline: none;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .onboarding-input:focus {
+          border-color: #D4AF7A;
+          box-shadow: 0 0 0 3px rgba(212, 175, 122, 0.15);
+          background: white;
+        }
+
+        .address-row {
+          display: flex;
+          gap: 10px;
+          align-items: flex-start;
+        }
+
+        .address-textarea {
+          flex: 1;
+          min-height: 80px;
+          resize: none;
+        }
+
+        .detect-btn {
+          background: #f0f7ff;
+          border: 1px solid #b3d4f5;
+          color: #1565c0;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          font-size: 0.85rem;
+          padding: 0 16px;
+          height: 46px;
+          white-space: nowrap;
+          transition: background 0.2s;
+          flex-shrink: 0;
+        }
+
+        .detect-btn:hover {
+          background: #dbeeff;
+        }
+
+        .onboarding-submit {
+          margin-top: 20px;
+          padding: 15px;
+          background: #2F4F4F;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: 'Manrope', sans-serif;
+          letter-spacing: 0.3px;
+          transition: background 0.2s;
+        }
+
+        .onboarding-submit:hover {
+          background: #1a2f2f;
+        }
+
+        @media (max-width: 600px) {
+          .onboarding-container {
+            margin: 80px 16px 60px;
+            padding: 30px 20px;
+          }
+
+          .onboarding-title {
+            font-size: 1.6rem;
+          }
+        }
+      `}</style>
     </div>
   );
 }
-
-const styles = {
-  container: { maxWidth: '500px', margin: '50px auto', padding: '20px', textAlign: 'center' },
-  title: { fontFamily: 'Georgia, serif', fontSize: '2rem', marginBottom: '10px' },
-  sub: { color: '#666', marginBottom: '30px' },
-  form: { display: 'flex', flexDirection: 'column', gap: '15px', textAlign: 'left' },
-  label: { fontWeight: 'bold', fontSize: '0.9rem', color: '#333' },
-  input: { padding: '12px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem', fontFamily: 'inherit' },
-  locBtn: { background: '#e3f2fd', border: '1px solid #2196F3', color: '#0d47a1', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', padding: '0 15px' },
-  submitBtn: { padding: '15px', background: '#1a1a1a', color: 'white', border: 'none', borderRadius: '8px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' }
-};

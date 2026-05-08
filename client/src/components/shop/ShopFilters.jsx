@@ -1,12 +1,5 @@
-import React, { useState } from 'react';
-
-const CATEGORY_MAP = {
-  'Pure Juices': 'Pure Fruit Juice',
-  'Fruit Shakes': 'Fruit Milkshake',
-  'Salads': 'Salad',
-  'Fresh Fruits': 'Fresh Fruit',
-  'Daily Deals': null
-};
+import { useState } from 'react';
+import { PRODUCT_CATEGORIES } from '../../config/constants';
 
 export default function ShopFilters({
   activeTab,
@@ -24,9 +17,9 @@ export default function ShopFilters({
   };
 
   const getCategoryCount = (tab) => {
-    const cat = CATEGORY_MAP[tab];
-    if (!cat) return products.filter(p => p.featured).length;
-    return products.filter(p => p.category === cat).length;
+    const cat = PRODUCT_CATEGORIES.find(c => c.label === tab);
+    if (!cat || cat.dbValue === null) return products.filter(p => p.featured).length;
+    return products.filter(p => p.category === cat.dbValue).length;
   };
 
   return (

@@ -2,12 +2,15 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { showToast } from '../../utils/toast';
 import { logger } from '../../utils/logger';
-import { API_BASE_URL } from '../../config/constants';
+import { API_BASE_URL, PRODUCT_CATEGORIES } from '../../config/constants';
+
+const DB_CATEGORIES = PRODUCT_CATEGORIES.filter(c => c.dbValue !== null).map(c => c.dbValue);
+const CATEGORIES = ['All', ...DB_CATEGORIES];
 
 const INITIAL_FORM = {
     id: null,
     title: '',
-    category: 'Fresh Fruit',
+    category: DB_CATEGORIES[3],
     price: '',
     unit: 'kg',
     stock: '',
@@ -20,8 +23,6 @@ const INITIAL_FORM = {
     uploadMethod: 'url',
     nutrition: { calories: '', protein: '', carbs: '', fat: '' }
 };
-
-const CATEGORIES = ['All', 'Pure Fruit Juice', 'Fruit Milkshake', 'Salad', 'Fresh Fruit'];
 
 export default function AdminProducts() {
     const [products, setProducts] = useState([]);

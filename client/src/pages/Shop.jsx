@@ -13,9 +13,9 @@ import { useCart } from '../context/CartContext';
 import { showToast } from '../utils/toast';
 
 import SEO from '../components/SEO';
-import { API_BASE_URL } from '../config/constants';
+import { API_BASE_URL, PRODUCT_CATEGORIES } from '../config/constants';
 
-const TABS = ['Pure Juices', 'Fruit Shakes', 'Salads', 'Fresh Fruits', 'Daily Deals'];
+const TABS = PRODUCT_CATEGORIES.map(c => c.label);
 const ITEMS_PER_PAGE = 12;
 
 export default function Shop() {
@@ -32,12 +32,9 @@ export default function Shop() {
   const categoryParam = searchParams.get('category');
   const searchParam = searchParams.get('search');
 
-  let activeTab = 'Pure Juices';
-  if (categoryParam === 'juices') activeTab = 'Pure Juices';
-  if (categoryParam === 'shakes') activeTab = 'Fruit Shakes';
-  if (categoryParam === 'salads') activeTab = 'Salads';
-  if (categoryParam === 'fruits') activeTab = 'Fresh Fruits';
-  if (categoryParam === 'deals') activeTab = 'Daily Deals';
+  const activeTab = (categoryParam
+    ? PRODUCT_CATEGORIES.find(c => c.slug === categoryParam)?.label
+    : null) ?? PRODUCT_CATEGORIES[0].label;
 
   const isSearchMode = !!searchParam;
 
@@ -57,14 +54,8 @@ export default function Shop() {
   }, [categoryParam, searchParam, sortOption, priceRange]);
 
   const handleTabChange = (tab) => {
-    const map = {
-      'Pure Juices': 'juices',
-      'Fruit Shakes': 'shakes',
-      'Salads': 'salads',
-      'Fresh Fruits': 'fruits',
-      'Daily Deals': 'deals'
-    };
-    setSearchParams({ category: map[tab] });
+    const cat = PRODUCT_CATEGORIES.find(c => c.label === tab);
+    if (cat) setSearchParams({ category: cat.slug });
   };
 
   useEffect(() => {
@@ -93,16 +84,14 @@ export default function Shop() {
         p.category.toLowerCase().includes(q)
       );
     } else {
-      result = result.filter(p => {
-        switch (activeTab) {
-          case 'Pure Juices': return p.category === 'Pure Fruit Juice';
-          case 'Fruit Shakes': return p.category === 'Fruit Milkshake';
-          case 'Salads': return p.category === 'Salad';
-          case 'Fresh Fruits': return p.category === 'Fresh Fruit';
-          case 'Daily Deals': return p.featured === true;
-          default: return false;
-        }
-      });
+      const cat = PRODUCT_CATEGORIES.find(c => c.label === activeTab);
+      if (cat) {
+        result = cat.dbValue === null
+          ? result.filter(p => p.featured === true)
+          : result.filter(p => p.category === cat.dbValue);
+      } else {
+        result = [];
+      }
     }
 
     const [minP, maxP] = priceRange;

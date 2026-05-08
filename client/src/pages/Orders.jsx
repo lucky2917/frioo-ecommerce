@@ -15,8 +15,6 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  if (authLoading) return <LoadingSpinner fullScreen />;
-
   useEffect(() => {
     if (!user?.id) {
       setLoading(false);
@@ -83,6 +81,8 @@ export default function Orders() {
     });
   };
 
+  if (authLoading) return <LoadingSpinner fullScreen />;
+
   return (
     <div className="orders-page">
       <SEO title="My Orders" description="Track your order history." />
@@ -100,7 +100,9 @@ export default function Orders() {
           </div>
         ) : orders.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">📦</div>
+            <div className="empty-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </div>
             <h3>No Orders Yet</h3>
             <p>Looks like you haven't placed an order yet.</p>
             <Link to="/shop" className="btn-shop">Start Shopping</Link>
@@ -140,10 +142,10 @@ export default function Orders() {
                           {item.preferences && (
                             <div className="item-prefs">
                               {item.preferences.exclusions?.length > 0 && (
-                                <div className="pref-row">🚫 No {item.preferences.exclusions.join(', ')}</div>
+                                <div className="pref-row">No {item.preferences.exclusions.join(', ')}</div>
                               )}
                               {item.preferences.removedIngredients?.length > 0 && (
-                                <div className="pref-row">🚫 No {item.preferences.removedIngredients.join(', ')}</div>
+                                <div className="pref-row">No {item.preferences.removedIngredients.join(', ')}</div>
                               )}
                             </div>
                           )}
@@ -343,7 +345,7 @@ export default function Orders() {
             text-align: center;
             padding: 80px 20px;
         }
-        .empty-icon { font-size: 3rem; margin-bottom: 20px; display: block; }
+        .empty-icon { margin-bottom: 20px; display: flex; justify-content: center; color: #bbb; }
         .empty-state h3 { font-family: 'Playfair Display'; margin-bottom: 10px; }
         .empty-state p { margin-bottom: 30px; color: #888; }
         .btn-shop {

@@ -211,13 +211,13 @@ export default function Cart() {
 
       if (!response.ok) {
         if (result.error?.requiresAuth || response.status === 401) {
-          showToast('⚠️ Please login to place an order', 'error');
+          showToast('Please login to place an order', 'error');
           return;
         }
         throw new Error(result.error?.message || 'Failed to place order');
       }
 
-      showToast('Order placed successfully! 🚀', 'success');
+      showToast('Order placed successfully', 'success');
       clearCart();
       navigate('/orders');
 
@@ -238,7 +238,7 @@ export default function Cart() {
     if (cartItems.length === 0) return;
 
     if (!user || !user.id) {
-      showToast('⚠️ Please login to place an order', 'error');
+      showToast('Please login to place an order', 'error');
       return;
     }
 
@@ -422,7 +422,7 @@ export default function Cart() {
                   {isChecking ? 'Checking...' : isPlacingOrder ? 'Processing...' : 'Checkout'}
                 </button>
                 {isBelowMin && <p className="os-warning">Add ₹{amountToMin.toFixed(0)} more for delivery.</p>}
-                <p className="secure-badge">🔒 Secure Checkout</p>
+                <p className="secure-badge">Secure Checkout</p>
               </div>
             </div>
           </div>

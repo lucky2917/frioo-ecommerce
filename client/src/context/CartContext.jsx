@@ -131,12 +131,12 @@ export const CartProvider = ({ children }) => {
             const result = await res.json();
 
             if (!res.ok) {
-                showToast(`❌ ${result.error?.message || 'Invalid coupon'}`);
+                showToast(result.error?.message || 'Invalid coupon');
                 return false;
             }
 
             setAppliedCoupon(result.data?.coupon);
-            showToast(`✅ ${result.data?.coupon?.code} Applied!`);
+            showToast(`${result.data?.coupon?.code} applied`);
             return true;
         } catch (err) {
             logger.error('Coupon verification failed:', err);
