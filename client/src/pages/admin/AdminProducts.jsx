@@ -13,7 +13,7 @@ const INITIAL_FORM = {
     category: DB_CATEGORIES[3],
     price: '',
     unit: 'kg',
-    stock: '',
+    stock: 'available',
     image_url: '',
     description: '',
     featured: false,
@@ -86,7 +86,7 @@ export default function AdminProducts() {
             category: String(product.category || 'Fresh Fruit'),
             price: typeof product.price_cents === 'number' ? (product.price_cents / 100).toString() : '',
             unit: String(product.unit || 'kg'),
-            stock: product.stock != null ? String(product.stock) : '',
+            stock: product.stock === 0 ? 'unavailable' : 'available',
             image_url: String(imageUrl),
             description: String(product.description || ''),
             featured: Boolean(product.featured),
@@ -143,7 +143,7 @@ export default function AdminProducts() {
                 category: formData.category,
                 price_cents,
                 unit: formData.unit,
-                stock: formData.stock !== '' ? parseInt(formData.stock, 10) : 0,
+                stock: formData.stock === 'unavailable' ? 0 : null,
                 images: [formData.image_url],
                 description: formData.description || '',
                 featured: formData.featured,
@@ -179,10 +179,11 @@ export default function AdminProducts() {
                 throw new Error(msg);
             }
 
+            const savedProduct = data.data.product;
             setProducts(prev =>
                 formData.id
-                    ? prev.map(p => p.id === data.product.id ? data.product : p)
-                    : [data.product, ...prev]
+                    ? prev.map(p => p.id === savedProduct.id ? savedProduct : p)
+                    : [savedProduct, ...prev]
             );
             showToast(`Product ${formData.id ? 'updated' : 'created'} successfully!`, 'success');
             setIsModalOpen(false);
@@ -312,11 +313,9 @@ export default function AdminProducts() {
                             <h3 className="product-name">{product.title}</h3>
                             <div className="product-meta">
                                 <span className="product-unit">{product.unit}</span>
-                                {product.stock != null && (
-                                    <span className={`stock-badge ${product.stock === 0 ? 'out' : product.stock <= 5 ? 'low' : 'ok'}`}>
-                                        {product.stock === 0 ? 'Out of stock' : `${product.stock} in stock`}
-                                    </span>
-                                )}
+                                <span className={`stock-badge ${product.stock === 0 ? 'out' : 'ok'}`}>
+                                    {product.stock === 0 ? 'Not Available' : 'Available'}
+                                </span>
                             </div>
                             <div className="product-price-row">
                                 <div className="product-price">
@@ -420,15 +419,23 @@ export default function AdminProducts() {
                                 </div>
 
                                 <div className="form-field">
-                                    <label>Stock Quantity</label>
-                                    <input
-                                        type="number"
-                                        step="1"
-                                        value={formData.stock}
-                                        onChange={e => setField('stock', e.target.value)}
-                                        placeholder="0"
-                                        min="0"
-                                    />
+                                    <label>Availability</label>
+                                    <div className="stock-toggle">
+                                        <button
+                                            type="button"
+                                            className={`stock-toggle-btn ${formData.stock === 'available' ? 'active available' : ''}`}
+                                            onClick={() => setField('stock', 'available')}
+                                        >
+                                            Available
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`stock-toggle-btn ${formData.stock === 'unavailable' ? 'active unavailable' : ''}`}
+                                            onClick={() => setField('stock', 'unavailable')}
+                                        >
+                                            Not Available
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="form-field full">
@@ -827,8 +834,33 @@ export default function AdminProducts() {
                     border-radius: 4px;
                 }
                 .stock-badge.ok { background: #dcfce7; color: #166534; }
-                .stock-badge.low { background: #fef3c7; color: #92400e; }
                 .stock-badge.out { background: #fee2e2; color: #991b1b; }
+
+                .stock-toggle {
+                    display: flex;
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    padding: 4px;
+                    gap: 4px;
+                }
+
+                .stock-toggle-btn {
+                    flex: 1;
+                    padding: 8px 12px;
+                    border: none;
+                    background: transparent;
+                    color: #64748b;
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .stock-toggle-btn:hover { color: #334155; }
+                .stock-toggle-btn.active.available { background: #dcfce7; color: #166534; }
+                .stock-toggle-btn.active.unavailable { background: #fee2e2; color: #991b1b; }
 
                 .product-price-row {
                     display: flex;

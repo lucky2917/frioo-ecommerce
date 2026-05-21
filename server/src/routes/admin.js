@@ -159,7 +159,7 @@ router.post('/products',
 
             const { data, error } = await supabaseAdmin
                 .from('products')
-                .insert([{ title, slug, description, price_cents, category, images, nutrition, featured, unit, stock: stock ?? 0, discount: discount ?? 0, perfect_for: perfect_for || '', video_url: video_url || '' }])
+                .insert([{ title, slug, description, price_cents, category, images, nutrition, featured, unit, stock: stock ?? null, discount: discount ?? 0, perfect_for: perfect_for || '', video_url: video_url || '' }])
                 .select()
                 .single();
 
@@ -207,7 +207,7 @@ router.patch('/products/:id',
             return sendSuccess(res, { product: data });
         } catch (err) {
             logger.error('Admin update product error:', err);
-            return sendError(res, 'Failed to update product', 500);
+            return sendError(res, err.message || 'Failed to update product', 500);
         }
     }
 );

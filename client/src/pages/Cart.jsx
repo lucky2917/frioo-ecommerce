@@ -214,7 +214,10 @@ export default function Cart() {
           showToast('Please login to place an order', 'error');
           return;
         }
-        throw new Error(result.error?.message || 'Failed to place order');
+        const details = result.error?.details;
+        const firstDetail = Array.isArray(details) && details[0];
+        const errorMessage = firstDetail?.message || result.error?.message || 'Failed to place order';
+        throw new Error(errorMessage);
       }
 
       showToast('Order placed successfully', 'success');
@@ -247,10 +250,18 @@ export default function Cart() {
       return;
     }
 
-    if (orderType === 'delivery' && !profile?.address?.trim()) {
-      showToast('No delivery address found. Please set one in your Profile.', 'error');
-      navigate('/profile');
-      return;
+    if (orderType === 'delivery') {
+      const addr = profile?.address?.trim() || '';
+      if (!addr) {
+        showToast('No delivery address found. Please set one in your Profile.', 'error');
+        navigate('/profile');
+        return;
+      }
+      if (addr.length < 10) {
+        showToast('Your delivery address is too short. Please update it in Profile.', 'error');
+        navigate('/profile');
+        return;
+      }
     }
 
     if (orderType === 'delivery' || orderType === 'takeaway') {

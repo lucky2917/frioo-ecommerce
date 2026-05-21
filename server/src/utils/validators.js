@@ -24,7 +24,7 @@ const addressValidator = (fieldName = 'delivery_address', required = true) => {
         .matches(/[a-zA-Z]/)
         .withMessage('Address must contain letters');
 
-    return required ? validator : validator.optional();
+    return required ? validator : validator.optional({ values: 'falsy' });
 };
 
 const nameValidator = (fieldName = 'full_name') =>
@@ -121,18 +121,18 @@ const sanitizeHtml = (value) => {
 };
 
 const orderValidators = () => [
-    body('user_id').optional().isUUID(4).withMessage('user_id must be a valid UUID'),
-    body('profile_id').optional().isUUID(4).withMessage('profile_id must be a valid UUID'),
+    body('user_id').optional({ values: 'falsy' }).isUUID(4).withMessage('user_id must be a valid UUID'),
+    body('profile_id').optional({ values: 'falsy' }).isUUID(4).withMessage('profile_id must be a valid UUID'),
     orderItemsValidator(),
     body('total_amount').isFloat({ min: 0, max: 1000000 }).withMessage('total_amount must be a number between 0 and 1000000'),
     orderTypeValidator(),
     addressValidator('delivery_address', false),
-    body('phone_number').optional().trim(),
+    body('phone_number').optional({ values: 'falsy' }).trim(),
     distanceValidator(),
-    body('customer_lat').optional().isFloat({ min: -90, max: 90 }).withMessage('Invalid latitude'),
-    body('customer_lng').optional().isFloat({ min: -180, max: 180 }).withMessage('Invalid longitude'),
-    body('coupon_code').optional().trim().toUpperCase(),
-    body('discount_amount').optional().isFloat({ min: 0 }).withMessage('Discount amount must be non-negative')
+    body('customer_lat').optional({ values: 'falsy' }).isFloat({ min: -90, max: 90 }).withMessage('Invalid latitude'),
+    body('customer_lng').optional({ values: 'falsy' }).isFloat({ min: -180, max: 180 }).withMessage('Invalid longitude'),
+    body('coupon_code').optional({ values: 'falsy' }).trim().toUpperCase(),
+    body('discount_amount').optional({ values: 'falsy' }).isFloat({ min: 0 }).withMessage('Discount amount must be non-negative')
 ];
 
 const productValidators = () => [

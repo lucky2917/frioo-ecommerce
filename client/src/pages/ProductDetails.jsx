@@ -142,20 +142,35 @@ export default function ProductDetails() {
         keywords={product ? `${product.title} vizag, ${product.category} vizag, buy ${product.title} online vizag, fresh ${product.category} visakhapatnam` : ''}
         structuredData={product ? {
           "@context": "https://schema.org",
-          "@type": "Product",
-          "name": product.title,
-          "description": product.description,
-          "image": product.images?.[0],
-          "brand": { "@type": "Brand", "name": "Frioo" },
-          "offers": {
-            "@type": "Offer",
-            "price": (product.price_cents / 100).toFixed(2),
-            "priceCurrency": "INR",
-            "availability": "https://schema.org/InStock",
-            "seller": { "@type": "Organization", "name": "Frioo Vizag" },
-            "areaServed": { "@type": "City", "name": "Visakhapatnam" }
-          },
-          "category": product.category
+          "@graph": [
+            {
+              "@type": "Product",
+              "name": product.title,
+              "description": product.description,
+              "image": product.images?.[0],
+              "url": `https://frioo.in/product/${product.id}`,
+              "sku": `FRIOO-${product.id}`,
+              "brand": { "@type": "Brand", "name": "Frioo" },
+              "category": product.category,
+              "offers": {
+                "@type": "Offer",
+                "price": (product.price_cents / 100).toFixed(2),
+                "priceCurrency": "INR",
+                "availability": "https://schema.org/InStock",
+                "url": `https://frioo.in/product/${product.id}`,
+                "seller": { "@type": "Organization", "name": "Frioo" },
+                "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
+              }
+            },
+            {
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://frioo.in/" },
+                { "@type": "ListItem", "position": 2, "name": "Shop", "item": "https://frioo.in/shop" },
+                { "@type": "ListItem", "position": 3, "name": product.title, "item": `https://frioo.in/product/${product.id}` }
+              ]
+            }
+          ]
         } : undefined}
       />
       <Navbar />

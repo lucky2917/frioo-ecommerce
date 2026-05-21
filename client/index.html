@@ -86,7 +86,7 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": ["FoodEstablishment", "LocalBusiness"],
     "@id": "https://frioo.in/#localbusiness",
     "name": "Frioo - Fresh Fruits & Juices Vizag",
     "image": "https://frioo.in/og-image.jpg",
@@ -116,13 +116,21 @@
         "closes": "22:00"
       }
     ],
-    "servesCuisine": ["Juice", "Fresh Fruits", "Salads", "Healthy Food"],
+    "servesCuisine": ["Fresh Fruits", "Fruit Juices", "Milkshakes", "Salads", "Healthy Food"],
     "menu": "https://frioo.in/shop",
     "hasMenu": "https://frioo.in/shop",
-    "areaServed": {
-      "@type": "City",
-      "name": "Visakhapatnam"
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Fresh Fruits, Juices & Salads",
+      "url": "https://frioo.in/shop"
     },
+    "areaServed": [
+      { "@type": "City", "name": "Visakhapatnam" },
+      { "@type": "AdministrativeArea", "name": "Andhra Pradesh" }
+    ],
+    "paymentAccepted": "Cash, UPI, Credit Card, Debit Card",
+    "currenciesAccepted": "INR",
+    "knowsAbout": ["Fresh Fruits", "Fruit Juices", "Milkshakes", "Fruit Salads", "Healthy Food Delivery", "Farm Fresh Produce"],
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": "4.8",

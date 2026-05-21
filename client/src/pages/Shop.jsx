@@ -118,6 +118,26 @@ export default function Shop() {
 
   const safeCart = cart || {};
 
+  const shopStructuredData = useMemo(() => {
+    const listProducts = processedProducts.slice(0, 20);
+    if (listProducts.length === 0) return undefined;
+    return {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": categoryParam
+        ? `Fresh ${categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)} in Visakhapatnam — Frioo`
+        : "Fresh Fruits, Juices & Salads in Vizag — Frioo",
+      "url": categoryParam ? `https://frioo.in/shop?category=${categoryParam}` : "https://frioo.in/shop",
+      "numberOfItems": listProducts.length,
+      "itemListElement": listProducts.map((p, idx) => ({
+        "@type": "ListItem",
+        "position": idx + 1,
+        "url": `https://frioo.in/product/${p.id}`,
+        "name": p.title
+      }))
+    };
+  }, [processedProducts, categoryParam]);
+
   const CATEGORY_SEO = {
     juices: {
       title: 'Buy Fresh Fruit Juices in Vizag — Pure, No Preservatives',
@@ -155,6 +175,7 @@ export default function Shop() {
         description={activeSeo?.description || 'Shop the freshest fruits, pure juices, fruit milkshakes & healthy salads in Visakhapatnam. Order online for delivery in Vizag within 6km. 100% natural, no preservatives.'}
         canonical={categoryParam ? `/shop?category=${categoryParam}` : '/shop'}
         keywords={activeSeo?.keywords || 'buy fruits online vizag, fresh juice shop vizag, fruit delivery visakhapatnam, order fruits online vizag, fresh salad vizag, fruit milkshake order vizag'}
+        structuredData={shopStructuredData}
       />
       <Navbar />
 
