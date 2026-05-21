@@ -48,8 +48,7 @@ router.post('/',
                 distance_km,
                 customer_lat,
                 customer_lng,
-                coupon_code,
-                notes
+                coupon_code
             } = req.body;
 
             const user_id = req.user.id;
@@ -160,7 +159,6 @@ router.post('/',
                     customer_lng: customer_lng || null,
                     coupon_code: coupon_code || null,
                     discount: serverCalculatedDiscount,
-                    notes: notes || null,
                     status: 'pending',
                     created_at: new Date().toISOString()
                 }])
