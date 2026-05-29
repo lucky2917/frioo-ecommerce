@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { supabase } from '../lib/supabaseClient';
@@ -9,6 +9,11 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const profileRef = useRef(null);
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
 
   const hardReset = async () => {
     logger.warn('Performing hard reset of auth state');
@@ -25,7 +30,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   };
 
-  const fetchProfile = async (userId) => {
+  const fetchProfile = useCallback(async (userId) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -36,14 +41,14 @@ export const AuthProvider = ({ children }) => {
       if (!error && data) {
         setProfile(data);
       } else if (error) {
-        logger.error("Profile fetch error:", error);
+        logger.error('Profile fetch error:', error);
       }
       return data;
     } catch (err) {
-      logger.error("Auth Error:", err);
+      logger.error('Auth Error:', err);
       return null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -82,16 +87,12 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       logger.info('Auth state changed:', event);
 
-      if (event === 'SIGNED_IN') {
-        logger.info('User signed in');
-      } else if (event === 'TOKEN_REFRESHED') {
+      if (event === 'TOKEN_REFRESHED') {
         logger.info('Token refreshed successfully');
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setProfile(null);
         setLoading(false);
-      } else if (event === 'USER_UPDATED') {
-        logger.info('User updated');
       }
 
       if (session?.error) {
@@ -102,7 +103,7 @@ export const AuthProvider = ({ children }) => {
 
       if (session?.user) {
         setUser(session.user);
-        if (!profile || profile.id !== session.user.id) {
+        if (!profileRef.current || profileRef.current.id !== session.user.id) {
           fetchProfile(session.user.id).catch(e => logger.error('Background profile fetch failed:', e));
         }
       } else if (!loading) {
@@ -197,7 +198,7 @@ export const AuthProvider = ({ children }) => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
     };
-  }, []);
+  }, [fetchProfile]);
 
   const refreshSession = async () => {
     try {

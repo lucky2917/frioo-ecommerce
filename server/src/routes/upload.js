@@ -30,6 +30,93 @@ const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 },
 });
 
+/**
+ * @swagger
+ * /api/upload:
+ *   post:
+ *     summary: Upload a product image
+ *     description: |
+ *       Uploads an image to Supabase Storage (`frioo-assets` bucket) and returns the public CDN URL.
+ *
+ *       **Validations performed:**
+ *       - MIME type must be `image/jpeg`, `image/png`, or `image/webp`
+ *       - File extension must be `.jpg`, `.jpeg`, `.png`, or `.webp`
+ *       - File content is verified against magic bytes (no spoofing)
+ *       - Maximum file size: **5 MB**
+ *
+ *       The returned URL can be used directly in the `images` field when creating or updating a product.
+ *
+ *       **Rate limit:** 20 requests per 15 minutes per IP (shared with admin auth limiter).
+ *
+ *       Admin only.
+ *     tags: [Upload]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [file]
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image file (JPEG, PNG, or WebP — max 5 MB)
+ *     responses:
+ *       200:
+ *         description: File uploaded — public CDN URL returned
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 url:
+ *                   type: string
+ *                   format: uri
+ *                   example: https://qxeoywdfozfwoaksyfyh.supabase.co/storage/v1/object/public/frioo-assets/1717000000000_123456789.jpg
+ *             example:
+ *               success: true
+ *               url: https://qxeoywdfozfwoaksyfyh.supabase.co/storage/v1/object/public/frioo-assets/1717000000000_123456789.jpg
+ *       400:
+ *         description: No file uploaded, invalid MIME type, bad extension, or magic byte mismatch
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: Invalid file type. Only JPEG, PNG, and WebP images are allowed.
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       403:
+ *         $ref: '#/components/responses/Forbidden'
+ *       413:
+ *         description: File exceeds 5 MB limit
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: File too large. Maximum size is 5 MB.
+ *       429:
+ *         $ref: '#/components/responses/TooManyRequests'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ */
 router.post('/', requireAdmin, upload.single('file'), async (req, res) => {
     try {
         const file = req.file;

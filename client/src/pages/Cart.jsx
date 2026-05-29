@@ -32,7 +32,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 export default function Cart() {
-  const { cart, addToCart, removeFromCart, deleteFromCart, clearCart, appliedCoupon, verifyCoupon, removeCoupon, availableCoupons } = useCart();
+  const { cart, addToCart, removeFromCart, deleteFromCart, updateCartItem, clearCart, appliedCoupon, verifyCoupon, removeCoupon, availableCoupons } = useCart();
 
   const cartItems = Object.entries(cart || {}).map(([key, value]) => ({
     ...value,
@@ -130,11 +130,7 @@ export default function Cart() {
       note: editNote.trim() ? sanitizeText(editNote.trim()) : undefined
     };
 
-    deleteFromCart(editingItem.originalKey);
-
-    for (let i = 0; i < editingItem.qty; i++) {
-      addToCart(editProduct, editingItem.variant, editingItem.price, newPreferences);
-    }
+    updateCartItem(editingItem.originalKey, newPreferences, editingItem.price);
 
     setEditingItem(null);
     setEditProduct(null);

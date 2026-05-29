@@ -4,9 +4,7 @@ const requestLogger = (req, res, next) => {
     const startTime = Date.now();
     const { method, originalUrl, ip, headers } = req;
 
-    const originalEnd = res.end;
-
-    res.end = function (...args) {
+    res.on('finish', () => {
         const duration = Date.now() - startTime;
         const { statusCode } = res;
 
@@ -19,7 +17,7 @@ const requestLogger = (req, res, next) => {
             path: originalUrl,
             status: statusCode,
             duration: `${duration}ms`,
-            ip: ip || req.connection?.remoteAddress,
+            ip: ip || req.socket?.remoteAddress,
             userAgent: headers['user-agent'],
             timestamp: new Date().toISOString()
         };
@@ -35,9 +33,7 @@ const requestLogger = (req, res, next) => {
         } else {
             logger.info(message, logData);
         }
-
-        return originalEnd.apply(res, args);
-    };
+    });
 
     next();
 };
@@ -58,11 +54,7 @@ const performanceLogger = (threshold = 1000) => {
                     timestamp: new Date().toISOString()
                 };
 
-                if (logger.warn) {
-                    logger.warn(`Slow request detected: ${req.method} ${req.originalUrl}`, warningData);
-                } else {
-                    console.warn(`Slow request detected: ${req.method} ${req.originalUrl}`, warningData);
-                }
+                logger.warn(`Slow request detected: ${req.method} ${req.originalUrl}`, warningData);
             }
         });
 

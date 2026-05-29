@@ -1,5 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { API_BASE_URL } from '../config/constants';
 
@@ -22,24 +21,22 @@ export const CartProvider = ({ children }) => {
     const [appliedCoupon, setAppliedCoupon] = useState(null);
     const [availableCoupons, setAvailableCoupons] = useState([]);
 
-    useEffect(() => {
-        const fetchCoupons = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('coupons')
-                    .select('id, code, discount_type, value, min_order_value, is_active')
-                    .eq('is_active', true)
-                    .order('min_order_value', { ascending: true });
-
-                if (!error && data) {
-                    setAvailableCoupons(data);
-                }
-            } catch (err) {
-                logger.error('Error fetching coupons:', err);
+    const fetchCoupons = useCallback(async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/coupons/public`, { credentials: 'include' });
+            if (!res.ok) return;
+            const result = await res.json();
+            if (result.data?.coupons) {
+                setAvailableCoupons(result.data.coupons);
             }
-        };
-        fetchCoupons();
+        } catch (err) {
+            logger.error('Error fetching coupons:', err);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchCoupons();
+    }, [fetchCoupons]);
 
     useEffect(() => {
         localStorage.setItem('frioo_cart', JSON.stringify(cart));
@@ -114,6 +111,30 @@ export const CartProvider = ({ children }) => {
         showToast('Item removed');
     };
 
+    const updateCartItem = (cartKey, newPreferences, newPrice) => {
+        setCart(prev => {
+            if (!prev[cartKey]) return prev;
+
+            const existing = prev[cartKey];
+            const newKey = makeCartKey(existing.id, existing.variant, newPreferences);
+            const newCart = { ...prev };
+
+            if (newKey === cartKey) {
+                newCart[cartKey] = { ...existing, preferences: newPreferences, price: newPrice ?? existing.price };
+                return newCart;
+            }
+
+            delete newCart[cartKey];
+            newCart[newKey] = {
+                ...existing,
+                preferences: newPreferences,
+                price: newPrice ?? existing.price,
+                qty: existing.qty
+            };
+            return newCart;
+        });
+    };
+
     const clearCart = () => {
         setCart({});
         setAppliedCoupon(null);
@@ -157,13 +178,15 @@ export const CartProvider = ({ children }) => {
             addToCart,
             removeFromCart,
             deleteFromCart,
+            updateCartItem,
             clearCart,
             notification,
             showToast,
             appliedCoupon,
             verifyCoupon,
             removeCoupon,
-            availableCoupons
+            availableCoupons,
+            refreshCoupons: fetchCoupons
         }}>
             {children}
         </CartContext.Provider>

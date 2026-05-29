@@ -1,5 +1,6 @@
 const { supabaseAdmin } = require('../db');
 const { sendUnauthorized, sendForbidden, sendError } = require('../utils/responses');
+const logger = require('../utils/logger');
 
 const requireAdmin = async (req, res, next) => {
     try {
@@ -45,7 +46,7 @@ const requireAdmin = async (req, res, next) => {
 
         next();
     } catch (err) {
-        console.error('Admin auth middleware error:', err);
+        logger.error('Admin auth middleware error:', err);
         return sendError(res, 'Authentication failed', 500);
     }
 };
@@ -64,7 +65,7 @@ const requireAuth = async (req, res, next) => {
         req.user = user;
         next();
     } catch (err) {
-        console.error('Auth middleware error:', err);
+        logger.error('Auth middleware error:', err);
         return sendError(res, 'Authentication failed', 500);
     }
 };

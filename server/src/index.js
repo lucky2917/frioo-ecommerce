@@ -16,6 +16,8 @@ const { requestLogger, performanceLogger } = require('./middleware/requestLogger
 const { csrfProtection, validateCsrfToken, getCsrfToken } = require('./middleware/csrf');
 const { initSentry, requestHandler, tracingHandler, errorHandler } = require('./config/sentry');
 const logger = require('./utils/logger');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 
 const app = express();
 
@@ -162,7 +164,55 @@ app.use(cookieParser());
 
 app.use(csrfProtection);
 
+/**
+ * @swagger
+ * /api/csrf-token:
+ *   get:
+ *     summary: Get CSRF token
+ *     description: |
+ *       Issues a CSRF token cookie and returns the token value in the response body.
+ *       The token must be included as the `X-CSRF-Token` header in all mutating API calls
+ *       (POST, PATCH, DELETE) that are not under `/api/admin/` or `/api/upload`.
+ *
+ *       Call this endpoint once per session before placing an order.
+ *       The token is also set automatically as an httpOnly cookie named `csrfToken`.
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: CSRF token issued
+ *         headers:
+ *           Set-Cookie:
+ *             description: httpOnly cookie containing the CSRF token
+ *             schema:
+ *               type: string
+ *               example: csrfToken=abc123; Path=/; HttpOnly; SameSite=Lax
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CsrfTokenResponse'
+ *             example:
+ *               success: true
+ *               data:
+ *                 csrfToken: a3f8d2c1e9b74a6f85230d1c7e4a9f2b3c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f
+ *               error: null
+ */
 app.get('/api/csrf-token', getCsrfToken);
+
+const swaggerUiOptions = {
+    customSiteTitle: 'Frioo API Docs',
+    swaggerOptions: {
+        persistAuthorization: true,
+        displayRequestDuration: true,
+        defaultModelsExpandDepth: 2,
+        defaultModelExpandDepth: 2,
+        docExpansion: 'list',
+        filter: true,
+        tryItOutEnabled: false
+    }
+};
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,

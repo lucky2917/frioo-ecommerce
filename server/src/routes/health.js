@@ -2,6 +2,27 @@ const express = require('express');
 const router = express.Router();
 const { supabaseAdmin } = require('../db');
 
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Liveness probe
+ *     description: Returns 200 immediately if the Node.js process is running. Does not check external dependencies.
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Service is alive
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthLive'
+ *             example:
+ *               status: ok
+ *               timestamp: '2025-05-29T10:00:00.000Z'
+ *               uptime: 3600.5
+ *               service: frioo-api
+ *               version: '1.0.0'
+ */
 router.get('/health', (req, res) => {
     res.status(200).json({
         status: 'ok',
@@ -12,6 +33,41 @@ router.get('/health', (req, res) => {
     });
 });
 
+/**
+ * @swagger
+ * /health/ready:
+ *   get:
+ *     summary: Readiness probe
+ *     description: Pings the Supabase database. Returns 200 only when the database is reachable. Use this for Kubernetes readiness gates.
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Service is ready — database connection confirmed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthReady'
+ *             example:
+ *               status: ready
+ *               checks:
+ *                 server: ok
+ *                 database: ok
+ *                 timestamp: '2025-05-29T10:00:00.000Z'
+ *               message: All systems operational
+ *       503:
+ *         description: Service unavailable — database unreachable
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthReady'
+ *             example:
+ *               status: unavailable
+ *               checks:
+ *                 server: ok
+ *                 database: error
+ *                 timestamp: '2025-05-29T10:00:00.000Z'
+ *               message: Database connection failed
+ */
 router.get('/health/ready', async (req, res) => {
     const checks = {
         server: 'ok',
@@ -56,6 +112,34 @@ router.get('/health/ready', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /health/status:
+ *   get:
+ *     summary: Detailed service status
+ *     description: Returns Node.js process stats — memory usage, CPU time, uptime, and environment. Useful for ops dashboards.
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Full service metadata
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthStatus'
+ *             example:
+ *               service: frioo-api
+ *               version: '1.0.0'
+ *               environment: production
+ *               uptime: 7200.3
+ *               timestamp: '2025-05-29T10:00:00.000Z'
+ *               memory:
+ *                 used: 48 MB
+ *                 total: 128 MB
+ *                 rss: 72 MB
+ *               cpu:
+ *                 user: 123456
+ *                 system: 78910
+ */
 router.get('/health/status', (req, res) => {
     const status = {
         service: 'frioo-api',

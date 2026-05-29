@@ -18,8 +18,9 @@ export const sanitizeHTML = (dirty) => {
 
     return DOMPurify.sanitize(dirty, {
         ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'br', 'p'],
-        ALLOWED_ATTR: ['href', 'target'],
-        ALLOW_DATA_ATTR: false
+        ALLOWED_ATTR: ['href', 'target', 'rel'],
+        ALLOW_DATA_ATTR: false,
+        ALLOWED_URI_REGEXP: /^https?:\/\//i,
     });
 };
 
