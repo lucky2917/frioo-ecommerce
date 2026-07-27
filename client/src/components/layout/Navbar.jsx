@@ -76,7 +76,7 @@ export default function Navbar() {
   }, [lastScrollY]);
 
   const checkOrderValidity = (order) => {
-    if (order.status !== 'Delivered') {
+    if (order.status !== 'delivered') {
       setActiveOrder(order);
     } else {
       const deliveryTime = new Date(order.updated_at || order.created_at).getTime();

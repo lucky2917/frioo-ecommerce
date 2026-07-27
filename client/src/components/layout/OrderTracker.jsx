@@ -3,7 +3,14 @@ import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabaseClient';
 import { DELIVERY_STATUS_DURATION_MS } from '../../config/constants';
 
-const STEPS = ['Received', 'Confirmed', 'Packed', 'Out for Delivery', 'Delivered'];
+const STEPS = [
+  { key: 'pending', label: 'Received' },
+  { key: 'confirmed', label: 'Confirmed' },
+  { key: 'preparing', label: 'Preparing' },
+  { key: 'ready', label: 'Ready' },
+  { key: 'out-for-delivery', label: 'Out for Delivery' },
+  { key: 'delivered', label: 'Delivered' },
+];
 
 export default function OrderTracker() {
   const { user } = useAuth();
@@ -12,7 +19,7 @@ export default function OrderTracker() {
 
   const resolveOrder = useCallback((order) => {
     if (!order) return setActiveOrder(null);
-    if (order.status !== 'Delivered') return setActiveOrder(order);
+    if (order.status !== 'delivered') return setActiveOrder(order);
     const elapsed = Date.now() - new Date(order.updated_at || order.created_at).getTime();
     setActiveOrder(elapsed < DELIVERY_STATUS_DURATION_MS ? order : null);
   }, []);
@@ -53,7 +60,7 @@ export default function OrderTracker() {
   }
   if (!Array.isArray(items)) items = [];
 
-  const currentStep = STEPS.indexOf(activeOrder.status);
+  const currentStep = STEPS.findIndex(s => s.key === activeOrder.status);
   const progress = Math.max(0, (currentStep / (STEPS.length - 1)) * 100);
 
   return (
@@ -82,9 +89,9 @@ export default function OrderTracker() {
               </div>
               <div className="ot-steps">
                 {STEPS.map((step, i) => (
-                  <div key={step} className={`ot-step${i <= currentStep ? ' done' : ''}`}>
+                  <div key={step.key} className={`ot-step${i <= currentStep ? ' done' : ''}`}>
                     <div className="ot-dot" />
-                    <span className="ot-step-label">{step}</span>
+                    <span className="ot-step-label">{step.label}</span>
                   </div>
                 ))}
               </div>
