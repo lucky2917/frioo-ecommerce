@@ -32,9 +32,12 @@ export const showToast = (message, type = 'info', duration = 3000) => {
     toast.innerHTML = `
     <div style="display: flex; align-items: center; gap: 12px;">
       <span style="font-size: 1.2rem;">${icons[type]}</span>
-      <span style="font-size: 0.9rem; font-weight: 500;">${message}</span>
+      <span class="toast-message" style="font-size: 0.9rem; font-weight: 500;"></span>
     </div>
   `;
+
+    const messageSpan = toast.querySelector('.toast-message');
+    if (messageSpan) messageSpan.textContent = message;
 
     Object.assign(toast.style, {
         position: 'fixed',
