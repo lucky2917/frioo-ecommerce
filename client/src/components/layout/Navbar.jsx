@@ -872,7 +872,8 @@ export default function Navbar() {
           top: 0;
           left: -100%;
           width: 100%; /* Full width for cleaner look with horizontal layout */
-          height: 100vh; /* Full height */
+          height: 100vh;
+          height: 100dvh;
           background: white;
           transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
           z-index: 2000;
