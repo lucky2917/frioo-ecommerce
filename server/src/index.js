@@ -337,11 +337,13 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 process.on('uncaughtException', (err) => {
   logger.error('Uncaught Exception:', err);
+  if (!server) return;
   gracefulShutdown('UNCAUGHT_EXCEPTION');
 });
 
 process.on('unhandledRejection', (reason, promise) => {
   logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  if (!server) return;
   gracefulShutdown('UNHANDLED_REJECTION');
 });
 
