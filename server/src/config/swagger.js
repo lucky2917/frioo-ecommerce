@@ -8,9 +8,7 @@ const definition = {
         version: '1.0.0',
         description:
             'REST API for Frioo — a fresh produce delivery and takeaway platform serving Visakhapatnam. ' +
-            'Protected endpoints require a Supabase JWT passed as a Bearer token. ' +
-            'Mutating endpoints (POST /api/orders) additionally require an `X-CSRF-Token` header ' +
-            'obtained from `GET /api/csrf-token`.',
+            'Protected endpoints require a Supabase JWT passed as a Bearer token.',
         contact: {
             name: 'Frioo',
             email: 'support@frioo.in',
@@ -28,7 +26,6 @@ const definition = {
     ],
     tags: [
         { name: 'Health', description: 'Liveness and readiness probes' },
-        { name: 'Auth', description: 'CSRF token acquisition' },
         { name: 'Products', description: 'Public product catalogue' },
         { name: 'Orders', description: 'Order placement — requires authentication' },
         { name: 'Coupons', description: 'Public coupon validation and listing' },
@@ -225,19 +222,6 @@ const definition = {
                             { field: 'phone_number', message: 'Invalid phone number. Must be a valid Indian mobile number starting with 6-9', value: '12345' }
                         ]
                     }
-                }
-            },
-            CsrfTokenResponse: {
-                type: 'object',
-                properties: {
-                    success: { type: 'boolean', example: true },
-                    data: {
-                        type: 'object',
-                        properties: {
-                            csrfToken: { type: 'string', example: 'a3f8d2c1e9b74a6f85230d1c7e4a9f2b3c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f' }
-                        }
-                    },
-                    error: { type: 'object', nullable: true, example: null }
                 }
             },
             HealthLive: {

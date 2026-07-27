@@ -15,9 +15,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const cookieParser = require('cookie-parser');
 const { requestLogger, performanceLogger } = require('./middleware/requestLogger');
-const { csrfProtection, validateCsrfToken, getCsrfToken } = require('./middleware/csrf');
 const logger = require('./utils/logger');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
@@ -111,6 +109,29 @@ const allowedOrigins = [
   process.env.PRODUCTION_URL
 ].filter(Boolean);
 
+const enforceOrigin = (req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    return next();
+  }
+  if (process.env.NODE_ENV !== 'production') {
+    return next();
+  }
+  const origin = req.headers.origin;
+  if (!origin) {
+    return next();
+  }
+  if (allowedOrigins.includes(origin)) {
+    return next();
+  }
+  return res.status(403).json({
+    success: false,
+    data: null,
+    error: { message: 'Origin not allowed', code: 403 }
+  });
+};
+
+app.use('/api', enforceOrigin);
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
@@ -158,44 +179,6 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-
-app.use(cookieParser());
-
-app.use(csrfProtection);
-
-/**
- * @swagger
- * /api/csrf-token:
- *   get:
- *     summary: Get CSRF token
- *     description: |
- *       Issues a CSRF token cookie and returns the token value in the response body.
- *       The token must be included as the `X-CSRF-Token` header in all mutating API calls
- *       (POST, PATCH, DELETE) that are not under `/api/admin/` or `/api/upload`.
- *
- *       Call this endpoint once per session before placing an order.
- *       The token is also set automatically as an httpOnly cookie named `csrfToken`.
- *     tags: [Auth]
- *     responses:
- *       200:
- *         description: CSRF token issued
- *         headers:
- *           Set-Cookie:
- *             description: httpOnly cookie containing the CSRF token
- *             schema:
- *               type: string
- *               example: csrfToken=abc123; Path=/; HttpOnly; SameSite=Lax
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/CsrfTokenResponse'
- *             example:
- *               success: true
- *               data:
- *                 csrfToken: a3f8d2c1e9b74a6f85230d1c7e4a9f2b3c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f
- *               error: null
- */
-app.get('/api/csrf-token', getCsrfToken);
 
 const swaggerUiOptions = {
     customSiteTitle: 'Frioo API Docs',
@@ -257,13 +240,6 @@ app.use('/', healthRouter);
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'Frioo API is running' });
-});
-
-app.use('/api', (req, res, next) => {
-  if (req.path.startsWith('/admin/') || req.path.startsWith('/upload')) {
-    return next();
-  }
-  validateCsrfToken(req, res, next);
 });
 
 app.use('/api/products', productsRouter);

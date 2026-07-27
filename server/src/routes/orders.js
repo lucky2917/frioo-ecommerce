@@ -45,9 +45,6 @@ const strictLimiter = rateLimit({
  *
  *       **Authentication:** Supabase JWT required in `Authorization: Bearer <token>` header.
  *
- *       **CSRF protection:** A valid `X-CSRF-Token` header is required for this endpoint.
- *       Obtain the token first by calling `GET /api/csrf-token`.
- *
  *       **Server-side validations performed:**
  *       - Product prices re-fetched from DB; client total must match within ₹0.01
  *       - Delivery distance re-calculated server-side using Haversine formula; max 6 km
@@ -58,14 +55,6 @@ const strictLimiter = rateLimit({
  *     tags: [Orders]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: header
- *         name: X-CSRF-Token
- *         required: true
- *         schema:
- *           type: string
- *         description: CSRF token obtained from `GET /api/csrf-token`. Required for all mutating API calls.
- *         example: a3f8d2c1e9b74a6f85230d1c7e4a9f2b3c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f
  *     requestBody:
  *       required: true
  *       content:
@@ -134,7 +123,7 @@ const strictLimiter = rateLimit({
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  *       403:
- *         description: Invalid or missing CSRF token
+ *         description: Origin not allowed
  *         $ref: '#/components/responses/Forbidden'
  *       409:
  *         description: Stock went out while placing the order — order auto-cancelled

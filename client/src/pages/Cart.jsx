@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import { useAuth } from '../context/AuthContext';
@@ -63,26 +63,8 @@ export default function Cart() {
   const [isChecking, setIsChecking] = useState(false);
   const [warningModal, setWarningModal] = useState({ show: false, distance: 0, lat: null, lng: null });
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
-  const [csrfToken, setCsrfToken] = useState('');
   const navigate = useNavigate();
   const { user, profile, loading: authLoading } = useAuth();
-
-  useEffect(() => {
-    const fetchCsrfToken = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/csrf-token`, {
-          credentials: 'include'
-        });
-        const data = await res.json();
-        if (data.success && data.data?.csrfToken) {
-          setCsrfToken(data.data.csrfToken);
-        }
-      } catch (err) {
-        logger.error('Failed to fetch CSRF token:', err);
-      }
-    };
-    fetchCsrfToken();
-  }, []);
 
   if (authLoading) return <div className="cart-page"><Navbar /><div style={{ padding: '100px', textAlign: 'center' }}>Loading...</div></div>;
 
@@ -197,7 +179,6 @@ export default function Cart() {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
           'Authorization': `Bearer ${session?.access_token || ''}`
         },
         body: JSON.stringify(orderPayload)
