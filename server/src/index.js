@@ -22,6 +22,8 @@ const swaggerSpec = require('./config/swagger');
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 const productsRouter = require('./routes/products');
 const couponsRouter = require('./routes/coupons');
 const ordersRouter = require('./routes/orders');
