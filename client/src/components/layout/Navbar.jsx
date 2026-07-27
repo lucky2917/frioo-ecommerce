@@ -32,10 +32,11 @@ export default function Navbar() {
 
     const debounceTimer = setTimeout(async () => {
       try {
+        const term = searchQuery.replace(/["\\]/g, '\\$&');
         const { data, error } = await supabase
           .from('products')
           .select('id, title, category, price_cents, images')
-          .or(`title.ilike.%${searchQuery}%,category.ilike.%${searchQuery}%`)
+          .or(`title.ilike."%${term}%",category.ilike."%${term}%"`)
           .limit(5);
 
         if (!error && data) {
