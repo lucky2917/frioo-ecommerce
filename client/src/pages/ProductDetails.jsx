@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import Navbar from '../components/layout/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
+import FetchError from '../components/FetchError';
 import VideoModal from '../components/shop/VideoModal';
 import ProductCard from '../components/shop/ProductCard';
 import OptimizedImage from '../components/OptimizedImage';
@@ -24,6 +25,7 @@ export default function ProductDetails() {
   const { addToCart } = useCart();
   const { id } = useParams();
   const [product, setProduct] = useState(null);
+  const [error, setError] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,42 +37,48 @@ export default function ProductDetails() {
   const [selectedExclusions, setSelectedExclusions] = useState([]);
   const [removedIngredients, setRemovedIngredients] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      window.scrollTo(0, 0);
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/products`);
-        const response = await res.json();
-        const data = response.data || {};
-        const items = data.items || [];
-        const found = items.find(p => p.id === parseInt(id));
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    window.scrollTo(0, 0);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/products`);
+      if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
+      const response = await res.json();
+      const data = response.data || {};
+      const items = data.items || [];
+      const found = items.find(p => p.id === parseInt(id));
 
-        if (found) {
-          setProduct(found);
-          setQty(1);
-          setSelectedExclusions([]);
-          setRemovedIngredients([]);
+      if (found) {
+        setProduct(found);
+        setQty(1);
+        setSelectedExclusions([]);
+        setRemovedIngredients([]);
 
-          if (found.category === 'Fresh Fruit' && found.unit === 'kg') {
-            setSelectedWeight(WEIGHT_OPTIONS[2]);
-          } else {
-            setSelectedWeight(null);
-          }
-
-          const others = items.filter(p => p.id !== found.id);
-          const sameCat = others.filter(p => p.category === found.category);
-          const randomMix = others.filter(p => p.category !== found.category).sort(() => 0.5 - Math.random());
-          setRelatedProducts([...sameCat, ...randomMix].slice(0, 4));
+        if (found.category === 'Fresh Fruit' && found.unit === 'kg') {
+          setSelectedWeight(WEIGHT_OPTIONS[2]);
+        } else {
+          setSelectedWeight(null);
         }
-      } catch (err) {
-        logger.error("Error loading product:", err);
-      } finally {
-        setLoading(false);
+
+        const others = items.filter(p => p.id !== found.id);
+        const sameCat = others.filter(p => p.category === found.category);
+        const randomMix = others.filter(p => p.category !== found.category).sort(() => 0.5 - Math.random());
+        setRelatedProducts([...sameCat, ...randomMix].slice(0, 4));
+      } else {
+        setProduct(null);
       }
-    };
-    fetchData();
+    } catch (err) {
+      logger.error("Error loading product:", err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -118,6 +126,19 @@ export default function ProductDetails() {
     <div className="pd-page">
       <Navbar />
       <div className="pd-loading"><LoadingSpinner /></div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="pd-page">
+      <Navbar />
+      <div className="pd-error">
+        <FetchError
+          message="We couldn't load this product. Please check your connection and try again."
+          onRetry={fetchData}
+        />
+        <Link to="/shop" className="back-link">Return to Shop</Link>
+      </div>
     </div>
   );
 

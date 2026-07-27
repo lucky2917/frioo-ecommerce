@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import ScrollReveal from '../components/animations/ScrollReveal';
@@ -8,6 +8,7 @@ import ProductCard from '../components/shop/ProductCard';
 import ShopFilters from '../components/shop/ShopFilters';
 import BundleDeals from '../components/shop/BundleDeals';
 import LoadingSpinner from '../components/LoadingSpinner';
+import FetchError from '../components/FetchError';
 import { logger } from '../utils/logger';
 import { useCart } from '../context/CartContext';
 import { showToast } from '../utils/toast';
@@ -22,6 +23,7 @@ export default function Shop() {
   const { cart, addToCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortOption, setSortOption] = useState('recommended');
@@ -58,21 +60,26 @@ export default function Shop() {
     if (cat) setSearchParams({ category: cat.slug });
   };
 
-  useEffect(() => {
-    const fetchShopProducts = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/products`);
-        const response = await res.json();
-        const data = response.data || {};
-        setProducts(data.items || []);
-        setLoading(false);
-      } catch (err) {
-        logger.error('Shop Fetch Error:', err);
-        setLoading(false);
-      }
-    };
-    fetchShopProducts();
+  const fetchShopProducts = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/products`);
+      if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
+      const response = await res.json();
+      const data = response.data || {};
+      setProducts(data.items || []);
+    } catch (err) {
+      logger.error('Shop Fetch Error:', err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchShopProducts();
+  }, [fetchShopProducts]);
 
   const processedProducts = useMemo(() => {
     let result = [...products];
@@ -291,6 +298,11 @@ export default function Shop() {
           <main className="grid-wrapper">
             {loading ? (
               <div className="loading-area"><LoadingSpinner /></div>
+            ) : error ? (
+              <FetchError
+                message="We couldn't load the products. Please check your connection and try again."
+                onRetry={fetchShopProducts}
+              />
             ) : (
               <>
                 <div className="product-grid">
