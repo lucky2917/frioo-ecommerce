@@ -11,6 +11,7 @@ const logger = require('../utils/logger');
 const SHOP_LAT = 17.721086639920603;
 const SHOP_LNG = 83.29694119604164;
 const MAX_DELIVERY_KM = 6;
+const MIN_DELIVERY_ORDER_VALUE = 349;
 
 const haversineKm = (lat1, lon1, lat2, lon2) => {
     const R = 6371;
@@ -269,6 +270,10 @@ router.post('/',
 
             if (priceDifference > 0.01) {
                 return sendError(res, 'Price verification failed. Please refresh and try again.', 400);
+            }
+
+            if (order_type === 'delivery' && serverCalculatedTotal < MIN_DELIVERY_ORDER_VALUE) {
+                return sendError(res, `Minimum delivery order is ₹${MIN_DELIVERY_ORDER_VALUE}`, 400);
             }
 
             const safeAddress = sanitizeAddress(delivery_address);
