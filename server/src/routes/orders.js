@@ -295,15 +295,9 @@ router.post('/',
             if (error) throw error;
 
             const stockUpdateResults = await Promise.all(items.map(async ({ id, qty }) => {
-                const product = products.find(p => p.id === id);
-                if (product?.stock === null) return true;
-                const { data: updated, error: stockErr } = await supabaseAdmin
-                    .from('products')
-                    .update({ stock: product.stock - qty })
-                    .eq('id', id)
-                    .gte('stock', qty)
-                    .select('id');
-                if (stockErr || !updated || updated.length === 0) {
+                const { data: decremented, error: stockErr } = await supabaseAdmin
+                    .rpc('decrement_product_stock', { p_id: id, p_qty: qty });
+                if (stockErr || decremented !== true) {
                     logger.error(`Stock update failed for product ${id} on order ${data.id}`);
                     return false;
                 }
