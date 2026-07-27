@@ -136,7 +136,13 @@ export default function Navbar() {
     <>
       <header className="navbar-wrapper">
         {activeOrder ? (
-          <div className="tracker-bar" onClick={() => setShowTrackerModal(true)}>
+          <div
+            className="tracker-bar"
+            role="button"
+            tabIndex={0}
+            onClick={() => setShowTrackerModal(true)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowTrackerModal(true); } }}
+          >
             <div className="tracker-content">
               <span className="pulse-dot"></span>
               <span>Order #{activeOrder.id}: <strong>{activeOrder.status}</strong></span>
@@ -158,6 +164,7 @@ export default function Navbar() {
               className="mobile-menu-toggle"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle menu"
+              aria-expanded={isMobileMenuOpen}
             >
               {isMobileMenuOpen ? (
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -208,7 +215,14 @@ export default function Navbar() {
                     </div>
                   ) : searchResults.length > 0 ? (
                     searchResults.map(p => (
-                      <div key={p.id} className="search-result-item" onClick={() => handleResultClick(p.id)}>
+                      <div
+                        key={p.id}
+                        className="search-result-item"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handleResultClick(p.id)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleResultClick(p.id); } }}
+                      >
                         <img src={p.images?.[0]} alt={p.title} className="result-img" />
                         <div className="result-info">
                           <div className="result-title">{p.title}</div>
@@ -478,7 +492,7 @@ export default function Navbar() {
           background: none;
           border: 2px solid #4A7C9D;
           border-radius: 4px;
-          padding: 6px;
+          padding: 8px;
           cursor: pointer;
           color: #4A7C9D;
         }

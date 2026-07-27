@@ -592,7 +592,7 @@ export default function Cart() {
         .pref-mini.red { background: #ffebee; color: #c62828; }
         .pref-mini.orange { background: #fff3e0; color: #ef6c00; }
         .modern-qty-selector { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; width: fit-content; }
-        .modern-qty-selector button { background: none; border: none; padding: 8px 12px; cursor: pointer; color: #333; transition: background 0.1s; }
+        .modern-qty-selector button { background: none; border: none; padding: 8px 12px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #333; transition: background 0.1s; }
         .modern-qty-selector button:hover { background: #f5f5f5; }
         .modern-qty-selector span { padding: 0 10px; font-weight: 600; font-size: 0.95rem; min-width: 20px; text-align: center; }
         .cart-row-price { text-align: right; }
