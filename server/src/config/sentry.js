@@ -1,9 +1,9 @@
 const Sentry = require('@sentry/node');
-const { ProfilingIntegration } = require('@sentry/profiling-node');
+const { nodeProfilingIntegration } = require('@sentry/profiling-node');
 
 let sentryInitialized = false;
 
-function initSentry(app) {
+function initSentry() {
     if (!process.env.SENTRY_DSN) {
         console.warn('⚠️  Sentry DSN not configured. Error tracking disabled.');
         return;
@@ -16,9 +16,9 @@ function initSentry(app) {
         tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
         profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
         integrations: [
-            new Sentry.Integrations.Http({ tracing: true }),
-            new Sentry.Integrations.Express({ app }),
-            new ProfilingIntegration(),
+            Sentry.httpIntegration(),
+            Sentry.expressIntegration(),
+            nodeProfilingIntegration(),
         ],
         ignoreErrors: [
             'ECONNRESET',
@@ -49,24 +49,9 @@ function initSentry(app) {
     }
 }
 
-const noopMiddleware = (_req, _res, next) => next();
-
-const requestHandler = () => {
-    if (!sentryInitialized) return noopMiddleware;
-    return Sentry.Handlers.requestHandler({
-        ip: true,
-        user: ['id', 'email'],
-    });
-};
-
-const tracingHandler = () => {
-    if (!sentryInitialized) return noopMiddleware;
-    return Sentry.Handlers.tracingHandler();
-};
-
-const errorHandler = () => {
-    if (!sentryInitialized) return noopMiddleware;
-    return Sentry.Handlers.errorHandler({
+const setupSentryErrorHandler = (app) => {
+    if (!sentryInitialized) return;
+    Sentry.setupExpressErrorHandler(app, {
         shouldHandleError(error) {
             return error.status >= 400;
         },
@@ -85,9 +70,7 @@ const captureError = (error, context = {}) => {
 
 module.exports = {
     initSentry,
-    requestHandler,
-    tracingHandler,
-    errorHandler,
+    setupSentryErrorHandler,
     captureError,
     Sentry,
 };

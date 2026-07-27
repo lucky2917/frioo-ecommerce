@@ -7,6 +7,10 @@ if (missingEnv.length > 0) {
   process.stderr.write(`CRITICAL: Missing required environment variables: ${missingEnv.join(', ')}\n`);
   process.exit(1);
 }
+
+const { initSentry, setupSentryErrorHandler } = require('./config/sentry');
+initSentry();
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -14,16 +18,11 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const { requestLogger, performanceLogger } = require('./middleware/requestLogger');
 const { csrfProtection, validateCsrfToken, getCsrfToken } = require('./middleware/csrf');
-const { initSentry, requestHandler, tracingHandler, errorHandler } = require('./config/sentry');
 const logger = require('./utils/logger');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 
 const app = express();
-
-initSentry(app);
-app.use(requestHandler());
-app.use(tracingHandler());
 
 const productsRouter = require('./routes/products');
 const couponsRouter = require('./routes/coupons');
@@ -273,7 +272,7 @@ app.use('/api/orders', ordersRouter);
 app.use('/api/admin', authLimiter, adminRouter);
 app.use('/api/upload', authLimiter, uploadRoutes);
 
-app.use(errorHandler());
+setupSentryErrorHandler(app);
 
 app.use((err, req, res, next) => {
   logger.error('Unhandled error:', err);
