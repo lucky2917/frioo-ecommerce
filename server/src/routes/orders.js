@@ -282,7 +282,7 @@ router.post('/',
                 .from('orders')
                 .insert([{
                     user_id,
-                    items: JSON.stringify(items),
+                    items: items,
                     total_amount: serverCalculatedTotal,
                     order_type,
                     address: safeAddress,

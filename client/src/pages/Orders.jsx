@@ -68,8 +68,12 @@ export default function Orders() {
     return statusMap[status] || 'status-blue';
   };
 
-  const handleReorder = (items) => {
-    if (!items || items.length === 0) return;
+  const handleReorder = (rawItems) => {
+    let items = rawItems;
+    if (typeof items === 'string') {
+      try { items = JSON.parse(items); } catch { items = []; }
+    }
+    if (!Array.isArray(items) || items.length === 0) return;
 
     items.forEach(item => {
       const product = {

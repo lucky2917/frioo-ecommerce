@@ -47,6 +47,12 @@ export default function OrderTracker() {
 
   if (!activeOrder) return null;
 
+  let items = activeOrder.items;
+  if (typeof items === 'string') {
+    try { items = JSON.parse(items); } catch { items = []; }
+  }
+  if (!Array.isArray(items)) items = [];
+
   const currentStep = STEPS.indexOf(activeOrder.status);
   const progress = Math.max(0, (currentStep / (STEPS.length - 1)) * 100);
 
@@ -86,7 +92,7 @@ export default function OrderTracker() {
 
             <div className="ot-items-box">
               <p className="ot-items-heading">Items</p>
-              {Array.isArray(activeOrder.items) && activeOrder.items.map((item, i) => (
+              {items.map((item, i) => (
                 <div key={i} className="ot-item-row">
                   <span>{item.qty}x {item.title} ({item.variant})</span>
                   <span>&#8377;{item.price * item.qty}</span>
