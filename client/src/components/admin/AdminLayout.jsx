@@ -62,7 +62,7 @@ export default function AdminLayout() {
         <div className="admin-layout">
             <header className="mobile-header">
                 <div className="mobile-brand">Frioo Admin</div>
-                <button className="menu-toggle" onClick={() => setIsMobileOpen(v => !v)} aria-label="Toggle menu">
+                <button className="menu-toggle" onClick={() => setIsMobileOpen(v => !v)} aria-label="Toggle menu" aria-expanded={isMobileOpen}>
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         {isMobileOpen
                             ? <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -75,7 +75,7 @@ export default function AdminLayout() {
             <aside ref={sidebarRef} className={`sidebar ${isMobileOpen ? 'mobile-open' : ''} ${isCollapsed ? 'collapsed' : ''}`}>
                 <div className="sidebar-brand">
                     <span className="brand-text">Frioo</span>
-                    <span className="brand-dot" />
+                    <span className="brand-dot" aria-hidden="true" />
                 </div>
 
                 <nav className="sidebar-nav">
@@ -88,6 +88,7 @@ export default function AdminLayout() {
                                     to={to}
                                     className={`nav-link ${isActive(to.split('/').pop()) ? 'active' : ''}`}
                                     title={isCollapsed ? label : undefined}
+                                    aria-current={isActive(to.split('/').pop()) ? 'page' : undefined}
                                 >
                                     <svg className="nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d={icon} />
@@ -131,6 +132,7 @@ export default function AdminLayout() {
                     className="collapse-btn"
                     onClick={() => setIsCollapsed(v => !v)}
                     title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                    aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                 >
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         {isCollapsed
@@ -150,13 +152,13 @@ export default function AdminLayout() {
                 .admin-layout {
                     display: flex;
                     min-height: 100vh;
-                    background: #f8fafc;
-                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                    background: var(--adm-canvas);
+                    font-family: var(--fr-font-sans);
                 }
 
                 .sidebar {
                     width: 260px;
-                    background: #0f172a;
+                    background: var(--adm-sidebar);
                     display: flex;
                     flex-direction: column;
                     position: fixed;
@@ -164,29 +166,29 @@ export default function AdminLayout() {
                     left: 0;
                     height: 100vh;
                     z-index: 50;
-                    transition: width 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.4,0,0.2,1);
+                    transition: width var(--fr-dur-base) var(--fr-ease-standard), transform var(--fr-dur-base) var(--fr-ease-standard);
                     overflow: hidden;
                 }
 
                 .sidebar.collapsed { width: 72px; }
 
                 .sidebar-brand {
-                    padding: 28px 24px;
-                    border-bottom: 1px solid rgba(255,255,255,0.08);
+                    padding: var(--fr-s6) var(--fr-s5);
+                    border-bottom: 1px solid var(--adm-sidebar-line);
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: var(--fr-s2);
                     flex-shrink: 0;
                 }
 
                 .brand-text {
-                    font-family: 'Playfair Display', Georgia, serif;
+                    font-family: var(--fr-font-display);
                     font-size: 1.6rem;
                     font-weight: 700;
-                    color: white;
+                    color: var(--fr-on-brand);
                     letter-spacing: 0.5px;
                     white-space: nowrap;
-                    transition: opacity 0.2s;
+                    transition: opacity var(--fr-dur-quick) var(--fr-ease-standard);
                 }
 
                 .sidebar.collapsed .brand-text { opacity: 0; width: 0; overflow: hidden; }
@@ -194,10 +196,10 @@ export default function AdminLayout() {
                 .brand-dot {
                     width: 8px;
                     height: 8px;
-                    background: #C5A065;
+                    background: var(--fr-warm);
                     border-radius: 50%;
                     flex-shrink: 0;
-                    transition: opacity 0.2s;
+                    transition: opacity var(--fr-dur-quick) var(--fr-ease-standard);
                 }
 
                 .sidebar.collapsed .brand-dot { opacity: 0; }
@@ -206,10 +208,10 @@ export default function AdminLayout() {
                     flex: 1;
                     overflow-y: auto;
                     overflow-x: hidden;
-                    padding: 20px 12px;
+                    padding: var(--fr-s5) var(--fr-s3);
                     display: flex;
                     flex-direction: column;
-                    gap: 28px;
+                    gap: var(--fr-s6);
                     scrollbar-width: none;
                 }
 
@@ -222,11 +224,11 @@ export default function AdminLayout() {
                     font-weight: 700;
                     text-transform: uppercase;
                     letter-spacing: 0.1em;
-                    color: #475569;
-                    padding: 0 12px;
-                    margin-bottom: 8px;
+                    color: var(--adm-sidebar-muted);
+                    padding: 0 var(--fr-s3);
+                    margin-bottom: var(--fr-s2);
                     white-space: nowrap;
-                    transition: opacity 0.2s;
+                    transition: opacity var(--fr-dur-quick) var(--fr-ease-standard);
                 }
 
                 .sidebar.collapsed .nav-group-label { opacity: 0; height: 0; margin: 0; overflow: hidden; }
@@ -234,14 +236,14 @@ export default function AdminLayout() {
                 .nav-link {
                     display: flex;
                     align-items: center;
-                    gap: 12px;
-                    padding: 11px 12px;
-                    color: #94a3b8;
+                    gap: var(--fr-s3);
+                    padding: 11px var(--fr-s3);
+                    color: var(--adm-sidebar-text);
                     text-decoration: none;
-                    border-radius: 9px;
+                    border-radius: var(--fr-r-card);
                     font-size: 0.9rem;
                     font-weight: 500;
-                    transition: all 0.18s;
+                    transition: background var(--fr-dur-quick) var(--fr-ease-standard), color var(--fr-dur-quick) var(--fr-ease-standard);
                     border: none;
                     background: transparent;
                     width: 100%;
@@ -252,15 +254,19 @@ export default function AdminLayout() {
                 }
 
                 .nav-link:hover {
-                    background: rgba(255,255,255,0.07);
-                    color: #e2e8f0;
+                    background: var(--adm-sidebar-2);
+                    color: var(--fr-on-brand);
+                }
+
+                .nav-link:focus-visible {
+                    outline: 2px solid var(--fr-brand-tint);
+                    outline-offset: -2px;
                 }
 
                 .nav-link.active {
-                    background: linear-gradient(135deg, #C5A065, #a67c52);
-                    color: white;
+                    background: var(--fr-brand);
+                    color: var(--fr-on-brand);
                     font-weight: 600;
-                    box-shadow: 0 4px 12px rgba(197,160,101,0.35);
                 }
 
                 .nav-icon {
@@ -270,43 +276,43 @@ export default function AdminLayout() {
                 }
 
                 .nav-label-text {
-                    transition: opacity 0.2s, width 0.2s;
+                    transition: opacity var(--fr-dur-quick) var(--fr-ease-standard), width var(--fr-dur-quick) var(--fr-ease-standard);
                     overflow: hidden;
                 }
 
                 .sidebar.collapsed .nav-label-text { opacity: 0; width: 0; }
 
                 .sidebar-footer {
-                    padding: 16px 12px;
-                    border-top: 1px solid rgba(255,255,255,0.08);
+                    padding: var(--fr-s4) var(--fr-s3);
+                    border-top: 1px solid var(--adm-sidebar-line);
                     flex-shrink: 0;
                     display: flex;
                     flex-direction: column;
-                    gap: 4px;
+                    gap: var(--fr-s1);
                 }
 
                 .admin-profile {
                     display: flex;
                     align-items: center;
-                    gap: 12px;
-                    padding: 12px;
-                    border-radius: 10px;
-                    background: rgba(255,255,255,0.05);
-                    margin-bottom: 8px;
+                    gap: var(--fr-s3);
+                    padding: var(--fr-s3);
+                    border-radius: var(--fr-r-card);
+                    background: var(--adm-sidebar-2);
+                    margin-bottom: var(--fr-s2);
                     overflow: hidden;
                 }
 
                 .sidebar.collapsed .admin-profile {
-                    padding: 10px;
+                    padding: var(--fr-s2);
                     justify-content: center;
                 }
 
                 .admin-avatar {
                     width: 36px;
                     height: 36px;
-                    background: linear-gradient(135deg, #C5A065, #a67c52);
-                    color: white;
-                    border-radius: 9px;
+                    background: var(--fr-brand);
+                    color: var(--fr-on-brand);
+                    border-radius: var(--fr-r-card);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -315,13 +321,13 @@ export default function AdminLayout() {
                     flex-shrink: 0;
                 }
 
-                .admin-info { overflow: hidden; transition: opacity 0.2s, width 0.2s; }
+                .admin-info { overflow: hidden; transition: opacity var(--fr-dur-quick) var(--fr-ease-standard), width var(--fr-dur-quick) var(--fr-ease-standard); }
                 .sidebar.collapsed .admin-info { opacity: 0; width: 0; }
 
                 .admin-name {
                     font-size: 0.85rem;
                     font-weight: 600;
-                    color: #e2e8f0;
+                    color: #E7ECE8;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
@@ -329,25 +335,25 @@ export default function AdminLayout() {
 
                 .admin-role {
                     font-size: 0.7rem;
-                    color: #64748b;
+                    color: var(--adm-sidebar-muted);
                     white-space: nowrap;
                 }
 
                 .footer-links { display: flex; flex-direction: column; gap: 2px; }
 
-                .footer-link { color: #64748b; }
-                .footer-link:hover { color: #94a3b8; background: rgba(255,255,255,0.05); }
+                .footer-link { color: var(--adm-sidebar-muted); }
+                .footer-link:hover { color: var(--adm-sidebar-text); background: var(--adm-sidebar-2); }
 
-                .logout-btn { color: #f87171; }
-                .logout-btn:hover { background: rgba(248,113,113,0.1); color: #fca5a5; }
+                .logout-btn { color: var(--fr-warm-tint); }
+                .logout-btn:hover { background: rgba(200,86,47,0.18); color: #F6E2D8; }
 
                 .admin-main {
                     flex: 1;
                     margin-left: 260px;
-                    padding: 48px 52px;
+                    padding: var(--fr-s8) var(--fr-s9);
                     overflow-y: auto;
                     height: 100vh;
-                    transition: margin-left 0.3s cubic-bezier(0.4,0,0.2,1);
+                    transition: margin-left var(--fr-dur-base) var(--fr-ease-standard);
                     position: relative;
                 }
 
@@ -359,26 +365,28 @@ export default function AdminLayout() {
                     left: 272px;
                     width: 32px;
                     height: 32px;
-                    background: white;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 8px;
+                    background: var(--adm-surface);
+                    border: 1px solid var(--adm-border);
+                    border-radius: var(--fr-r-control);
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     cursor: pointer;
                     z-index: 60;
-                    transition: left 0.3s cubic-bezier(0.4,0,0.2,1), box-shadow 0.2s;
-                    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+                    transition: left var(--fr-dur-base) var(--fr-ease-standard), box-shadow var(--fr-dur-quick) var(--fr-ease-standard);
+                    box-shadow: var(--fr-elev-1);
                 }
 
                 .admin-main.main-expanded .collapse-btn { left: 84px; }
 
                 .collapse-btn:hover {
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-                    border-color: #cbd5e1;
+                    box-shadow: var(--fr-elev-2);
+                    border-color: var(--adm-border-strong);
                 }
 
-                .collapse-btn svg { width: 15px; height: 15px; color: #64748b; }
+                .collapse-btn:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+
+                .collapse-btn svg { width: 15px; height: 15px; color: var(--adm-text-2); }
 
                 .mobile-header { display: none; }
 
@@ -394,24 +402,24 @@ export default function AdminLayout() {
 
                     .admin-main {
                         margin-left: 0 !important;
-                        padding: 88px 24px 24px;
+                        padding: 88px var(--fr-s5) var(--fr-s5);
                     }
 
                     .mobile-header {
                         display: flex;
                         align-items: center;
                         justify-content: space-between;
-                        padding: 18px 24px;
-                        background: #0f172a;
-                        color: white;
+                        padding: var(--fr-s4) var(--fr-s5);
+                        background: var(--adm-sidebar);
+                        color: var(--fr-on-brand);
                         position: fixed;
                         top: 0; left: 0; right: 0;
                         z-index: 40;
-                        box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+                        box-shadow: var(--fr-elev-2);
                     }
 
                     .mobile-brand {
-                        font-family: 'Playfair Display', Georgia, serif;
+                        font-family: var(--fr-font-display);
                         font-size: 1.35rem;
                         font-weight: 700;
                         letter-spacing: 0.5px;
@@ -420,29 +428,37 @@ export default function AdminLayout() {
                     .menu-toggle {
                         background: none;
                         border: none;
-                        color: white;
+                        color: var(--fr-on-brand);
                         cursor: pointer;
-                        padding: 6px;
-                        border-radius: 6px;
+                        padding: var(--fr-s1);
+                        border-radius: var(--fr-r-control);
                         display: flex;
                         align-items: center;
-                        transition: background 0.2s;
+                        transition: background var(--fr-dur-quick) var(--fr-ease-standard);
                     }
 
-                    .menu-toggle:hover { background: rgba(255,255,255,0.1); }
+                    .menu-toggle:hover { background: var(--adm-sidebar-2); }
+                    .menu-toggle:focus-visible { outline: 2px solid var(--fr-brand-tint); outline-offset: 2px; }
                     .menu-toggle svg { width: 22px; height: 22px; }
 
                     .sidebar-overlay {
                         position: fixed;
                         inset: 0;
-                        background: rgba(0,0,0,0.6);
+                        background: var(--fr-scrim);
                         z-index: 45;
                         backdrop-filter: blur(2px);
                     }
                 }
 
                 @media (max-width: 768px) {
-                    .admin-main { padding: 80px 16px 16px; }
+                    .admin-main { padding: 80px var(--fr-s4) var(--fr-s4); }
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .sidebar, .admin-main, .collapse-btn, .nav-link, .brand-text,
+                    .brand-dot, .nav-group-label, .nav-label-text, .admin-info, .menu-toggle {
+                        transition: none;
+                    }
                 }
             `}</style>
         </div>

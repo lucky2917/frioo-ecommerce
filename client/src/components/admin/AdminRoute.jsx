@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -7,9 +6,34 @@ export default function AdminRoute({ children }) {
 
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.spinner}></div>
-        <p style={styles.text}>Verifying Credentials...</p>
+      <div className="adm-route-loading" role="status">
+        <span className="adm-route-spinner" aria-hidden="true" />
+        <p>Verifying credentials</p>
+        <style>{`
+          .adm-route-loading {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--fr-s4);
+            background: var(--adm-canvas);
+            font-family: var(--fr-font-sans);
+            color: var(--adm-text-2);
+          }
+          .adm-route-loading p { margin: 0; font-size: 0.9rem; font-weight: 600; }
+          .adm-route-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--adm-border);
+            border-top-color: var(--fr-brand);
+            border-radius: 50%;
+          }
+          @media (prefers-reduced-motion: no-preference) {
+            .adm-route-spinner { animation: adm-route-spin 0.8s linear infinite; }
+          }
+          @keyframes adm-route-spin { to { transform: rotate(360deg); } }
+        `}</style>
       </div>
     );
   }
@@ -20,29 +44,3 @@ export default function AdminRoute({ children }) {
 
   return children;
 }
-
-const styles = {
-  loadingContainer: {
-    height: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#f4f6f8',
-    fontFamily: 'sans-serif'
-  },
-  spinner: {
-    width: '40px',
-    height: '40px',
-    border: '4px solid #e0e0e0',
-    borderTop: '4px solid #1a1a1a',
-    borderRadius: '50%',
-    animation: 'spin 1s linear infinite'
-  },
-  text: {
-    marginTop: '20px',
-    color: '#666',
-    fontWeight: 'bold',
-    fontSize: '0.9rem'
-  }
-};
