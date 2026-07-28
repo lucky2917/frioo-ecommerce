@@ -59,9 +59,9 @@ const homeSchema = {
   }
 };
 
-export default function Home() {
-  const PRODUCT_TABS = PRODUCT_CATEGORIES.filter(c => c.dbValue !== null).slice(0, 3);
+const PRODUCT_TABS = PRODUCT_CATEGORIES.filter(c => c.dbValue !== null).slice(0, 3);
 
+export default function Home() {
   const { products, error: productsError, refetch: loadProducts } = useProducts();
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [couponCopied, setCouponCopied] = useState(false);

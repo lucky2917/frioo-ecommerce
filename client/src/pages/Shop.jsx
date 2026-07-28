@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import ScrollReveal from '../components/animations/ScrollReveal';
@@ -43,15 +43,16 @@ export default function Shop() {
     return Math.ceil(Math.max(...products.map(p => p.price_cents / 100)));
   }, [products]);
 
-  useEffect(() => {
-    if (products.length > 0 && priceRange[1] === Infinity) {
-      setPriceRange([0, maxPrice]);
-    }
-  }, [maxPrice, products.length]);
+  if (products.length > 0 && priceRange[1] === Infinity) {
+    setPriceRange([0, maxPrice]);
+  }
 
-  useEffect(() => {
+  const filterKey = `${categoryParam}|${searchParam}|${sortOption}|${priceRange[0]}|${priceRange[1]}`;
+  const [lastFilterKey, setLastFilterKey] = useState(filterKey);
+  if (filterKey !== lastFilterKey) {
+    setLastFilterKey(filterKey);
     setVisibleCount(ITEMS_PER_PAGE);
-  }, [categoryParam, searchParam, sortOption, priceRange]);
+  }
 
   const handleTabChange = (tab) => {
     const cat = PRODUCT_CATEGORIES.find(c => c.label === tab);
