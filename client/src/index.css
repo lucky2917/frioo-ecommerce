@@ -94,6 +94,20 @@
   --fr-dur-expressive: 320ms;
   --fr-ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --fr-ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --adm-canvas: #F4F6F5;
+  --adm-surface: #FFFFFF;
+  --adm-surface-2: #EEF2F0;
+  --adm-border: #DDE4E0;
+  --adm-border-strong: #C6D0CB;
+  --adm-text: #16211B;
+  --adm-text-2: #4A574F;
+  --adm-text-3: #7C877F;
+  --adm-sidebar: #16211B;
+  --adm-sidebar-2: #223029;
+  --adm-sidebar-line: rgba(255, 255, 255, 0.08);
+  --adm-sidebar-text: #A8B3AC;
+  --adm-sidebar-muted: #6E7C73;
 }
 
 * {
