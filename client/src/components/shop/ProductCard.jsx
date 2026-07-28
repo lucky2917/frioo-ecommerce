@@ -1,33 +1,30 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import OptimizedImage from '../OptimizedImage';
-import VideoModal from './VideoModal';
 
-const FALLBACK_IMAGE = "https://via.placeholder.com/400x300?text=Frioo+Fresh";
+const FALLBACK_IMAGE = 'https://via.placeholder.com/400x500?text=Frioo+Fresh';
+
+const WEIGHT_OPTIONS = [
+  { label: '250g', multiplier: 0.25 },
+  { label: '500g', multiplier: 0.50 },
+  { label: '1kg', multiplier: 1.0 },
+];
 
 export default function ProductCard({ product, onAdd }) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [showVideo, setShowVideo] = useState(false);
-
   const [showCustomize, setShowCustomize] = useState(false);
   const [selectedExclusions, setSelectedExclusions] = useState([]);
   const [removedIngredients, setRemovedIngredients] = useState([]);
-
-  const isWeightBased = product.category === 'Fresh Fruit' && product.unit === 'kg';
-  const WEIGHT_OPTIONS = [
-    { label: '250g', multiplier: 0.25 },
-    { label: '500g', multiplier: 0.50 },
-    { label: '1kg', multiplier: 1.0 }
-  ];
   const [selectedWeight, setSelectedWeight] = useState(WEIGHT_OPTIONS[2]);
 
-  const hasOptions = (product.nutrition?.exclusions?.length > 0 || product.nutrition?.ingredients?.length > 0);
+  const isWeightBased = product.category === 'Fresh Fruit' && product.unit === 'kg';
+  const hasOptions = product.nutrition?.exclusions?.length > 0 || product.nutrition?.ingredients?.length > 0;
 
   const basePrice = product.price_cents / 100;
   const hasDiscount = product.discount > 0;
-  const originalPrice = hasDiscount
-    ? Math.round(basePrice / (1 - product.discount / 100))
-    : null;
+  const originalPrice = hasDiscount ? Math.round(basePrice / (1 - product.discount / 100)) : null;
+
+  const unitSuffix = product.unit === 'kg' ? ' / kg' : product.unit === 'item' ? ' each' : product.unit ? ` / ${product.unit}` : '';
+  const per100g = product.unit === 'kg' ? Math.round(basePrice / 10) : null;
 
   let finalPrice, variantLabel;
   if (isWeightBased) {
@@ -48,393 +45,129 @@ export default function ProductCard({ product, onAdd }) {
     }
   };
 
-  const handleConfirmCustomization = () => {
-    const preferences = {
-      exclusions: selectedExclusions,
-      removedIngredients: removedIngredients
-    };
-    onAdd(product, variantLabel, finalPrice, preferences);
+  const handleConfirm = () => {
+    onAdd(product, variantLabel, finalPrice, { exclusions: selectedExclusions, removedIngredients });
     setShowCustomize(false);
     setSelectedExclusions([]);
     setRemovedIngredients([]);
     setSelectedWeight(WEIGHT_OPTIONS[2]);
   };
 
-  const toggleExclusion = (item) => {
-    setSelectedExclusions(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
-  };
-
-  const toggleIngredient = (item) => {
-    setRemovedIngredients(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
-  };
+  const toggleExclusion = (item) => setSelectedExclusions((prev) => prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]);
+  const toggleIngredient = (item) => setRemovedIngredients((prev) => prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]);
 
   return (
     <>
-      <div
-        className="patisserie-card"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div className="card-image-wrapper">
-          <Link to={`/product/${product.id}`} className="card-image-link">
-            <OptimizedImage
-              src={imageSrc}
-              alt={product.title}
-              className="card-image"
-            />
-            {hasDiscount
-            ? <span className="badge-pop badge-sale">{product.discount}% OFF</span>
-            : product.featured && <span className="badge-pop">Popular</span>
-          }
-          </Link>
-
-          {product.video_url && (
-            <button
-              className={`play-btn ${isHovered ? 'visible' : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                setShowVideo(true);
-              }}
-              title="Watch Prep Video"
-            >
-              ▶
-            </button>
-          )}
-        </div>
-
-        <div className="card-content">
-          <div className="card-price-group">
-            <span className={`card-price${hasDiscount ? ' card-price-sale' : ''}`}>
-              &#8377;{basePrice.toFixed(0)}
-            </span>
-            {hasDiscount && (
-              <span className="card-price-original">&#8377;{originalPrice}</span>
-            )}
+      <article className="fr-pc">
+        <Link to={`/product/${product.id}`} className="fr-pc-media" aria-label={product.title}>
+          <OptimizedImage src={imageSrc} alt={product.title} className="fr-pc-img" />
+          {hasDiscount && <span className="fr-pc-badge">{product.discount}% off</span>}
+        </Link>
+        <div className="fr-pc-body">
+          <Link to={`/product/${product.id}`} className="fr-pc-name">{product.title}</Link>
+          <div className="fr-pc-price-row">
+            <span className={`fr-pc-price${hasDiscount ? ' fr-pc-price-sale' : ''}`}>&#8377;{basePrice.toFixed(0)}</span>
+            <span className="fr-pc-unit">{unitSuffix}</span>
+            {hasDiscount && <span className="fr-pc-original">&#8377;{originalPrice}</span>}
           </div>
-
-          <h3 className="card-title">
-            <Link to={`/product/${product.id}`}>{product.title}</Link>
-          </h3>
-
-          <p className="card-desc">
-            {product.description?.substring(0, 40)}...
-          </p>
-
-          <button className="action-btn" onClick={handleActionClick}>
+          {per100g && <div className="fr-pc-measure">&#8377;{per100g} / 100g</div>}
+          <button className="fr-pc-add" onClick={handleActionClick}>
             {hasOptions || isWeightBased ? 'Choose options' : 'Add to cart'}
           </button>
         </div>
-      </div>
+      </article>
 
       {showCustomize && (
-        <div className="cust-overlay">
-          <div className="cust-modal">
-            <div className="cust-header">
-              <h4>Customize {product.title}</h4>
-              <button className="close-btn" onClick={() => setShowCustomize(false)}>×</button>
-            </div>
-
-            <div className="cust-body">
-              {isWeightBased && (
-                <div className="cust-section">
-                  <label>Select Quantity</label>
-                  <div className="weight-grid">
-                    {WEIGHT_OPTIONS.map(opt => (
-                      <button
-                        key={opt.label}
-                        className={`opt-chip ${selectedWeight.label === opt.label ? 'active' : ''}`}
-                        onClick={() => setSelectedWeight(opt)}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="price-preview">Price: ₹{finalPrice.toFixed(0)}</div>
-                </div>
-              )}
-
-              {product.nutrition?.exclusions?.length > 0 && (
-                <div className="cust-section">
-                  <label>Exclusions (No extra cost)</label>
-                  <div className="chip-grid">
-                    {product.nutrition.exclusions.map(item => (
-                      <button
-                        key={item}
-                        className={`opt-chip ${selectedExclusions.includes(item) ? 'active' : ''}`}
-                        onClick={() => toggleExclusion(item)}
-                      >
-                        {selectedExclusions.includes(item) ? '✓ ' : ''}{item}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {product.nutrition?.ingredients?.length > 0 && (
-                <div className="cust-section">
-                  <label>Remove Ingredients</label>
-                  <div className="chip-grid">
-                    {product.nutrition.ingredients.map(item => (
-                      <button
-                        key={item}
-                        className={`opt-chip ${removedIngredients.includes(item) ? 'active' : ''}`}
-                        onClick={() => toggleIngredient(item)}
-                      >
-                        {removedIngredients.includes(item) ? '✓ ' : ''} No {item}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="cust-footer">
-              <button className="confirm-btn" onClick={handleConfirmCustomization}>
-                Add to Cart - ₹{finalPrice.toFixed(0)}
+        <div className="fr-pc-scrim" onClick={() => setShowCustomize(false)}>
+          <div className="fr-pc-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Customize ${product.title}`}>
+            <div className="fr-pc-sheet-head">
+              <h4 className="fr-pc-sheet-title">{product.title}</h4>
+              <button className="fr-pc-sheet-close" onClick={() => setShowCustomize(false)} aria-label="Close">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
+            </div>
+            <div className="fr-pc-sheet-body">
+              {isWeightBased && (
+                <div className="fr-pc-section">
+                  <label className="fr-pc-label">Quantity</label>
+                  <div className="fr-pc-chips">
+                    {WEIGHT_OPTIONS.map((opt) => (
+                      <button key={opt.label} className={`fr-pc-chip${selectedWeight.label === opt.label ? ' fr-pc-chip-on' : ''}`} onClick={() => setSelectedWeight(opt)}>{opt.label}</button>
+                    ))}
+                  </div>
+                  <div className="fr-pc-measure">&#8377;{(basePrice / 10).toFixed(0)} / 100g</div>
+                </div>
+              )}
+              {product.nutrition?.exclusions?.length > 0 && (
+                <div className="fr-pc-section">
+                  <label className="fr-pc-label">Remove any? (no extra cost)</label>
+                  <div className="fr-pc-chips">
+                    {product.nutrition.exclusions.map((item) => (
+                      <button key={item} className={`fr-pc-chip${selectedExclusions.includes(item) ? ' fr-pc-chip-on' : ''}`} onClick={() => toggleExclusion(item)}>{selectedExclusions.includes(item) ? 'No ' : ''}{item}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {product.nutrition?.ingredients?.length > 0 && (
+                <div className="fr-pc-section">
+                  <label className="fr-pc-label">Customize ingredients</label>
+                  <div className="fr-pc-chips">
+                    {product.nutrition.ingredients.map((item) => (
+                      <button key={item} className={`fr-pc-chip${removedIngredients.includes(item) ? ' fr-pc-chip-on' : ''}`} onClick={() => toggleIngredient(item)}>No {item}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="fr-pc-sheet-foot">
+              <button className="fr-pc-confirm" onClick={handleConfirm}>Add to cart &middot; &#8377;{finalPrice.toFixed(0)}</button>
             </div>
           </div>
         </div>
       )}
 
-      {showVideo && <VideoModal videoUrl={product.video_url} onClose={() => setShowVideo(false)} />}
+      <style>{`
+        .fr-pc { display: flex; flex-direction: column; background: var(--fr-surface); border-radius: var(--fr-r-card); box-shadow: var(--fr-elev-1); overflow: hidden; height: 100%; transition: box-shadow var(--fr-dur-base) var(--fr-ease-standard), transform var(--fr-dur-base) var(--fr-ease-standard); }
+        .fr-pc:hover { box-shadow: var(--fr-elev-2); transform: translateY(-2px); }
+        .fr-pc-media { position: relative; display: block; aspect-ratio: 4 / 5; background: var(--fr-surface-2); overflow: hidden; }
+        .fr-pc-img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--fr-dur-base) var(--fr-ease-standard); }
+        .fr-pc:hover .fr-pc-img { transform: scale(1.02); }
+        .fr-pc-badge { position: absolute; top: var(--fr-s3); left: var(--fr-s3); background: var(--fr-warm); color: var(--fr-on-brand); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; padding: 4px 9px; border-radius: var(--fr-r-control); }
+        .fr-pc-body { display: flex; flex-direction: column; gap: var(--fr-s1); padding: var(--fr-s4); flex: 1; }
+        .fr-pc-name { font-family: var(--fr-font-sans); font-size: 0.98rem; font-weight: 600; color: var(--fr-text); text-decoration: none; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .fr-pc-name:hover { color: var(--fr-brand); }
+        .fr-pc-name:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
+        .fr-pc-price-row { display: flex; align-items: baseline; gap: var(--fr-s2); margin-top: var(--fr-s1); }
+        .fr-pc-price { font-family: var(--fr-font-sans); font-size: 1.2rem; font-weight: 700; color: var(--fr-text); font-variant-numeric: tabular-nums; }
+        .fr-pc-price-sale { color: var(--fr-warm); }
+        .fr-pc-unit { font-size: 0.8rem; color: var(--fr-text-2); }
+        .fr-pc-original { font-size: 0.82rem; color: var(--fr-text-3); text-decoration: line-through; }
+        .fr-pc-measure { font-family: var(--fr-font-mono); font-size: 0.76rem; color: var(--fr-text-2); }
+        .fr-pc-add { margin-top: auto; height: 44px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .fr-pc-add:hover { background: var(--fr-brand-press); }
+        .fr-pc-add:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 
-      <style jsx>{`
-        .patisserie-card {
-           display: flex;
-           flex-direction: column;
-           height: 100%;
-        }
+        .fr-pc-scrim { position: fixed; inset: 0; z-index: var(--fr-z-modal); background: var(--fr-scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: var(--fr-s5); }
+        .fr-pc-sheet { width: 100%; max-width: 440px; background: var(--fr-surface); border-radius: var(--fr-r-surface); box-shadow: var(--fr-elev-3); overflow: hidden; }
+        .fr-pc-sheet-head { display: flex; align-items: center; justify-content: space-between; padding: var(--fr-s4) var(--fr-s5); border-bottom: 1px solid var(--fr-line); }
+        .fr-pc-sheet-title { font-family: var(--fr-font-display); font-size: 1.2rem; font-weight: 700; color: var(--fr-text); margin: 0; }
+        .fr-pc-sheet-close { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }
+        .fr-pc-sheet-close:hover { background: var(--fr-surface-2); }
+        .fr-pc-sheet-close:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        .fr-pc-sheet-body { padding: var(--fr-s5); max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: var(--fr-s5); }
+        .fr-pc-section { display: flex; flex-direction: column; gap: var(--fr-s3); }
+        .fr-pc-label { font-size: 0.82rem; font-weight: 600; color: var(--fr-text-2); }
+        .fr-pc-chips { display: flex; flex-wrap: wrap; gap: var(--fr-s2); }
+        .fr-pc-chip { min-height: 44px; padding: 0 var(--fr-s4); background: var(--fr-surface); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-pill); font-family: var(--fr-font-sans); font-size: 0.88rem; color: var(--fr-text); cursor: pointer; transition: border-color var(--fr-dur-quick) var(--fr-ease-standard), background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .fr-pc-chip:hover { border-color: var(--fr-brand); color: var(--fr-brand); }
+        .fr-pc-chip-on { background: var(--fr-brand); color: var(--fr-on-brand); border-color: var(--fr-brand); }
+        .fr-pc-chip-on:hover { color: var(--fr-on-brand); }
+        .fr-pc-sheet-foot { padding: var(--fr-s4) var(--fr-s5); border-top: 1px solid var(--fr-line); }
+        .fr-pc-confirm { width: 100%; height: 48px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+        .fr-pc-confirm:hover { background: var(--fr-brand-press); }
+        .fr-pc-confirm:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 
-        .card-image-wrapper {
-          position: relative;
-          aspect-ratio: 1;
-          background: #f7f7f7;
-          border-radius: 4px;
-          overflow: hidden;
-          margin-bottom: 16px;
-        }
-
-        .card-image-link {
-          display: block;
-          width: 100%;
-          height: 100%;
-        }
-
-        .card-image {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.5s ease;
-        }
-
-        .patisserie-card:hover .card-image {
-          transform: scale(1.05); /* Smooth zoom */
-        }
-
-        .badge-pop {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          background: #FF9800;
-          color: white;
-          font-size: 0.7rem;
-          font-weight: 700;
-          padding: 4px 10px;
-          border-radius: 50px;
-          z-index: 2;
-        }
-
-        .badge-sale {
-          background: #D0483A;
-        }
-
-        .play-btn {
-          position: absolute;
-          bottom: 15px;
-          right: 15px;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: white;
-          color: #1a1a1a;
-          border: none;
-          font-size: 1rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          opacity: 0;
-          transform: translateY(10px);
-          transition: all 0.3s ease;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-          z-index: 5;
-        }
-
-        .play-btn:hover {
-          background: #4CAF50;
-          color: white;
-          transform: scale(1.1) !important;
-        }
-
-        .patisserie-card:hover .play-btn {
-          opacity: 1;
-          transform: translateY(0);
-        }
-
-        .card-content {
-          display: flex;
-          flex-direction: column;
-          flex: 1;
-        }
-
-        .card-price-group {
-          display: flex;
-          align-items: baseline;
-          gap: 8px;
-          margin-bottom: 6px;
-        }
-
-        .card-price {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: #2F4F4F;
-        }
-
-        .card-price-sale {
-          color: #D0483A;
-        }
-
-        .card-price-original {
-          font-size: 0.85rem;
-          color: #bbb;
-          text-decoration: line-through;
-        }
-
-        .card-title {
-          margin: 0 0 8px 0;
-          font-family: 'Playfair Display', serif;
-          font-size: 1.1rem;
-          font-weight: 500;
-          line-height: 1.3;
-        }
-        .card-title a { color: #1a1a1a; text-decoration: none; transition: color 0.2s; }
-        .card-title a:hover { color: #4CAF50; }
-
-        .card-desc {
-          font-size: 0.85rem;
-          color: #888;
-          margin: 0 0 20px 0;
-          line-height: 1.5;
-        }
-
-        .action-btn {
-          width: 100%;
-          padding: 14px;
-          background: #C5A065;
-          color: white;
-          border: none;
-          font-family: 'Inter', sans-serif;
-          font-weight: 600;
-          font-size: 0.9rem;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          border-radius: 4px;
-          margin-top: auto;
-        }
-        .action-btn:hover { background: #1a1a1a; }
-
-        .cust-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.6);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-          animation: fadeIn 0.2s;
-        }
-
-        .cust-modal {
-          background: white;
-          width: 90%;
-          max-width: 450px;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-          animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .product-card-shop {
-          background: #FFFFFF;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Framer's expo out */
-          cursor: pointer;
-          position: relative;
-          will-change: transform;
-          transform: translateZ(0);
-        }
-
-        .product-card-shop:hover {
-          transform: translateY(-6px) scale(1.01);
-          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-        }
-
-        .product-card-shop:active {
-          transform: translateY(-2px) scale(0.99);
-          transition-duration: 0.1s;
-        }
-
-        .cust-header {
-          padding: 15px 20px;
-          border-bottom: 1px solid #eee;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          background: #f9f9f9;
-        }
-        .cust-header h4 { margin: 0; font-family: 'Playfair Display', serif; }
-        .close-btn { border: none; background: none; font-size: 1.5rem; cursor: pointer; }
-
-        .cust-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
-
-        .cust-section { margin-bottom: 20px; }
-        .cust-section label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; color: #333; }
-
-        .chip-grid, .weight-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-
-        .opt-chip {
-          padding: 8px 16px;
-          border: 1px solid #e0e0e0;
-          background: white;
-          border-radius: 50px;
-          font-size: 0.9rem;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .opt-chip:hover { border-color: #4CAF50; color: #4CAF50; }
-        .opt-chip.active { background: #4CAF50; color: white; border-color: #4CAF50; }
-
-        .price-preview { margin-top: 10px; font-weight: 700; color: #C5A065; text-align: right; }
-
-        .cust-footer { padding: 15px 20px; border-top: 1px solid #eee; }
-        .confirm-btn {
-          width: 100%;
-          padding: 14px;
-          background: #1a1a1a;
-          color: white;
-          border: none;
-          font-weight: 700;
-          border-radius: 8px;
-          cursor: pointer;
-        }
-        .confirm-btn:hover { background: #333; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { .fr-pc, .fr-pc-img, .fr-pc-add, .fr-pc-chip { transition: none; } }
       `}</style>
     </>
   );

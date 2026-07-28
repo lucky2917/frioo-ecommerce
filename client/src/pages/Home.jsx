@@ -1,40 +1,21 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
-import ScrollReveal from '../components/animations/ScrollReveal';
-import StaggerText from '../components/animations/StaggerText';
 import Footer from '../components/layout/Footer';
 import SEO from '../components/SEO';
 import FetchError from '../components/FetchError';
+import ProductCard from '../components/shop/ProductCard';
 import { useProducts } from '../hooks/useProducts';
+import { useCart } from '../context/CartContext';
 import { PRODUCT_CATEGORIES } from '../config/constants';
-import previewVideo from '../assets/preview.mp4';
+
+const HERO_IMAGE = 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=1400&q=80';
 
 const CATEGORIES = [
-  {
-    slug: 'juices',
-    label: 'Pure Juices',
-    desc: 'Cold-pressed daily, no concentrates, no added sugar.',
-    img: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=700'
-  },
-  {
-    slug: 'shakes',
-    label: 'Fruit Shakes',
-    desc: 'Rich, creamy shakes made to order with real fruit.',
-    img: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=700'
-  },
-  {
-    slug: 'salads',
-    label: 'Fresh Salads',
-    desc: 'Seasonal fruit salads — crisp, clean, no dressing fillers.',
-    img: 'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?w=700'
-  },
-  {
-    slug: 'fruits',
-    label: 'Fresh Fruits',
-    desc: 'Hand-picked from local Vizag farms every morning.',
-    img: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=700'
-  }
+  { slug: 'juices', label: 'Pure Juices', desc: 'Cold-pressed daily, no concentrates, no added sugar.', img: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=700' },
+  { slug: 'shakes', label: 'Fruit Shakes', desc: 'Rich, creamy shakes made to order with real fruit.', img: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=700' },
+  { slug: 'salads', label: 'Fresh Salads', desc: 'Seasonal fruit salads, crisp and clean.', img: 'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?w=700' },
+  { slug: 'fruits', label: 'Fresh Fruits', desc: 'Hand-picked from local Vizag markets every morning.', img: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=700' },
 ];
 
 const homeSchema = {
@@ -52,48 +33,31 @@ const homeSchema = {
     "postalCode": "530004",
     "addressCountry": "IN"
   },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": 17.721086639920603,
-    "longitude": 83.29694119604164
-  }
+  "geo": { "@type": "GeoCoordinates", "latitude": 17.721086639920603, "longitude": 83.29694119604164 }
 };
 
 const PRODUCT_TABS = PRODUCT_CATEGORIES.filter(c => c.dbValue !== null).slice(0, 3);
 
+const SkeletonCard = () => (
+  <div className="home-skel" aria-hidden="true">
+    <div className="home-skel-img" />
+    <div className="home-skel-line" />
+    <div className="home-skel-line home-skel-short" />
+    <div className="home-skel-btn" />
+  </div>
+);
+
 export default function Home() {
-  const { products, error: productsError, refetch: loadProducts } = useProducts();
-  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const { products, loading, error: productsError, refetch: loadProducts } = useProducts();
+  const { addToCart } = useCart();
   const [couponCopied, setCouponCopied] = useState(false);
   const [activeProductTab, setActiveProductTab] = useState(PRODUCT_TABS[0].slug);
 
-  useEffect(() => {
-    const getTarget = () => {
-      const t = new Date();
-      t.setHours(24, 0, 0, 0);
-      return t;
-    };
-    let target = getTarget();
-    const tick = () => {
-      const now = new Date();
-      let diff = target.getTime() - now.getTime();
-      if (diff <= 0) { target = getTarget(); diff = target.getTime() - now.getTime(); }
-      setTimeLeft({
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / 1000 / 60) % 60),
-        seconds: Math.floor((diff / 1000) % 60),
-      });
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const featuredProducts = useMemo(() => products.filter(p => p.featured).slice(0, 6), [products]);
+  const featuredProducts = useMemo(() => products.filter(p => p.featured).slice(0, 8), [products]);
 
   const tabGroups = useMemo(() => {
     return PRODUCT_TABS.reduce((acc, tab) => {
-      acc[tab.slug] = products.filter(p => p.category === tab.dbValue).slice(0, 6);
+      acc[tab.slug] = products.filter(p => p.category === tab.dbValue).slice(0, 8);
       return acc;
     }, {});
   }, [products]);
@@ -106,6 +70,9 @@ export default function Home() {
       setTimeout(() => setCouponCopied(false), 2000);
     });
   }, []);
+
+  const isLoadingProducts = loading && products.length === 0;
+  const isEmpty = !loading && !productsError && products.length === 0;
 
   return (
     <div className="home-page">
@@ -120,225 +87,129 @@ export default function Home() {
 
       <h1 className="seo-h1">Frioo — Best Fresh Fruits, Juices & Salads Delivery in Vizag, Visakhapatnam</h1>
 
-      <div className="hero-carousel">
-        <video className="hero-video" autoPlay loop muted playsInline>
-          <source src={previewVideo} type="video/mp4" />
-        </video>
-        <div className="hero-video-overlay" />
-        <div className="hero-overlay-text">
-          <StaggerText text="FRIOO" className="hero-main-title" stagger={0.08} delay={0.5} />
-          <ScrollReveal delay={1.2} duration={0.8}>
-            <p className="hero-sub-title">Fresh Fruits, Juices & Salads Delivered in Vizag.</p>
-            <div className="hero-cta-group">
-              <Link to="/shop" className="hero-cta-btn">Order Fresh Now</Link>
-              <p className="hero-micro-trust">Trusted by 2,400+ families in Vizag</p>
-            </div>
-          </ScrollReveal>
+      <section className="home-hero">
+        <div className="home-hero-media">
+          <img src={HERO_IMAGE} alt="Fresh fruit, ready at Frioo" className="home-hero-img" />
         </div>
-      </div>
+        <div className="home-hero-panel">
+          <p className="home-hero-eyebrow">Fresh in Visakhapatnam</p>
+          <h2 className="home-hero-title">Fruit, juices &amp; salads, made the same day.</h2>
+          <p className="home-hero-sub">Hand-picked each morning and delivered across Vizag, within 6&nbsp;km.</p>
+          <Link to="/shop" className="home-hero-cta">Shop fresh</Link>
+        </div>
+      </section>
 
-      <section className="home-categories-section" aria-label="Product categories">
-        <div className="section-container">
-          <ScrollReveal>
-            <h2 className="section-title">WHAT WE MAKE</h2>
-            <p className="section-subtitle">Four categories. One commitment — made fresh, delivered the same day.</p>
-          </ScrollReveal>
-          <div className="home-cat-carousel-wrap">
-            <div className="home-categories-grid">
-              {CATEGORIES.map((cat, i) => (
-                <ScrollReveal key={cat.slug} delay={0.1 * i} direction="up">
-                  <Link to={`/shop?category=${cat.slug}`} className="home-cat-card">
-                    <div className="home-cat-img-wrap">
-                      <img src={cat.img} alt={cat.label} className="home-cat-img" loading="lazy" />
-                      <div className="home-cat-overlay" />
-                    </div>
-                    <div className="home-cat-body">
-                      <h3 className="home-cat-title">{cat.label}</h3>
-                      <p className="home-cat-desc">{cat.desc}</p>
-                      <span className="home-cat-link">Shop {cat.label} &rarr;</span>
-                    </div>
-                  </Link>
-                </ScrollReveal>
-              ))}
-            </div>
+      <section className="home-section" aria-label="Product categories">
+        <div className="home-container">
+          <header className="home-head">
+            <p className="home-eyebrow">What we make</p>
+            <h2 className="home-title">Four things, done properly</h2>
+          </header>
+          <div className="home-cats">
+            {CATEGORIES.map((cat) => (
+              <Link key={cat.slug} to={`/shop?category=${cat.slug}`} className="home-cat">
+                <div className="home-cat-media"><img src={cat.img} alt={cat.label} loading="lazy" /></div>
+                <div className="home-cat-body">
+                  <h3 className="home-cat-title">{cat.label}</h3>
+                  <p className="home-cat-desc">{cat.desc}</p>
+                  <span className="home-cat-link">Shop {cat.label} &rarr;</span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
+      {isLoadingProducts && (
+        <section className="home-section">
+          <div className="home-container">
+            <div className="home-grid">{Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}</div>
+          </div>
+        </section>
+      )}
+
       {featuredProducts.length > 0 && (
-        <section className="featured-section" aria-label="Featured fresh juices and fruits in Vizag">
-          <div className="section-container">
-            <ScrollReveal>
-              <StaggerText text="FRESHLY MADE FAVORITES" className="section-title" />
-              <p className="section-subtitle">Our most-loved items, freshly made daily with the finest local fruits.</p>
-            </ScrollReveal>
-
-            <div className="products-scroll">
-              {featuredProducts.map((product, idx) => {
-                const currentPrice = product.price_cents / 100;
-                const hasDiscount = product.discount > 0;
-                const originalPrice = hasDiscount
-                  ? Math.round(currentPrice / (1 - product.discount / 100))
-                  : null;
-
-                return (
-                  <ScrollReveal key={product.id} delay={0.1 * (idx + 1)} direction="up" className="inline-block">
-                    <div className="product-card-mini">
-                      {hasDiscount && (
-                        <span className="product-badge product-badge-sale">{product.discount}% OFF</span>
-                      )}
-                      {!hasDiscount && idx === 0 && (
-                        <span className="product-badge product-badge-bestseller">Bestseller</span>
-                      )}
-                      {!hasDiscount && idx === 1 && (
-                        <span className="product-badge product-badge-popular">Popular</span>
-                      )}
-                      <Link to={`/product/${product.id}`} className="product-link">
-                        <div className="product-image-wrapper">
-                          <img src={product.images[0]} alt={product.title} className="product-image" />
-                        </div>
-                        <div className="product-info">
-                          <div className="product-price-group">
-                            <span className={`product-price${hasDiscount ? ' discounted' : ''}`}>
-                              &#8377;{currentPrice.toFixed(0)}
-                            </span>
-                            {hasDiscount && (
-                              <span className="product-original-price">&#8377;{originalPrice}</span>
-                            )}
-                          </div>
-                          <h4 className="product-name">{product.title}</h4>
-                          <div className="product-stock">
-                            <span className="stock-dot" />
-                            <span className="stock-text">In stock</span>
-                          </div>
-                          <p className="product-desc">{product.description?.substring(0, 50)}...</p>
-                        </div>
-                        <button className="product-cta">Choose options</button>
-                      </Link>
-                    </div>
-                  </ScrollReveal>
-                );
-              })}
+        <section className="home-section" aria-label="Featured products">
+          <div className="home-container">
+            <header className="home-head">
+              <p className="home-eyebrow">Freshly made</p>
+              <h2 className="home-title">Today's favourites</h2>
+            </header>
+            <div className="home-grid">
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} onAdd={addToCart} />
+              ))}
             </div>
           </div>
         </section>
       )}
 
-      <section className="coupon-section" aria-label="Coupon offer">
-        <div className="section-container">
-          <ScrollReveal>
-            <div className="coupon-wrapper">
-              <div className="coupon-left">
-                <span className="coupon-eyebrow">First order offer</span>
-                <h2 className="coupon-headline">10% off your first order</h2>
-                <p className="coupon-body">
-                  Made fresh, delivered the same day. No minimum basket — just good food.
-                </p>
-                <div className="coupon-code-row">
-                  <div className="coupon-code-box">
-                    <span className="coupon-code-text">FRESH10</span>
-                    <div className="coupon-divider-v" />
-                    <button className="coupon-copy-btn" onClick={copyCoupon}>
-                      {couponCopied ? 'Copied' : 'Copy'}
-                    </button>
-                  </div>
-                  <Link to="/shop" className="coupon-shop-link">Shop Now &rarr;</Link>
-                </div>
-              </div>
-              <div className="coupon-right">
-                <p className="coupon-expires">Offer expires in</p>
-                <div className="coupon-timer">
-                  <div className="coupon-timer-item">
-                    <span className="coupon-timer-val">{String(timeLeft.hours).padStart(2, '0')}</span>
-                    <span className="coupon-timer-label">Hrs</span>
-                  </div>
-                  <span className="coupon-timer-sep">:</span>
-                  <div className="coupon-timer-item">
-                    <span className="coupon-timer-val">{String(timeLeft.minutes).padStart(2, '0')}</span>
-                    <span className="coupon-timer-label">Min</span>
-                  </div>
-                  <span className="coupon-timer-sep">:</span>
-                  <div className="coupon-timer-item">
-                    <span className="coupon-timer-val">{String(timeLeft.seconds).padStart(2, '0')}</span>
-                    <span className="coupon-timer-label">Sec</span>
-                  </div>
-                </div>
-                <p className="coupon-fine-print">Resets daily at midnight</p>
-              </div>
+      <section className="home-section home-offer-section" aria-label="First order offer">
+        <div className="home-container">
+          <div className="home-offer">
+            <div className="home-offer-text">
+              <p className="home-eyebrow">First order</p>
+              <h2 className="home-offer-title">10% off your first order</h2>
+              <p className="home-offer-body">Made fresh, delivered the same day. No minimum basket.</p>
             </div>
-          </ScrollReveal>
+            <div className="home-offer-action">
+              <div className="home-offer-code">
+                <span className="home-offer-code-text">FRESH10</span>
+                <button className="home-offer-copy" onClick={copyCoupon}>{couponCopied ? 'Copied' : 'Copy'}</button>
+              </div>
+              <Link to="/shop" className="home-offer-link">Shop now &rarr;</Link>
+            </div>
+          </div>
         </div>
       </section>
 
       {productsError && products.length === 0 && (
-        <section className="all-products-section" aria-label="Product loading error">
-          <div className="section-container">
-            <FetchError
-              message="We couldn't load our fresh picks right now. Please try again."
-              onRetry={loadProducts}
-            />
+        <section className="home-section">
+          <div className="home-container">
+            <FetchError message="We couldn't load our fresh picks right now. Please try again." onRetry={loadProducts} />
+          </div>
+        </section>
+      )}
+
+      {isEmpty && (
+        <section className="home-section">
+          <div className="home-container">
+            <div className="home-empty">
+              <p className="home-empty-title">Nothing to show just yet</p>
+              <p className="home-empty-sub">Our shelves are being restocked. Please check back shortly.</p>
+              <Link to="/shop" className="home-hero-cta">Browse the shop</Link>
+            </div>
           </div>
         </section>
       )}
 
       {products.length > 0 && (
-        <section className="all-products-section" aria-label="All Frioo products">
-          <div className="section-container">
-            <ScrollReveal>
-              <div className="ap-header">
-                <div>
-                  <h2 className="section-title">EVERYTHING FRESH</h2>
-                  <p className="section-subtitle">Browse by category — 6 items at a glance</p>
-                </div>
-                <Link to="/shop" className="ap-view-all">View all &rarr;</Link>
+        <section className="home-section" aria-label="All products">
+          <div className="home-container">
+            <header className="home-head home-head-row">
+              <div>
+                <p className="home-eyebrow">Everything fresh</p>
+                <h2 className="home-title">Browse by category</h2>
               </div>
-            </ScrollReveal>
-
-            <div className="ap-tabs">
-              {PRODUCT_TABS.map(tab => (
+              <Link to="/shop" className="home-viewall">View all &rarr;</Link>
+            </header>
+            <div className="home-tabs" role="tablist">
+              {PRODUCT_TABS.map((tab) => (
                 <button
                   key={tab.slug}
-                  className={`ap-tab-btn${activeProductTab === tab.slug ? ' active' : ''}`}
+                  role="tab"
+                  aria-selected={activeProductTab === tab.slug}
+                  className={`home-tab${activeProductTab === tab.slug ? ' home-tab-on' : ''}`}
                   onClick={() => setActiveProductTab(tab.slug)}
                 >
                   {tab.label}
                 </button>
               ))}
             </div>
-
-            <div className="ap-grid">
-              {activeTabProducts.map((product) => {
-                const price = product.price_cents / 100;
-                const hasDiscount = product.discount > 0;
-                const originalPrice = hasDiscount
-                  ? Math.round(price / (1 - product.discount / 100))
-                  : null;
-
-                return (
-                  <Link key={product.id} to={`/product/${product.id}`} className="ap-card">
-                    <div className="ap-card-img-wrap">
-                      <img src={product.images?.[0]} alt={product.title} className="ap-card-img" loading="lazy" />
-                      {hasDiscount && (
-                        <div className="ap-discount-badge">{product.discount}% OFF</div>
-                      )}
-                      {product.featured && !hasDiscount && (
-                        <div className="ap-featured-badge">Popular</div>
-                      )}
-                    </div>
-                    <div className="ap-card-body">
-                      <p className="ap-card-title">{product.title}</p>
-                      <div className="ap-card-pricing">
-                        <span className={`ap-card-price${hasDiscount ? ' sale' : ''}`}>
-                          &#8377;{price.toFixed(0)}
-                        </span>
-                        {hasDiscount && (
-                          <span className="ap-card-original">&#8377;{originalPrice}</span>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+            <div className="home-grid">
+              {activeTabProducts.map((product) => (
+                <ProductCard key={product.id} product={product} onAdd={addToCart} />
+              ))}
             </div>
           </div>
         </section>
@@ -347,560 +218,89 @@ export default function Home() {
       <Footer />
 
       <style>{`
-        .home-categories-section {
-          padding: 80px 0;
-          background: #FAFAFA;
-        }
-
-        .home-categories-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 20px;
-          margin-top: 50px;
-        }
-
-        .home-cat-card {
-          display: block;
-          text-decoration: none;
-          border-radius: 12px;
-          overflow: hidden;
-          background: white;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .home-cat-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 32px rgba(0,0,0,0.1);
-        }
-
-        .home-cat-img-wrap {
-          position: relative;
-          height: 200px;
-          overflow: hidden;
-        }
-
-        .home-cat-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.4s ease;
-        }
-
-        .home-cat-card:hover .home-cat-img {
-          transform: scale(1.05);
-        }
-
-        .home-cat-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.35));
-        }
-
-        .home-cat-body {
-          padding: 20px;
-        }
-
-        .home-cat-title {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.15rem;
-          color: #111;
-          margin: 0 0 6px;
-        }
-
-        .home-cat-desc {
-          font-size: 0.85rem;
-          color: #888;
-          margin: 0 0 14px;
-          line-height: 1.5;
-        }
-
-        .home-cat-link {
-          font-size: 0.8rem;
-          font-weight: 700;
-          color: #2F4F4F;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        /* Featured section — discount enhancements */
-        .product-price-group {
-          display: flex;
-          align-items: baseline;
-          gap: 8px;
-          margin-bottom: 4px;
-        }
-
-        .product-price.discounted {
-          color: #D0483A;
-          font-weight: 700;
-        }
-
-        .product-original-price {
-          font-size: 0.8rem;
-          color: #aaa;
-          text-decoration: line-through;
-        }
-
-        .product-badge-sale {
-          background: #D0483A;
-          color: white;
-        }
-
-        /* Coupon section */
-        .coupon-section {
-          padding: 48px 0;
-          background: #2F4F4F;
-        }
-
-        .coupon-wrapper {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          background: white;
-          border-radius: 20px;
-          overflow: hidden;
-          box-shadow: 0 8px 40px rgba(0,0,0,0.12);
-          position: relative;
-        }
-
-        .coupon-wrapper::before {
-          content: '';
-          position: absolute;
-          left: 60%;
-          top: -20px;
-          bottom: -20px;
-          width: 1px;
-          border-left: 2px dashed #e0e0e0;
-        }
-
-        .coupon-left {
-          flex: 1;
-          padding: 36px 44px;
-        }
-
-        .coupon-eyebrow {
-          display: inline-block;
-          font-size: 0.75rem;
-          font-weight: 700;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-          color: #C5A065;
-          background: #FFF8EF;
-          padding: 4px 12px;
-          border-radius: 20px;
-          margin-bottom: 12px;
-        }
-
-        .coupon-headline {
-          font-family: 'Playfair Display', serif;
-          font-size: 2rem;
-          color: #1a1a1a;
-          margin: 0 0 8px;
-          line-height: 1.2;
-        }
-
-        .coupon-body {
-          font-size: 0.9rem;
-          color: #777;
-          margin: 0 0 22px;
-          max-width: 380px;
-          line-height: 1.55;
-        }
-
-        .coupon-code-row {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          flex-wrap: wrap;
-        }
-
-        .coupon-code-box {
-          display: flex;
-          align-items: center;
-          border: 2px dashed #C5A065;
-          border-radius: 10px;
-          overflow: hidden;
-          background: #FDFAF5;
-        }
-
-        .coupon-code-text {
-          font-family: 'Courier New', monospace;
-          font-size: 1.05rem;
-          font-weight: 700;
-          letter-spacing: 3px;
-          color: #1a1a1a;
-          padding: 10px 18px;
-        }
-
-        .coupon-divider-v {
-          width: 1px;
-          height: 42px;
-          background: #e8d9c0;
-        }
-
-        .coupon-copy-btn {
-          padding: 10px 16px;
-          background: #C5A065;
-          color: white;
-          border: none;
-          font-size: 0.82rem;
-          font-weight: 700;
-          cursor: pointer;
-          transition: background 0.2s;
-          letter-spacing: 0.5px;
-        }
-
-        .coupon-copy-btn:hover {
-          background: #b8904f;
-        }
-
-        .coupon-shop-link {
-          font-size: 0.88rem;
-          font-weight: 700;
-          color: #2F4F4F;
-          text-decoration: none;
-          border-bottom: 1.5px solid #2F4F4F;
-          padding-bottom: 2px;
-          transition: color 0.2s;
-        }
-
-        .coupon-shop-link:hover {
-          color: #C5A065;
-          border-color: #C5A065;
-        }
-
-        .coupon-right {
-          width: 40%;
-          padding: 36px 44px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-        }
-
-        .coupon-expires {
-          font-size: 0.75rem;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          color: #999;
-          margin: 0 0 12px;
-        }
-
-        .coupon-timer {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 8px;
-        }
-
-        .coupon-timer-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          background: #2F4F4F;
-          border-radius: 10px;
-          padding: 10px 14px;
-          min-width: 58px;
-        }
-
-        .coupon-timer-val {
-          font-size: 1.6rem;
-          font-weight: 700;
-          color: white;
-          font-variant-numeric: tabular-nums;
-          line-height: 1;
-        }
-
-        .coupon-timer-label {
-          font-size: 0.6rem;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          color: rgba(255,255,255,0.6);
-          margin-top: 4px;
-        }
-
-        .coupon-timer-sep {
-          font-size: 1.4rem;
-          font-weight: 700;
-          color: #2F4F4F;
-          margin-bottom: 12px;
-        }
-
-        .coupon-fine-print {
-          font-size: 0.72rem;
-          color: #bbb;
-          margin: 0;
-        }
-
-        /* Everything Fresh — tabbed grid */
-        .all-products-section {
-          padding: 80px 0;
-          background: white;
-        }
-
-        .ap-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          margin-bottom: 32px;
-        }
-
-        .ap-view-all {
-          font-size: 0.9rem;
-          font-weight: 700;
-          color: #2F4F4F;
-          text-decoration: none;
-          border-bottom: 1.5px solid #2F4F4F;
-          padding-bottom: 2px;
-          white-space: nowrap;
-          transition: color 0.2s, border-color 0.2s;
-        }
-
-        .ap-view-all:hover {
-          color: #C5A065;
-          border-color: #C5A065;
-        }
-
-        .ap-tabs {
-          display: flex;
-          gap: 10px;
-          margin-bottom: 32px;
-          border-bottom: 1px solid #eee;
-          padding-bottom: 0;
-        }
-
-        .ap-tab-btn {
-          padding: 10px 24px;
-          background: none;
-          border: none;
-          border-bottom: 2px solid transparent;
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: #999;
-          cursor: pointer;
-          transition: color 0.2s, border-color 0.2s;
-          margin-bottom: -1px;
-          font-family: 'Inter', sans-serif;
-        }
-
-        .ap-tab-btn:hover {
-          color: #2F4F4F;
-        }
-
-        .ap-tab-btn.active {
-          color: #2F4F4F;
-          border-bottom-color: #2F4F4F;
-        }
-
-        .ap-grid {
-          display: flex;
-          gap: 16px;
-          overflow-x: auto;
-          scroll-snap-type: x mandatory;
-          -webkit-overflow-scrolling: touch;
-          padding-bottom: 8px;
-          scrollbar-width: none;
-        }
-
-        .ap-grid::-webkit-scrollbar {
-          display: none;
-        }
-
-        .ap-card {
-          flex-shrink: 0;
-          width: calc((100% - 5 * 16px) / 6);
-          scroll-snap-align: start;
-          text-decoration: none;
-          color: inherit;
-          background: white;
-          border-radius: 14px;
-          overflow: hidden;
-          border: 1px solid #f0f0f0;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .ap-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-        }
-
-        .ap-card-img-wrap {
-          position: relative;
-          height: 150px;
-          background: #f7f7f7;
-          overflow: hidden;
-        }
-
-        .ap-card-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.3s ease;
-        }
-
-        .ap-card:hover .ap-card-img {
-          transform: scale(1.04);
-        }
-
-        .ap-discount-badge {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          background: #D0483A;
-          color: white;
-          font-size: 0.68rem;
-          font-weight: 700;
-          padding: 3px 8px;
-          border-radius: 5px;
-          letter-spacing: 0.3px;
-        }
-
-        .ap-featured-badge {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          background: #2F4F4F;
-          color: white;
-          font-size: 0.68rem;
-          font-weight: 700;
-          padding: 3px 8px;
-          border-radius: 5px;
-        }
-
-        .ap-card-body {
-          padding: 12px;
-        }
-
-        .ap-card-title {
-          font-size: 0.82rem;
-          font-weight: 600;
-          color: #1a1a1a;
-          margin: 0 0 5px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .ap-card-pricing {
-          display: flex;
-          align-items: baseline;
-          gap: 6px;
-        }
-
-        .ap-card-price {
-          font-size: 0.95rem;
-          font-weight: 700;
-          color: #1a1a1a;
-        }
-
-        .ap-card-price.sale {
-          color: #D0483A;
-        }
-
-        .ap-card-original {
-          font-size: 0.75rem;
-          color: #bbb;
-          text-decoration: line-through;
-        }
-
-        @media (max-width: 1024px) {
-          .home-categories-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-          .coupon-wrapper::before { display: none; }
-          .coupon-wrapper { flex-direction: column; }
-          .coupon-left { padding: 28px 32px 16px; width: 100%; box-sizing: border-box; }
-          .coupon-right { width: 100%; box-sizing: border-box; padding: 16px 32px 28px; flex-direction: row; justify-content: center; align-items: center; gap: 24px; text-align: left; }
-          .coupon-expires { margin: 0; }
-          .coupon-fine-print { display: none; }
-        }
-
-        @media (max-width: 768px) {
-          .home-cat-carousel-wrap {
-            position: relative;
-            margin-top: 32px;
-          }
-
-          .home-cat-carousel-wrap::before,
-          .home-cat-carousel-wrap::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 14%;
-            pointer-events: none;
-            z-index: 2;
-          }
-
-          .home-cat-carousel-wrap::before {
-            left: 0;
-            background: linear-gradient(to right, #FAFAFA 20%, transparent);
-          }
-
-          .home-cat-carousel-wrap::after {
-            right: 0;
-            background: linear-gradient(to left, #FAFAFA 20%, transparent);
-          }
-
-          .home-categories-grid {
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            gap: 16px;
-            padding: 10px 13% 24px;
-            margin-top: 0;
-            scrollbar-width: none;
-          }
-
-          .home-categories-grid::-webkit-scrollbar {
-            display: none;
-          }
-
-          .home-categories-grid > * {
-            flex-shrink: 0;
-            width: 72%;
-            scroll-snap-align: center;
-          }
-
-          .home-cat-card {
-            display: block;
-            width: 100%;
-          }
-
-          .home-cat-img-wrap {
-            height: 180px;
-          }
-
-          .home-categories-section {
-            padding: 50px 0;
-          }
-        }
-
-        @media (max-width: 600px) {
-          .coupon-section { padding: 24px 0; }
-          .coupon-wrapper { border-radius: 14px; }
-          .coupon-left { padding: 20px 16px 12px; }
-          .coupon-right { padding: 12px 16px 20px; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
-          .coupon-headline { font-size: 1.35rem; margin-bottom: 6px; }
-          .coupon-body { font-size: 0.82rem; margin-bottom: 14px; }
-          .coupon-eyebrow { font-size: 0.68rem; margin-bottom: 8px; }
-          .coupon-code-text { font-size: 0.95rem; padding: 8px 14px; letter-spacing: 2px; }
-          .coupon-copy-btn { padding: 8px 13px; font-size: 0.78rem; }
-          .coupon-divider-v { height: 36px; }
-          .coupon-code-row { gap: 10px; }
-          .coupon-shop-link { font-size: 0.82rem; }
-          .coupon-expires { margin-bottom: 8px; }
-          .coupon-timer-item { padding: 7px 10px; min-width: 44px; border-radius: 8px; }
-          .coupon-timer-val { font-size: 1.2rem; }
-          .coupon-timer-sep { font-size: 1.1rem; margin-bottom: 10px; }
-          .coupon-timer-label { font-size: 0.55rem; }
-          .ap-card { width: calc(50% - 8px); }
-          .ap-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-          .ap-tabs { gap: 0; }
-          .ap-tab-btn { padding: 10px 16px; font-size: 0.82rem; }
+        .home-page { background: var(--fr-canvas); }
+
+        .home-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; min-height: 520px; }
+        .home-hero-media { overflow: hidden; background: var(--fr-surface-2); }
+        .home-hero-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .home-hero-panel { display: flex; flex-direction: column; justify-content: center; padding: var(--fr-s10) var(--fr-s9); background: var(--fr-canvas); }
+        .home-hero-eyebrow { font-family: var(--fr-font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fr-brand); margin: 0 0 var(--fr-s4); }
+        .home-hero-title { font-family: var(--fr-font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; line-height: 1.08; letter-spacing: -0.015em; color: var(--fr-text); margin: 0 0 var(--fr-s4); max-width: 16ch; }
+        .home-hero-sub { font-size: 1.1rem; line-height: 1.5; color: var(--fr-text-2); margin: 0 0 var(--fr-s6); max-width: 40ch; }
+        .home-hero-cta { align-self: flex-start; display: inline-flex; align-items: center; height: 52px; padding: 0 var(--fr-s6); background: var(--fr-brand); color: var(--fr-on-brand); border-radius: var(--fr-r-control); font-size: 0.98rem; font-weight: 600; text-decoration: none; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .home-hero-cta:hover { background: var(--fr-brand-press); }
+        .home-hero-cta:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+
+        .home-section { padding: var(--fr-s9) 0; }
+        .home-container { max-width: 1200px; margin: 0 auto; padding: 0 var(--fr-s7); }
+        .home-head { margin-bottom: var(--fr-s6); }
+        .home-head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--fr-s4); }
+        .home-eyebrow { font-family: var(--fr-font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fr-brand); margin: 0 0 var(--fr-s2); }
+        .home-title { font-family: var(--fr-font-display); font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 700; letter-spacing: -0.015em; color: var(--fr-text); margin: 0; }
+        .home-viewall { font-size: 0.92rem; font-weight: 600; color: var(--fr-brand); text-decoration: none; white-space: nowrap; }
+        .home-viewall:hover { color: var(--fr-brand-press); }
+        .home-viewall:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
+
+        .home-cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--fr-s5); }
+        .home-cat { display: flex; flex-direction: column; background: var(--fr-surface); border-radius: var(--fr-r-card); overflow: hidden; box-shadow: var(--fr-elev-1); text-decoration: none; transition: box-shadow var(--fr-dur-base) var(--fr-ease-standard), transform var(--fr-dur-base) var(--fr-ease-standard); }
+        .home-cat:hover { box-shadow: var(--fr-elev-2); transform: translateY(-2px); }
+        .home-cat:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        .home-cat-media { aspect-ratio: 4 / 3; overflow: hidden; background: var(--fr-surface-2); }
+        .home-cat-media img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--fr-dur-base) var(--fr-ease-standard); }
+        .home-cat:hover .home-cat-media img { transform: scale(1.03); }
+        .home-cat-body { padding: var(--fr-s4); display: flex; flex-direction: column; gap: var(--fr-s2); }
+        .home-cat-title { font-family: var(--fr-font-display); font-size: 1.15rem; font-weight: 650; color: var(--fr-text); margin: 0; }
+        .home-cat-desc { font-size: 0.86rem; color: var(--fr-text-2); line-height: 1.5; margin: 0; }
+        .home-cat-link { font-size: 0.8rem; font-weight: 600; color: var(--fr-brand); margin-top: var(--fr-s1); }
+
+        .home-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--fr-s5); }
+
+        .home-tabs { display: flex; gap: var(--fr-s2); margin-bottom: var(--fr-s6); border-bottom: 1px solid var(--fr-line); }
+        .home-tab { padding: var(--fr-s3) var(--fr-s4); background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: var(--fr-font-sans); font-size: 0.92rem; font-weight: 600; color: var(--fr-text-2); cursor: pointer; transition: color var(--fr-dur-quick) var(--fr-ease-standard), border-color var(--fr-dur-quick) var(--fr-ease-standard); }
+        .home-tab:hover { color: var(--fr-brand); }
+        .home-tab-on { color: var(--fr-brand); border-bottom-color: var(--fr-brand); }
+        .home-tab:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
+
+        .home-offer-section { background: var(--fr-surface-2); }
+        .home-offer { display: flex; align-items: center; justify-content: space-between; gap: var(--fr-s7); flex-wrap: wrap; background: var(--fr-surface); border: 1px solid var(--fr-line); border-radius: var(--fr-r-surface); padding: var(--fr-s7) var(--fr-s8); }
+        .home-offer-title { font-family: var(--fr-font-display); font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; color: var(--fr-text); margin: var(--fr-s1) 0; }
+        .home-offer-body { color: var(--fr-text-2); font-size: 0.95rem; margin: 0; }
+        .home-offer-action { display: flex; flex-direction: column; align-items: flex-start; gap: var(--fr-s3); }
+        .home-offer-code { display: flex; align-items: stretch; border: 1px dashed var(--fr-brand); border-radius: var(--fr-r-control); overflow: hidden; }
+        .home-offer-code-text { display: flex; align-items: center; font-family: var(--fr-font-mono); font-size: 1rem; font-weight: 700; letter-spacing: 0.12em; color: var(--fr-text); padding: 0 var(--fr-s4); background: var(--fr-brand-tint); }
+        .home-offer-copy { border: none; background: var(--fr-brand); color: var(--fr-on-brand); font-family: var(--fr-font-sans); font-size: 0.86rem; font-weight: 600; padding: var(--fr-s3) var(--fr-s4); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .home-offer-copy:hover { background: var(--fr-brand-press); }
+        .home-offer-copy:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        .home-offer-link { font-size: 0.9rem; font-weight: 600; color: var(--fr-brand); text-decoration: none; }
+        .home-offer-link:hover { color: var(--fr-brand-press); }
+
+        .home-empty { text-align: center; padding: var(--fr-s9) var(--fr-s5); display: flex; flex-direction: column; align-items: center; gap: var(--fr-s3); }
+        .home-empty-title { font-family: var(--fr-font-display); font-size: 1.4rem; font-weight: 700; color: var(--fr-text); margin: 0; }
+        .home-empty-sub { color: var(--fr-text-2); margin: 0 0 var(--fr-s3); }
+
+        .home-skel { display: flex; flex-direction: column; gap: var(--fr-s3); background: var(--fr-surface); border-radius: var(--fr-r-card); box-shadow: var(--fr-elev-1); overflow: hidden; padding-bottom: var(--fr-s4); }
+        .home-skel-img { aspect-ratio: 4 / 5; background: var(--fr-surface-2); }
+        .home-skel-line { height: 12px; border-radius: var(--fr-r-control); background: var(--fr-surface-2); margin: 0 var(--fr-s4); }
+        .home-skel-short { width: 50%; }
+        .home-skel-btn { height: 44px; border-radius: var(--fr-r-control); background: var(--fr-surface-2); margin: var(--fr-s2) var(--fr-s4) 0; }
+        @media (prefers-reduced-motion: no-preference) { .home-skel-img, .home-skel-line, .home-skel-btn { animation: home-shimmer 1.4s var(--fr-ease-standard) infinite; } }
+        @keyframes home-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+        @media (max-width: 900px) {
+          .home-hero { grid-template-columns: 1fr; min-height: 0; }
+          .home-hero-media { aspect-ratio: 16 / 10; }
+          .home-hero-panel { padding: var(--fr-s7) var(--fr-s5) var(--fr-s8); }
+          .home-cats { grid-template-columns: repeat(2, 1fr); gap: var(--fr-s4); }
+          .home-grid { grid-template-columns: repeat(2, 1fr); gap: var(--fr-s4); }
+          .home-container { padding: 0 var(--fr-s4); }
+          .home-section { padding: var(--fr-s8) 0; }
+          .home-offer { padding: var(--fr-s6); gap: var(--fr-s5); }
+        }
+        @media (max-width: 520px) {
+          .home-cats { grid-template-columns: 1fr; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .home-cat, .home-cat-media img, .home-hero-cta, .home-tab { transition: none; }
         }
       `}</style>
     </div>
