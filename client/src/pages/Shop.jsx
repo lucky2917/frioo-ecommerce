@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import ScrollReveal from '../components/animations/ScrollReveal';
@@ -9,21 +9,19 @@ import ShopFilters from '../components/shop/ShopFilters';
 import BundleDeals from '../components/shop/BundleDeals';
 import LoadingSpinner from '../components/LoadingSpinner';
 import FetchError from '../components/FetchError';
-import { logger } from '../utils/logger';
 import { useCart } from '../context/CartContext';
 import { showToast } from '../utils/toast';
 
 import SEO from '../components/SEO';
-import { API_BASE_URL, PRODUCT_CATEGORIES } from '../config/constants';
+import { useProducts } from '../hooks/useProducts';
+import { PRODUCT_CATEGORIES } from '../config/constants';
 
 const TABS = PRODUCT_CATEGORIES.map(c => c.label);
 const ITEMS_PER_PAGE = 12;
 
 export default function Shop() {
   const { cart, addToCart } = useCart();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const { products, loading, error, refetch: fetchShopProducts } = useProducts();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortOption, setSortOption] = useState('recommended');
@@ -59,27 +57,6 @@ export default function Shop() {
     const cat = PRODUCT_CATEGORIES.find(c => c.label === tab);
     if (cat) setSearchParams({ category: cat.slug });
   };
-
-  const fetchShopProducts = useCallback(async () => {
-    setLoading(true);
-    setError(false);
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/products`);
-      if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
-      const response = await res.json();
-      const data = response.data || {};
-      setProducts(data.items || []);
-    } catch (err) {
-      logger.error('Shop Fetch Error:', err);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchShopProducts();
-  }, [fetchShopProducts]);
 
   const processedProducts = useMemo(() => {
     let result = [...products];

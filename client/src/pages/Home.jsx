@@ -4,10 +4,10 @@ import Navbar from '../components/layout/Navbar';
 import ScrollReveal from '../components/animations/ScrollReveal';
 import StaggerText from '../components/animations/StaggerText';
 import Footer from '../components/layout/Footer';
-import { logger } from '../utils/logger';
 import SEO from '../components/SEO';
 import FetchError from '../components/FetchError';
-import { API_BASE_URL, PRODUCT_CATEGORIES } from '../config/constants';
+import { useProducts } from '../hooks/useProducts';
+import { PRODUCT_CATEGORIES } from '../config/constants';
 import previewVideo from '../assets/preview.mp4';
 
 const CATEGORIES = [
@@ -62,8 +62,7 @@ const homeSchema = {
 export default function Home() {
   const PRODUCT_TABS = PRODUCT_CATEGORIES.filter(c => c.dbValue !== null).slice(0, 3);
 
-  const [products, setProducts] = useState([]);
-  const [productsError, setProductsError] = useState(false);
+  const { products, error: productsError, refetch: loadProducts } = useProducts();
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
   const [couponCopied, setCouponCopied] = useState(false);
   const [activeProductTab, setActiveProductTab] = useState(PRODUCT_TABS[0].slug);
@@ -89,24 +88,6 @@ export default function Home() {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
-
-  const loadProducts = useCallback(async () => {
-    setProductsError(false);
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/products`);
-      if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
-      const response = await res.json();
-      const data = response.data || {};
-      setProducts(data.items || []);
-    } catch (err) {
-      logger.error('Failed to fetch products:', err);
-      setProductsError(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
 
   const featuredProducts = useMemo(() => products.filter(p => p.featured).slice(0, 6), [products]);
 
