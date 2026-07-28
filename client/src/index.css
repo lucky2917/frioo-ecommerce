@@ -22,9 +22,9 @@
 
   --mobile-search-height: 50px;
 
-  --navbar-height-desktop: 145px;
+  --navbar-height-desktop: 88px;
 
-  --navbar-height-mobile: 115px;
+  --navbar-height-mobile: 120px;
 
   --container-width: 1600px;
 
@@ -35,6 +35,65 @@
 
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  --fr-canvas: #F5F8F3;
+  --fr-surface: #FFFFFF;
+  --fr-surface-2: #EEF3EC;
+  --fr-text: #16211B;
+  --fr-text-2: #47564D;
+  --fr-text-3: #86938B;
+  --fr-line: #DCE5DD;
+  --fr-line-strong: #C3D0C4;
+  --fr-brand: #1B4D3E;
+  --fr-brand-press: #123A2E;
+  --fr-brand-tint: #E3EFE7;
+  --fr-warm: #C8562F;
+  --fr-warm-tint: #F6E2D8;
+  --fr-success: #2E7D46;
+  --fr-danger: #B23A2E;
+  --fr-info: #3C6E8F;
+  --fr-on-brand: #FFFFFF;
+  --fr-scrim: rgba(18, 32, 26, 0.5);
+
+  --fr-font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --fr-font-sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fr-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --fr-s1: 4px;
+  --fr-s2: 8px;
+  --fr-s3: 12px;
+  --fr-s4: 16px;
+  --fr-s5: 24px;
+  --fr-s6: 32px;
+  --fr-s7: 40px;
+  --fr-s8: 48px;
+  --fr-s9: 64px;
+  --fr-s10: 96px;
+
+  --fr-r-control: 6px;
+  --fr-r-card: 10px;
+  --fr-r-surface: 16px;
+  --fr-r-pill: 999px;
+
+  --fr-elev-1: 6px 8px 20px -10px rgba(18, 32, 26, 0.16), 1px 2px 4px -1px rgba(18, 32, 26, 0.08);
+  --fr-elev-2: 10px 16px 32px -12px rgba(18, 32, 26, 0.22);
+  --fr-elev-3: 18px 30px 60px -22px rgba(18, 32, 26, 0.34);
+
+  --fr-z-nav: 100;
+  --fr-z-dropdown: 200;
+  --fr-z-cta: 300;
+  --fr-z-scrim: 400;
+  --fr-z-sheet: 410;
+  --fr-z-modal: 500;
+  --fr-z-toast: 600;
+  --fr-z-tooltip: 700;
+
+  --fr-dur-instant: 100ms;
+  --fr-dur-quick: 180ms;
+  --fr-dur-base: 240ms;
+  --fr-dur-expressive: 320ms;
+  --fr-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --fr-ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
@@ -294,34 +353,43 @@ a:hover {
   position: fixed;
   top: 100px;
   right: 20px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  z-index: 3000;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--fr-surface);
+  border-radius: var(--fr-r-surface);
+  box-shadow: var(--fr-elev-3);
+  z-index: var(--fr-z-toast);
+  border: 1px solid var(--fr-line);
   overflow: hidden;
-  animation: slideInRight 0.4s ease;
+  animation: slideInRight var(--fr-dur-base) var(--fr-ease-settle);
   min-width: 280px;
 }
 
+@media (max-width: 600px) {
+  .toast-notification {
+    top: auto;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    left: 16px;
+    right: 16px;
+    min-width: 0;
+  }
+}
+
 .toast-content {
-  padding: 16px 20px;
+  padding: var(--fr-s4) var(--fr-s5);
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: var(--fr-s3);
 }
 
 .toast-icon {
-  font-size: 1.5rem;
-  background: #F5F5F5;
-  border-radius: 50%;
+  background: var(--fr-brand-tint);
+  color: var(--fr-brand);
+  border-radius: var(--fr-r-pill);
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .toast-text {
@@ -332,16 +400,16 @@ a:hover {
 .toast-title {
   display: block;
   font-size: 0.85rem;
-  color: #1a1a1a;
+  color: var(--fr-text);
   margin-bottom: 2px;
-  font-family: 'Manrope', sans-serif;
+  font-family: var(--fr-font-sans);
   font-weight: 700;
 }
 
 .toast-msg {
   font-size: 0.8rem;
-  color: #666;
-  font-family: 'Manrope', sans-serif;
+  color: var(--fr-text-2);
+  font-family: var(--fr-font-sans);
 }
 
 @keyframes slideInRight {
@@ -364,8 +432,8 @@ a:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--bg-body);
-  gap: 20px;
+  background: var(--fr-canvas);
+  gap: var(--fr-s5);
 }
 
 .seo-h1 {

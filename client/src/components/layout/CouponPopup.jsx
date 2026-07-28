@@ -1,73 +1,72 @@
 import React, { useState, useEffect } from 'react';
 
 export default function CouponPopup() {
-    const [show, setShow] = useState(false);
+  const [show, setShow] = useState(false);
 
-    useEffect(() => {
-        const welcomeSeen = localStorage.getItem('frioo_welcome_seen');
-        if (!welcomeSeen) {
-            setTimeout(() => setShow(true), 1500);
-            localStorage.setItem('frioo_welcome_seen', 'true');
-        }
-    }, []);
+  useEffect(() => {
+    const welcomeSeen = localStorage.getItem('frioo_welcome_seen');
+    if (!welcomeSeen) {
+      setTimeout(() => setShow(true), 1500);
+      localStorage.setItem('frioo_welcome_seen', 'true');
+    }
+  }, []);
 
-    if (!show) return null;
+  if (!show) return null;
 
-    return (
-        <div style={styles.overlay}>
-            <div style={styles.card} className="animate-pop">
-                <button onClick={() => setShow(false)} style={styles.close}>&times;</button>
-                <div style={{ fontSize: '3rem' }}>📍</div>
-                <h2 style={styles.title}>Welcome to Frioo!</h2>
-                <p style={styles.text}>
-                    We currently deliver fresh juices, smoothies & salads in <strong>Visakhapatnam</strong>
-                </p>
-                <div style={styles.serviceBox}>
-                    <div style={styles.serviceItem}>
-                        <span style={styles.icon}>🚚</span>
-                        <div>
-                            <strong>Delivery Range</strong>
-                            <p style={styles.serviceText}>Within 6 km radius</p>
-                        </div>
-                    </div>
-                    <div style={styles.serviceItem}>
-                        <span style={styles.icon}>🏪</span>
-                        <div>
-                            <strong>Pickup Available</strong>
-                            <p style={styles.serviceText}>At our Visakhapatnam store</p>
-                        </div>
-                    </div>
-                </div>
-                <button onClick={() => setShow(false)} style={styles.btn}>Start Shopping</button>
+  return (
+    <div className="fr-welcome-scrim" onClick={() => setShow(false)}>
+      <div className="fr-welcome" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Welcome to Frioo">
+        <button className="fr-welcome-close" onClick={() => setShow(false)} aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+        </button>
+        <span className="fr-welcome-mark">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+        </span>
+        <h2 className="fr-welcome-title">Welcome to Frioo</h2>
+        <p className="fr-welcome-text">We deliver fresh juices, shakes &amp; salads across <strong>Visakhapatnam</strong>.</p>
+        <div className="fr-welcome-facts">
+          <div className="fr-welcome-fact">
+            <span className="fr-welcome-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M1 3h15v13H1z" /><path d="M16 8h4l3 3v5h-7z" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>
+            </span>
+            <div>
+              <strong>Delivery range</strong>
+              <p>Within 6&nbsp;km radius</p>
             </div>
+          </div>
+          <div className="fr-welcome-fact">
+            <span className="fr-welcome-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 9l1.5-5h15L21 9" /><path d="M4 9v11h16V9" /><path d="M3 9h18a2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1-2 2 2 2 0 0 1-2-2z" /></svg>
+            </span>
+            <div>
+              <strong>Pickup available</strong>
+              <p>At our Visakhapatnam store</p>
+            </div>
+          </div>
         </div>
-    );
+        <button className="fr-welcome-btn" onClick={() => setShow(false)}>Start shopping</button>
+      </div>
+      <style>{`
+        .fr-welcome-scrim { position: fixed; inset: 0; z-index: var(--fr-z-modal); background: var(--fr-scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: var(--fr-s5); }
+        .fr-welcome { position: relative; width: 100%; max-width: 400px; background: var(--fr-surface); border-radius: var(--fr-r-surface); box-shadow: var(--fr-elev-3); padding: var(--fr-s8) var(--fr-s7); text-align: center; font-family: var(--fr-font-sans); }
+        .fr-welcome-close { position: absolute; top: var(--fr-s3); right: var(--fr-s3); width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-3); cursor: pointer; border-radius: var(--fr-r-control); }
+        .fr-welcome-close:hover { background: var(--fr-surface-2); color: var(--fr-text); }
+        .fr-welcome-close:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        .fr-welcome-mark { width: 56px; height: 56px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--fr-r-pill); background: var(--fr-brand-tint); color: var(--fr-brand); margin-bottom: var(--fr-s3); }
+        .fr-welcome-title { font-family: var(--fr-font-display); font-size: 1.6rem; font-weight: 700; color: var(--fr-text); margin: 0 0 var(--fr-s2); }
+        .fr-welcome-text { color: var(--fr-text-2); font-size: 0.95rem; line-height: 1.55; margin: 0 0 var(--fr-s5); }
+        .fr-welcome-text strong { color: var(--fr-text); font-weight: 600; }
+        .fr-welcome-facts { background: var(--fr-surface-2); border-radius: var(--fr-r-card); padding: var(--fr-s4); margin-bottom: var(--fr-s5); text-align: left; display: flex; flex-direction: column; gap: var(--fr-s4); }
+        .fr-welcome-fact { display: flex; align-items: flex-start; gap: var(--fr-s3); }
+        .fr-welcome-icon { color: var(--fr-brand); flex-shrink: 0; margin-top: 2px; }
+        .fr-welcome-fact strong { font-size: 0.9rem; color: var(--fr-text); font-weight: 600; }
+        .fr-welcome-fact p { margin: 2px 0 0; font-size: 0.82rem; color: var(--fr-text-3); }
+        .fr-welcome-btn { width: 100%; height: 48px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .fr-welcome-btn:hover { background: var(--fr-brand-press); }
+        .fr-welcome-btn:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        @media (prefers-reduced-motion: no-preference) { .fr-welcome { animation: fr-welcome-pop var(--fr-dur-expressive) var(--fr-ease-settle); } }
+        @keyframes fr-welcome-pop { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+      `}</style>
+    </div>
+  );
 }
-
-const styles = {
-    overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)' },
-    card: { background: 'white', width: '90%', maxWidth: '380px', padding: '35px 30px', borderRadius: '20px', textAlign: 'center', position: 'relative', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' },
-    close: { position: 'absolute', top: '10px', right: '15px', background: 'none', border: 'none', fontSize: '2rem', cursor: 'pointer', color: '#999' },
-    title: { fontFamily: 'Playfair Display', fontSize: '1.75rem', margin: '10px 0', color: '#1a1a1a' },
-    text: { color: '#666', marginBottom: '25px', fontSize: '0.95rem', lineHeight: '1.5' },
-    serviceBox: { background: '#f8fafc', padding: '20px', borderRadius: '12px', marginBottom: '25px', textAlign: 'left' },
-    serviceItem: { display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '15px', '&:last-child': { marginBottom: 0 } },
-    icon: { fontSize: '1.75rem', flexShrink: 0 },
-    serviceText: { margin: '4px 0 0', fontSize: '0.85rem', color: '#64748b' },
-    btn: { width: '100%', background: '#1a1a1a', color: 'white', border: 'none', padding: '15px', borderRadius: '50px', fontWeight: 'bold', cursor: 'pointer', fontSize: '1rem', transition: 'transform 0.2s' }
-};
-
-const styleSheet = document.createElement("style");
-styleSheet.innerText = `
-    @keyframes pop {
-        from { transform: scale(0.9); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
-    }
-    .animate-pop {
-        animation: pop 0.3s ease-out;
-    }
-    button:hover {
-        transform: translateY(-1px);
-    }
-`;
-document.head.appendChild(styleSheet);
