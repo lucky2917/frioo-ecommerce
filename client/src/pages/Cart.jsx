@@ -254,7 +254,7 @@ export default function Cart() {
         throw new Error(errorMessage);
       }
 
-      showToast('Order placed successfully', 'success');
+      showToast("Order placed. Thank you, we're getting it ready.", 'success');
       clearCart();
       navigate('/orders');
 
@@ -337,8 +337,10 @@ export default function Cart() {
     }
   };
 
-  const placeOrderLabel = isChecking ? 'Checking…' : isPlacingOrder ? 'Placing order…' : 'Place order';
+  const submitting = isChecking || isPlacingOrder;
+  const placeOrderLabel = isChecking ? 'Confirming your location…' : isPlacingOrder ? 'Placing order…' : `Place order · ₹${finalTotal.toFixed(0)}`;
   const placeOrderDisabled = isBelowMin || isChecking || isPlacingOrder;
+  const placeOrderStatus = isChecking ? 'Confirming your location' : isPlacingOrder ? 'Placing your order' : '';
 
   return (
     <div className="cart-page">
@@ -450,7 +452,11 @@ export default function Cart() {
 
                 {isBelowMin && <p className="cart-nudge">Add &#8377;{amountToMin.toFixed(0)} more to place a delivery order.</p>}
 
-                <button className="cart-place fr-only-desktop" onClick={handlePreCheckout} disabled={placeOrderDisabled}>{placeOrderLabel}</button>
+                <button className="cart-place fr-only-desktop" onClick={handlePreCheckout} disabled={placeOrderDisabled}>
+                  {submitting && <span className="cart-spin" aria-hidden="true" />}{placeOrderLabel}
+                </button>
+
+                <div className="cart-sr" aria-live="polite">{placeOrderStatus}</div>
 
                 <p className="cart-next">You'll receive an order confirmation. Live tracking begins once your order is accepted.</p>
               </div>
@@ -462,7 +468,7 @@ export default function Cart() {
       {cartItems.length > 0 && (
         <div className="cart-mobilebar fr-only-mobile">
           <div className="cart-mobilebar-info"><span>Total</span><strong>&#8377;{finalTotal.toFixed(0)}</strong></div>
-          <button className="cart-mobilebar-btn" onClick={handlePreCheckout} disabled={placeOrderDisabled}>{placeOrderLabel}</button>
+          <button className="cart-mobilebar-btn" onClick={handlePreCheckout} disabled={placeOrderDisabled}>{submitting && <span className="cart-spin" aria-hidden="true" />}{placeOrderLabel}</button>
         </div>
       )}
 
@@ -637,6 +643,10 @@ const cartBaseStyles = `
   .cart-place:disabled { opacity: 0.5; cursor: not-allowed; }
   .cart-place:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
   .cart-next { font-size: 0.8rem; color: var(--fr-text-2); text-align: center; margin: var(--fr-s3) 0 0; line-height: 1.5; }
+  .cart-spin { width: 16px; height: 16px; margin-right: var(--fr-s2); border: 2px solid color-mix(in srgb, var(--fr-on-brand) 40%, transparent); border-top-color: var(--fr-on-brand); border-radius: var(--fr-r-pill); display: inline-block; vertical-align: middle; }
+  @media (prefers-reduced-motion: no-preference) { .cart-spin { animation: cart-spin 0.7s linear infinite; } }
+  @keyframes cart-spin { to { transform: rotate(360deg); } }
+  .cart-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
   .cart-mobilebar { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: var(--fr-z-cta); align-items: center; gap: var(--fr-s3); background: var(--fr-surface); border-top: 1px solid var(--fr-line); box-shadow: var(--fr-elev-2); padding: var(--fr-s3) var(--fr-s4); padding-bottom: calc(var(--fr-s3) + env(safe-area-inset-bottom)); }
   .cart-mobilebar-info { display: flex; flex-direction: column; }

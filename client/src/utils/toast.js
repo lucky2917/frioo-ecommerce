@@ -12,6 +12,9 @@ export const showToast = (message, type = 'info', duration = 3000) => {
     const toast = document.createElement('div');
     toast.id = 'app-toast';
     toast.className = `toast toast-${type}`;
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+    toast.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
+    toast.setAttribute('aria-atomic', 'true');
 
     const icons = {
         success: '✅',
