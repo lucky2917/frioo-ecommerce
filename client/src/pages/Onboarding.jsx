@@ -18,11 +18,13 @@ export default function Onboarding() {
   });
   const [loadingLocation, setLoadingLocation] = useState(false);
 
-  useEffect(() => {
+  const [lastUser, setLastUser] = useState(null);
+  if (user !== lastUser) {
+    setLastUser(user);
     if (user?.user_metadata?.full_name && !formData.full_name) {
       setFormData(prev => ({ ...prev, full_name: user.user_metadata.full_name }));
     }
-  }, [user]);
+  }
 
   useEffect(() => {
     if (!loading && !user) {

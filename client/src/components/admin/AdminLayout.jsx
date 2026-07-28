@@ -40,7 +40,11 @@ export default function AdminLayout() {
         return () => document.removeEventListener('mousedown', handleOutside);
     }, [isMobileOpen]);
 
-    useEffect(() => { setIsMobileOpen(false); }, [location.pathname]);
+    const [lastPathname, setLastPathname] = useState(location.pathname);
+    if (location.pathname !== lastPathname) {
+        setLastPathname(location.pathname);
+        setIsMobileOpen(false);
+    }
 
     const handleLogout = async () => {
         try {

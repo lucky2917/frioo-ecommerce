@@ -35,7 +35,7 @@ export const CartProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        fetchCoupons();
+        (async () => { await fetchCoupons(); })();
     }, [fetchCoupons]);
 
     useEffect(() => {

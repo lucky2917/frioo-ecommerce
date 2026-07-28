@@ -21,14 +21,19 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
+  const [lastSearchQuery, setLastSearchQuery] = useState(searchQuery);
+  if (searchQuery !== lastSearchQuery) {
+    setLastSearchQuery(searchQuery);
     if (searchQuery.trim().length < 2) {
       setSearchResults([]);
       setIsSearching(false);
-      return;
+    } else {
+      setIsSearching(true);
     }
+  }
 
-    setIsSearching(true);
+  useEffect(() => {
+    if (searchQuery.trim().length < 2) return;
 
     const controller = new AbortController();
     const debounceTimer = setTimeout(async () => {
@@ -63,9 +68,11 @@ export default function Navbar() {
   const [activeOrder, setActiveOrder] = useState(null);
   const [showTrackerModal, setShowTrackerModal] = useState(false);
 
-  useEffect(() => {
+  const [lastLocation, setLastLocation] = useState(location);
+  if (location !== lastLocation) {
+    setLastLocation(location);
     setIsMobileMenuOpen(false);
-  }, [location]);
+  }
 
   useEffect(() => {
     const handleScroll = () => {
