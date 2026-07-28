@@ -4,7 +4,6 @@
 
   --bg-body: #FAFAFA;
   --bg-card: #FFFFFF;
-  --bg-glass: rgba(255, 255, 255, 0.95);
 
   --text-primary: #111111;
   --text-secondary: #666666;
@@ -145,13 +144,6 @@ a:hover {
   .page-content {
     padding-top: var(--navbar-height-desktop);
   }
-}
-
-.glass-panel {
-  background: var(--bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .product-card {
