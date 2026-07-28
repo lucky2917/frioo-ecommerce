@@ -50,3 +50,12 @@ Sort labels must describe the actual logic (Constitution "prove, never promise")
 | **"Newest"** | sort by `created_at` | `created_at` exists, but adding the sort would modify the frozen `processedProducts` logic — **not offered** for now. Can be added honestly if that logic is later unfrozen. |
 
 Offered sorts (all backed by existing logic): Featured (default order), Price: Low → High, Price: High → Low, A → Z (title).
+
+## Product Details — sparse fields
+
+| Field | State | UI behaviour |
+|---|---|---|
+| **`nutrition` (calories/protein/carbs/fat)** | Frequently all-zero / unfilled | The Nutrition section shows **only** values that are meaningfully present; if every value is absent/zero, the **whole section is omitted**. No invented defaults (the old `\|\| 120`, `\|\| '2g'`, `\|\| '15g'` fallbacks were removed). |
+| **`perfect_for`** | Often null | Shown when present; **omitted** when missing (the old "Any time of day snack or boost." fallback was removed). |
+
+Empty space is preferred over invented content.

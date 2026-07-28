@@ -2,14 +2,10 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import Navbar from '../components/layout/Navbar';
-import LoadingSpinner from '../components/LoadingSpinner';
 import FetchError from '../components/FetchError';
 import VideoModal from '../components/shop/VideoModal';
 import ProductCard from '../components/shop/ProductCard';
-import OptimizedImage from '../components/OptimizedImage';
 import { showToast } from '../utils/toast';
-import ScrollReveal from '../components/animations/ScrollReveal';
-import StaggerText from '../components/animations/StaggerText';
 
 import { useCart } from '../context/CartContext';
 import { useProduct } from '../hooks/useProduct';
@@ -24,6 +20,13 @@ const rotateByOffset = (items, offset) => {
   if (items.length === 0) return items;
   const shift = offset % items.length;
   return [...items.slice(shift), ...items.slice(0, shift)];
+};
+
+const gram = (v) => (typeof v === 'number' ? `${v}g` : v);
+const isMeaningful = (v) => {
+  if (v === null || v === undefined || v === '') return false;
+  const num = typeof v === 'number' ? v : parseFloat(v);
+  return Number.isNaN(num) ? String(v).trim().length > 0 : num > 0;
 };
 
 export default function ProductDetails() {
@@ -108,34 +111,58 @@ export default function ProductDetails() {
   if (loading) return (
     <div className="pd-page">
       <Navbar />
-      <div className="pd-loading"><LoadingSpinner /></div>
+      <div className="pd-shell">
+        <div className="pd-grid">
+          <div className="pd-skel-media" />
+          <div className="pd-skel-lines">
+            <div className="pd-skel-line pd-skel-40" />
+            <div className="pd-skel-line pd-skel-70" />
+            <div className="pd-skel-line pd-skel-30" />
+            <div className="pd-skel-line" />
+            <div className="pd-skel-line" />
+            <div className="pd-skel-btn" />
+          </div>
+        </div>
+      </div>
+      <style>{pdSkeletonStyles}</style>
     </div>
   );
 
   if (error) return (
     <div className="pd-page">
       <Navbar />
-      <div className="pd-error">
-        <FetchError
-          message="We couldn't load this product. Please check your connection and try again."
-          onRetry={refetch}
-        />
-        <Link to="/shop" className="back-link">Return to Shop</Link>
+      <div className="pd-message">
+        <FetchError message="We couldn't load this product. Please check your connection and try again." onRetry={refetch} />
+        <Link to="/shop" className="pd-back">Return to shop</Link>
       </div>
+      <style>{pdMessageStyles}</style>
     </div>
   );
 
   if (!product) return (
     <div className="pd-page">
       <Navbar />
-      <div className="pd-error">
-        <h2>Product not found</h2>
-        <Link to="/shop" className="back-link">Return to Shop</Link>
+      <div className="pd-message">
+        <h2 className="pd-notfound">Product not found</h2>
+        <Link to="/shop" className="pd-back">Return to shop</Link>
       </div>
+      <style>{pdMessageStyles}</style>
     </div>
   );
 
-  const images = product.images?.length > 0 ? product.images : ['https://via.placeholder.com/600?text=Frioo'];
+  const images = product.images?.length > 0 ? product.images : ['https://via.placeholder.com/600x750?text=Frioo'];
+  const basePrice = product.price_cents / 100;
+  const oldPrice = product.discount > 0 ? Math.round(currentPrice / (1 - product.discount / 100)) : null;
+  const unitSuffix = product.unit === 'kg' ? '/ kg' : product.unit === 'item' ? 'each' : product.unit ? `/ ${product.unit}` : '';
+  const per100g = product.unit === 'kg' ? Math.round(basePrice / 10) : null;
+
+  const nutrition = product.nutrition || {};
+  const nutritionItems = [
+    { label: 'Calories', display: nutrition.calories, raw: nutrition.calories },
+    { label: 'Protein', display: gram(nutrition.protein), raw: nutrition.protein },
+    { label: 'Carbs', display: gram(nutrition.carbs), raw: nutrition.carbs },
+    { label: 'Fat', display: gram(nutrition.fat), raw: nutrition.fat },
+  ].filter(n => isMeaningful(n.raw));
 
   return (
     <div className="pd-page">
@@ -179,119 +206,92 @@ export default function ProductDetails() {
       />
       <Navbar />
 
-      <main className="pd-main">
-        <div className="pd-breadcrumb">
-          <Link to="/">Home</Link> / <Link to="/shop">Shop</Link> / <span>{product.title}</span>
-        </div>
+      <main className="pd-shell">
+        <nav className="pd-crumbs" aria-label="Breadcrumb">
+          <Link to="/">Home</Link><span>/</span><Link to="/shop">Shop</Link><span>/</span><span className="pd-crumb-current">{product.title}</span>
+        </nav>
 
         <div className="pd-grid">
           <div className="pd-gallery">
-            <ScrollReveal direction="fade" duration={0.8}>
-              <div className="pd-main-image-frame">
-                <img src={images[selectedImage]} alt={product.title} className="pd-main-img" />
-                {product.discount && <span className="pd-badge-sale">Save {product.discount}%</span>}
+            <div className="pd-gallery-sticky">
+              <div className="pd-frame">
+                <img src={images[selectedImage]} alt={product.title} className="pd-frame-img" />
+                {product.discount > 0 && <span className="pd-badge">Save {product.discount}%</span>}
               </div>
-            </ScrollReveal>
 
-            {images.length > 1 && (
-              <ScrollReveal delay={0.2} direction="up">
-                <div className="pd-thumbnails">
+              {images.length > 1 && (
+                <div className="pd-thumbs">
                   {images.map((img, idx) => (
-                    <button
-                      key={idx}
-                      className={`pd-thumb ${selectedImage === idx ? 'active' : ''}`}
-                      onClick={() => setSelectedImage(idx)}
-                    >
-                      <img src={img} alt={`Thumb ${idx}`} />
+                    <button key={idx} className={`pd-thumb${selectedImage === idx ? ' pd-thumb-on' : ''}`} onClick={() => setSelectedImage(idx)} aria-label={`View image ${idx + 1}`} aria-pressed={selectedImage === idx}>
+                      <img src={img} alt="" />
                     </button>
                   ))}
                 </div>
-              </ScrollReveal>
-            )}
+              )}
 
-            {product.video_url && (
-              <button className="pd-watch-btn" onClick={() => setShowPrepVideo(true)}>
-                <span className="icon">▶</span>
-                <div className="text">
-                  <strong>Watch Preparation</strong>
-                  <span>See fresh creation</span>
-                </div>
-              </button>
-            )}
+              {product.video_url && (
+                <button className="pd-watch" onClick={() => setShowPrepVideo(true)}>
+                  <span className="pd-watch-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+                  </span>
+                  <span className="pd-watch-text">
+                    <strong>Watch how it's made</strong>
+                    <span>Exactly what you'll receive</span>
+                  </span>
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="pd-details">
-            <div className="pd-header">
-              <ScrollReveal delay={0.1}>
-                <span className="pd-cat-tag">{product.category}</span>
-              </ScrollReveal>
-              <StaggerText text={product.title} className="pd-title" stagger={0.05} />
+            <p className="pd-cat">{product.category}</p>
+            <h1 className="pd-title">{product.title}</h1>
 
-              <ScrollReveal delay={0.2}>
-                <div className="pd-price-row">
-                  <span className="pd-price">₹{currentPrice.toFixed(0)}</span>
-                  {product.discount && (
-                    <span className="pd-old-price">₹{Math.round(currentPrice / (1 - product.discount / 100))}</span>
-                  )}
-                  <span className="pd-unit-label">
-                    {selectedWeight ? `/ ${selectedWeight.label}` : '/ item'}
-                  </span>
-                </div>
-              </ScrollReveal>
+            <div className="pd-price-block">
+              <div className="pd-price-row">
+                <span className="pd-price">&#8377;{currentPrice.toFixed(0)}</span>
+                {oldPrice && <span className="pd-old">&#8377;{oldPrice}</span>}
+                <span className="pd-unit">{selectedWeight ? `/ ${selectedWeight.label}` : unitSuffix}</span>
+              </div>
+              {per100g && <div className="pd-measure">&#8377;{per100g} / 100g</div>}
             </div>
 
-            <ScrollReveal delay={0.3}>
-              <p className="pd-desc">{product.description}</p>
-            </ScrollReveal>
+            <p className="pd-delivery">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" /></svg>
+              Delivered fresh in Visakhapatnam, within 6&nbsp;km
+            </p>
+
+            {product.description && <p className="pd-desc">{product.description}</p>}
 
             <div className="pd-options">
-
               {selectedWeight && (
-                <div className="pd-option-group">
-                  <label>Pack Size</label>
-                  <div className="pd-pill-row">
+                <div className="pd-opt-group">
+                  <span className="pd-opt-label">Pack size</span>
+                  <div className="pd-opt-pills">
                     {WEIGHT_OPTIONS.map(opt => (
-                      <button
-                        key={opt.label}
-                        className={`pd-pill ${selectedWeight.label === opt.label ? 'active' : ''}`}
-                        onClick={() => setSelectedWeight(opt)}
-                      >
-                        {opt.label}
-                      </button>
+                      <button key={opt.label} className={`pd-pill${selectedWeight.label === opt.label ? ' pd-pill-on' : ''}`} onClick={() => setSelectedWeight(opt)} aria-pressed={selectedWeight.label === opt.label}>{opt.label}</button>
                     ))}
                   </div>
                 </div>
               )}
 
               {product.nutrition?.exclusions?.length > 0 && (
-                <div className="pd-option-group">
-                  <label>Want to remove any?</label>
-                  <div className="pd-pill-row">
+                <div className="pd-opt-group">
+                  <span className="pd-opt-label">Want to remove any?</span>
+                  <div className="pd-opt-pills">
                     {product.nutrition.exclusions.map(item => (
-                      <button
-                        key={item}
-                        className={`pd-pill ${selectedExclusions.includes(item) ? 'active' : ''}`}
-                        onClick={() => toggleExclusion(item)}
-                      >
-                        {selectedExclusions.includes(item) ? '✓ No ' : ''}{item}
-                      </button>
+                      <button key={item} className={`pd-pill${selectedExclusions.includes(item) ? ' pd-pill-on' : ''}`} onClick={() => toggleExclusion(item)} aria-pressed={selectedExclusions.includes(item)}>{selectedExclusions.includes(item) ? 'No ' : ''}{item}</button>
                     ))}
                   </div>
                 </div>
               )}
 
               {product.nutrition?.ingredients?.length > 0 && (
-                <div className="pd-option-group">
-                  <label>Customize Ingredients</label>
-                  <div className="pd-pill-row">
+                <div className="pd-opt-group">
+                  <span className="pd-opt-label">Customize ingredients</span>
+                  <div className="pd-opt-pills">
                     {product.nutrition.ingredients.map(item => (
-                      <button
-                        key={item}
-                        className={`pd-pill glass-red ${removedIngredients.includes(item) ? 'active' : ''}`}
-                        onClick={() => toggleIngredient(item)}
-                      >
-                        {removedIngredients.includes(item) ? '✕ ' : ''}No {item}
-                      </button>
+                      <button key={item} className={`pd-pill${removedIngredients.includes(item) ? ' pd-pill-on' : ''}`} onClick={() => toggleIngredient(item)} aria-pressed={removedIngredients.includes(item)}>No {item}</button>
                     ))}
                   </div>
                 </div>
@@ -299,407 +299,164 @@ export default function ProductDetails() {
             </div>
 
             <div className="pd-actions">
-              <div className="pd-qty-control">
-                <button onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
-                <span>{qty}</span>
-                <button onClick={() => setQty(q => q + 1)}>+</button>
+              <div className="pd-qty">
+                <button onClick={() => setQty(q => Math.max(1, q - 1))} aria-label="Decrease quantity">&minus;</button>
+                <span aria-live="polite">{qty}</span>
+                <button onClick={() => setQty(q => q + 1)} aria-label="Increase quantity">+</button>
               </div>
-              <button className="pd-add-btn" onClick={handleAddToCart}>
-                Add to Cart • ₹{(currentPrice * qty).toFixed(0)}
-              </button>
+              <button className="pd-add" onClick={handleAddToCart}>Add to cart &middot; &#8377;{(currentPrice * qty).toFixed(0)}</button>
             </div>
 
-            <div className="pd-info-sections">
-              <div className="pd-info-block">
-                <h3>Description</h3>
-                <p>{product.description}</p>
-                <p><strong>Perfect for:</strong> {product.perfect_for || 'Any time of day snack or boost.'}</p>
-                <p className="small-text">Made fresh specifically for your order.</p>
+            {(product.perfect_for || nutritionItems.length > 0) && (
+              <div className="pd-support">
+                {product.perfect_for && (
+                  <div className="pd-support-block">
+                    <h2 className="pd-support-title">Good for</h2>
+                    <p className="pd-support-text">{product.perfect_for}</p>
+                  </div>
+                )}
+                {nutritionItems.length > 0 && (
+                  <div className="pd-support-block">
+                    <h2 className="pd-support-title">Nutrition</h2>
+                    <div className="pd-nutri">
+                      {nutritionItems.map(n => (
+                        <div key={n.label} className="pd-nutri-item">
+                          <strong>{n.display}</strong>
+                          <span>{n.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-
-              <div className="pd-info-block">
-                <h3>Nutrition Facts</h3>
-                <div className="pd-nutri-grid">
-                  <div className="nutri-item">
-                    <strong>{product.nutrition?.calories || 120}</strong>
-                    <span>Calories</span>
-                  </div>
-                  <div className="nutri-item">
-                    <strong>{product.nutrition?.protein || '2g'}</strong>
-                    <span>Protein</span>
-                  </div>
-                  <div className="nutri-item">
-                    <strong>{product.nutrition?.carbs || '15g'}</strong>
-                    <span>Carbs</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+            )}
           </div>
         </div>
 
-        <section className="pd-related">
-          <ScrollReveal>
-            <h2 className="section-title">You might also like</h2>
-          </ScrollReveal>
-          <div className="pd-related-grid">
-            {relatedProducts.map((p, idx) => (
-              <ScrollReveal key={p.id} delay={0.1 * idx} direction="fade" className="related-item-reveal">
-                <ProductCard product={p} onAdd={addToCart} />
-              </ScrollReveal>
-            ))}
-          </div>
-        </section>
-
+        {relatedProducts.length > 0 && (
+          <section className="pd-related" aria-label="Related products">
+            <h2 className="pd-related-title">These also go well</h2>
+            <div className="pd-related-grid">
+              {relatedProducts.map(p => <ProductCard key={p.id} product={p} onAdd={addToCart} />)}
+            </div>
+          </section>
+        )}
       </main>
 
-      {showPrepVideo && product.video_url && (
-        <VideoModal videoUrl={product.video_url} onClose={() => setShowPrepVideo(false)} />
-      )}
+      {showPrepVideo && product.video_url && <VideoModal videoUrl={product.video_url} onClose={() => setShowPrepVideo(false)} />}
 
       <style>{`
-        .pd-page {
-            background: #fff;
-            min-height: 100vh;
-            color: #1a1a1a;
-            padding-top: var(--navbar-height-mobile); /* Responsive navbar clearance */
-        }
-        .pd-main {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .pd-breadcrumb {
-            font-size: 0.9rem;
-            color: #888;
-            margin-bottom: 30px;
-            padding-top: 10px;
-        }
-        .pd-breadcrumb a {
-            color: #1a1a1a;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .pd-breadcrumb a:hover { color: #C5A065; }
+        .pd-page { background: var(--fr-canvas); min-height: 100vh; padding-top: var(--navbar-height-mobile); }
+        @media (min-width: 901px) { .pd-page { padding-top: var(--navbar-height-desktop); } }
+        .pd-shell { max-width: 1200px; margin: 0 auto; padding: var(--fr-s6) var(--fr-s7) var(--fr-s10); }
 
-        .pd-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            margin-bottom: 80px;
-        }
+        .pd-crumbs { display: flex; align-items: center; gap: var(--fr-s2); font-size: 0.85rem; color: var(--fr-text-3); margin-bottom: var(--fr-s6); flex-wrap: wrap; }
+        .pd-crumbs a { color: var(--fr-text-2); text-decoration: none; }
+        .pd-crumbs a:hover { color: var(--fr-brand); }
+        .pd-crumbs a:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
+        .pd-crumb-current { color: var(--fr-text); }
 
-        .pd-gallery {
-            position: sticky;
-            top: 120px;
-            height: fit-content;
-        }
-        .pd-main-image-frame {
-            width: 100%;
-            aspect-ratio: 1;
-            background: #f9f9f9;
-            border-radius: 20px;
-            overflow: hidden;
-            border: 1px solid #eee;
-            position: relative;
-        }
-        .pd-main-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-        .pd-main-img:hover { transform: scale(1.05); }
+        .pd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--fr-s9); align-items: start; }
 
-        .pd-badge-sale {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #FF5252;
-            color: white;
-            padding: 6px 14px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: 700;
-        }
-
-        .pd-thumbnails {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .pd-thumb {
-            width: 80px;
-            height: 80px;
-            border: 2px solid transparent;
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            padding: 0;
-            background: #f9f9f9;
-            transition: all 0.2s;
-        }
-        .pd-thumb.active { border-color: #C5A065; }
+        .pd-gallery-sticky { position: sticky; top: calc(var(--navbar-height-desktop) + var(--fr-s5)); display: flex; flex-direction: column; gap: var(--fr-s4); }
+        .pd-frame { position: relative; aspect-ratio: 4 / 5; background: var(--fr-surface-2); border-radius: var(--fr-r-surface); overflow: hidden; box-shadow: var(--fr-elev-1); }
+        .pd-frame-img { width: 100%; height: 100%; object-fit: cover; }
+        .pd-badge { position: absolute; top: var(--fr-s4); right: var(--fr-s4); background: var(--fr-warm); color: var(--fr-on-brand); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; padding: 5px 11px; border-radius: var(--fr-r-control); }
+        .pd-thumbs { display: flex; gap: var(--fr-s3); flex-wrap: wrap; }
+        .pd-thumb { width: 72px; height: 72px; padding: 0; border: 2px solid transparent; border-radius: var(--fr-r-control); overflow: hidden; background: var(--fr-surface-2); cursor: pointer; }
         .pd-thumb img { width: 100%; height: 100%; object-fit: cover; }
-
-        .pd-watch-btn {
-            width: 100%;
-            margin-top: 25px;
-            padding: 15px;
-            background: #fdfbf7;
-            border: 1px solid #eaeaea;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .pd-watch-btn:hover { border-color: #C5A065; background: #fffdf5; }
-        .pd-watch-btn .icon {
-            width: 40px;
-            height: 40px;
-            background: #C5A065;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-        }
-        .pd-watch-btn .text { display: flex; flex-direction: column; text-align: left; }
-        .pd-watch-btn .text strong { color: #2F4F4F; font-size: 1rem; }
-        .pd-watch-btn .text span { color: #888; font-size: 0.85rem; }
+        .pd-thumb-on { border-color: var(--fr-brand); }
+        .pd-thumb:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        .pd-watch { display: flex; align-items: center; gap: var(--fr-s3); padding: var(--fr-s3) var(--fr-s4); background: var(--fr-surface); border: 1px solid var(--fr-line); border-radius: var(--fr-r-card); cursor: pointer; text-align: left; transition: border-color var(--fr-dur-quick) var(--fr-ease-standard); }
+        .pd-watch:hover { border-color: var(--fr-brand); }
+        .pd-watch:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        .pd-watch-icon { width: 40px; height: 40px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--fr-brand-tint); color: var(--fr-brand); border-radius: var(--fr-r-pill); }
+        .pd-watch-text { display: flex; flex-direction: column; }
+        .pd-watch-text strong { font-size: 0.92rem; color: var(--fr-text); font-weight: 600; }
+        .pd-watch-text span { font-size: 0.82rem; color: var(--fr-text-2); }
 
         .pd-details { display: flex; flex-direction: column; }
-        .pd-cat-tag {
-            display: inline-block;
-            color: #C5A065;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        .pd-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 3rem;
-            line-height: 1.1;
-            margin-bottom: 15px;
-            color: #2F4F4F;
-        }
-        .pd-price-row {
-            display: flex;
-            align-items: baseline;
-            gap: 15px;
-            margin-bottom: 30px;
-            padding-bottom: 30px;
-            border-bottom: 1px solid #eee;
-        }
-        .pd-price { font-size: 2rem; font-weight: 700; color: #1a1a1a; }
-        .pd-old-price { font-size: 1.2rem; color: #ccc; text-decoration: line-through; }
-        .pd-unit-label { font-size: 1rem; color: #888; }
+        .pd-cat { font-family: var(--fr-font-mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fr-brand); margin: 0 0 var(--fr-s2); }
+        .pd-title { font-family: var(--fr-font-display); font-size: clamp(1.9rem, 3.5vw, 2.6rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.015em; color: var(--fr-text); margin: 0 0 var(--fr-s5); }
+        .pd-price-block { display: flex; flex-direction: column; gap: var(--fr-s1); padding-bottom: var(--fr-s5); border-bottom: 1px solid var(--fr-line); margin-bottom: var(--fr-s5); }
+        .pd-price-row { display: flex; align-items: baseline; gap: var(--fr-s3); }
+        .pd-price { font-family: var(--fr-font-display); font-size: 2rem; font-weight: 700; color: var(--fr-text); font-variant-numeric: tabular-nums; }
+        .pd-old { font-size: 1.1rem; color: var(--fr-text-3); text-decoration: line-through; }
+        .pd-unit { font-size: 0.95rem; color: var(--fr-text-2); }
+        .pd-measure { font-family: var(--fr-font-mono); font-size: 0.82rem; color: var(--fr-text-2); }
+        .pd-delivery { display: flex; align-items: center; gap: var(--fr-s2); font-size: 0.9rem; color: var(--fr-text-2); margin: 0 0 var(--fr-s5); }
+        .pd-delivery svg { color: var(--fr-brand); flex-shrink: 0; }
+        .pd-desc { font-size: 1.02rem; line-height: 1.6; color: var(--fr-text-2); margin: 0 0 var(--fr-s6); max-width: 52ch; }
 
-        .pd-desc {
-            font-size: 1.05rem;
-            line-height: 1.6;
-            color: #555;
-            margin-bottom: 30px;
-        }
+        .pd-options { display: flex; flex-direction: column; gap: var(--fr-s5); margin-bottom: var(--fr-s6); }
+        .pd-opt-group { display: flex; flex-direction: column; gap: var(--fr-s3); }
+        .pd-opt-label { font-size: 0.85rem; font-weight: 600; color: var(--fr-text); }
+        .pd-opt-pills { display: flex; flex-wrap: wrap; gap: var(--fr-s2); }
+        .pd-pill { min-height: 44px; padding: 0 var(--fr-s4); background: var(--fr-surface); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-pill); font-family: var(--fr-font-sans); font-size: 0.9rem; color: var(--fr-text); cursor: pointer; transition: border-color var(--fr-dur-quick) var(--fr-ease-standard), background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .pd-pill:hover { border-color: var(--fr-brand); color: var(--fr-brand); }
+        .pd-pill-on { background: var(--fr-brand); border-color: var(--fr-brand); color: var(--fr-on-brand); }
+        .pd-pill-on:hover { color: var(--fr-on-brand); }
+        .pd-pill:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 
-        .pd-options { margin-bottom: 30px; }
-        .pd-option-group { margin-bottom: 25px; }
-        .pd-option-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #333;
-            font-size: 0.95rem;
-        }
-        .pd-pill-row { display: flex; flex-wrap: wrap; gap: 10px; }
-        .pd-pill {
-            padding: 10px 20px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            color: #555;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            font-family: 'Inter', sans-serif;
-        }
-        .pd-pill:hover {
-            border-color: #C5A065;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(197, 160, 101, 0.2);
-        }
-        .pd-pill.active {
-            border-color: #C5A065;
-            background: #C5A065;
-            color: white;
-            transform: translateY(-1px);
-        }
-        .pd-pill.glass-red:hover {
-            border-color: #e57373;
-            box-shadow: 0 4px 12px rgba(229, 115, 115, 0.2);
-        }
-        .pd-pill.glass-red.active {
-            border-color: #e57373;
-            background: #e57373;
-            color: white;
-        }
+        .pd-actions { display: flex; gap: var(--fr-s3); margin-bottom: var(--fr-s7); }
+        .pd-qty { display: flex; align-items: center; border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); overflow: hidden; }
+        .pd-qty button { width: 48px; height: 52px; background: var(--fr-surface); border: none; font-size: 1.3rem; color: var(--fr-text); cursor: pointer; }
+        .pd-qty button:hover { background: var(--fr-surface-2); }
+        .pd-qty button:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: -2px; }
+        .pd-qty span { min-width: 44px; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .pd-add { flex: 1; height: 52px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 1rem; font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .pd-add:hover { background: var(--fr-brand-press); }
+        .pd-add:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 
-        .pd-actions {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 40px;
-        }
-        .pd-qty-control {
-            display: flex;
-            align-items: center;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            padding: 5px;
-        }
-        .pd-qty-control button {
-            width: 40px;
-            height: 40px;
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #2F4F4F;
-        }
-        .pd-qty-control span {
-            width: 30px;
-            text-align: center;
-            font-weight: 600;
-        }
-        .pd-add-btn {
-            flex: 1;
-            background: #2F4F4F;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Framer's expo out */
-            will-change: transform;
-            transform: translateZ(0);
-        }
-        .pd-add-btn:hover {
-            background: #1a1a1a;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-        .pd-add-btn:active {
-            transform: translateY(0px) scale(0.98);
-            transition-duration: 0.1s;
-        }
+        .pd-support { display: flex; flex-direction: column; gap: var(--fr-s5); border-top: 1px solid var(--fr-line); padding-top: var(--fr-s6); }
+        .pd-support-title { font-family: var(--fr-font-display); font-size: 1.15rem; font-weight: 650; color: var(--fr-text); margin: 0 0 var(--fr-s3); }
+        .pd-support-text { font-size: 0.95rem; line-height: 1.6; color: var(--fr-text-2); margin: 0; }
+        .pd-nutri { display: flex; flex-wrap: wrap; gap: var(--fr-s3); }
+        .pd-nutri-item { display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--fr-surface-2); border-radius: var(--fr-r-card); padding: var(--fr-s3) var(--fr-s5); min-width: 92px; }
+        .pd-nutri-item strong { font-family: var(--fr-font-display); font-size: 1.3rem; color: var(--fr-brand); }
+        .pd-nutri-item span { font-size: 0.8rem; color: var(--fr-text-2); }
 
-        .pd-info-sections {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-            border-top: 1px solid #eee;
-            padding-top: 30px;
-        }
-        .pd-info-block h3 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            color: #2F4F4F;
-            margin-bottom: 15px;
-        }
-        .pd-info-block p {
-            color: #666;
-            line-height: 1.7;
-            margin-bottom: 10px;
-        }
-        .pd-nutri-grid {
-            display: flex;
-            gap: 30px;
-        }
-        .nutri-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: #f9f9f9;
-            padding: 15px 25px;
-            border-radius: 12px;
-            min-width: 100px;
-        }
-        .nutri-item strong { color: #C5A065; font-size: 1.5rem; }
-        .nutri-item span { color: #888; font-size: 0.9rem; margin-top: 5px; }
-
-        .pd-related {
-            border-top: 1px solid #eee;
-            padding-top: 50px;
-            margin-top: 40px;
-            overflow: hidden;
-        }
-        .section-title {
-            text-align: center;
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem; /* Slightly smaller title */
-            margin-bottom: 30px;
-            color: #2F4F4F;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .pd-related-grid {
-            display: flex;
-            overflow-x: auto;
-            gap: 15px; /* Tighter gap */
-            padding: 10px 20px 30px 20px;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-        .pd-related-grid::-webkit-scrollbar { display: none; }
-
-        .pd-related-grid > * {
-            flex: 0 0 190px; /* Mini Card Width from Home.jsx */
-            scroll-snap-align: start;
-        }
-
-        .pd-related-grid .patisserie-card .card-price { font-size: 1rem; }
-        .pd-related-grid .patisserie-card .card-title { font-size: 0.95rem; }
-        .pd-related-grid .patisserie-card .action-btn { padding: 10px; font-size: 0.8rem; }
-        .pd-related-grid .patisserie-card .card-desc { display: none; } /* Hide desc for mini look */
-        .pd-related-grid .patisserie-card .badge-pop { font-size: 0.6rem; padding: 2px 8px; }
+        .pd-related { border-top: 1px solid var(--fr-line); margin-top: var(--fr-s9); padding-top: var(--fr-s8); }
+        .pd-related-title { font-family: var(--fr-font-display); font-size: 1.5rem; font-weight: 700; color: var(--fr-text); margin: 0 0 var(--fr-s5); }
+        .pd-related-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--fr-s5); }
 
         @media (max-width: 900px) {
-            .pd-page {
-                padding-top: var(--navbar-height-desktop); /* Desktop navbar with secondary nav */
-            }
-            .pd-grid { grid-template-columns: 1fr; gap: 40px; }
-            .pd-gallery { position: static; }
-            .pd-title { font-size: 2.2rem; }
+          .pd-shell { padding: var(--fr-s4) var(--fr-s4) calc(var(--fr-s9) + 80px); }
+          .pd-grid { grid-template-columns: 1fr; gap: var(--fr-s6); }
+          .pd-gallery-sticky { position: static; }
+          .pd-related-grid { grid-template-columns: repeat(2, 1fr); gap: var(--fr-s4); }
+          .pd-actions { position: fixed; bottom: 0; left: 0; right: 0; z-index: var(--fr-z-cta); background: var(--fr-surface); border-top: 1px solid var(--fr-line); padding: var(--fr-s3) var(--fr-s4); padding-bottom: calc(var(--fr-s3) + env(safe-area-inset-bottom)); margin: 0; box-shadow: var(--fr-elev-2); }
+        }
 
-            .pd-actions {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: white;
-                padding: 15px 20px;
-                box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
-                margin: 0;
-                z-index: 100;
-            }
-            .pd-page { padding-bottom: 120px; }
-
-            .pd-related-grid {
-                gap: 12px;
-                padding-left: 15px;
-            }
-            .pd-related-grid > * {
-                flex: 0 0 160px; /* Even smaller for mobile to show more context */
-            }
+        @media (prefers-reduced-motion: reduce) {
+          .pd-watch, .pd-pill, .pd-add { transition: none; }
         }
       `}</style>
     </div>
   );
 }
+
+const pdSkeletonStyles = `
+  .pd-page { background: var(--fr-canvas); min-height: 100vh; padding-top: var(--navbar-height-mobile); }
+  @media (min-width: 901px) { .pd-page { padding-top: var(--navbar-height-desktop); } }
+  .pd-shell { max-width: 1200px; margin: 0 auto; padding: var(--fr-s7); }
+  .pd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--fr-s9); }
+  @media (max-width: 900px) { .pd-grid { grid-template-columns: 1fr; gap: var(--fr-s6); } }
+  .pd-skel-media { aspect-ratio: 4 / 5; background: var(--fr-surface-2); border-radius: var(--fr-r-surface); }
+  .pd-skel-lines { display: flex; flex-direction: column; gap: var(--fr-s4); padding-top: var(--fr-s3); }
+  .pd-skel-line { height: 16px; border-radius: var(--fr-r-control); background: var(--fr-surface-2); }
+  .pd-skel-40 { width: 40%; } .pd-skel-70 { width: 70%; height: 34px; } .pd-skel-30 { width: 30%; }
+  .pd-skel-btn { height: 52px; border-radius: var(--fr-r-control); background: var(--fr-surface-2); margin-top: var(--fr-s3); }
+  @media (prefers-reduced-motion: no-preference) { .pd-skel-media, .pd-skel-line, .pd-skel-btn { animation: pd-shimmer 1.4s var(--fr-ease-standard) infinite; } }
+  @keyframes pd-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+`;
+
+const pdMessageStyles = `
+  .pd-page { background: var(--fr-canvas); min-height: 100vh; padding-top: var(--navbar-height-mobile); }
+  @media (min-width: 901px) { .pd-page { padding-top: var(--navbar-height-desktop); } }
+  .pd-message { max-width: 520px; margin: 0 auto; padding: var(--fr-s10) var(--fr-s5); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--fr-s4); }
+  .pd-notfound { font-family: var(--fr-font-display); font-size: 1.6rem; font-weight: 700; color: var(--fr-text); margin: 0; }
+  .pd-back { color: var(--fr-brand); font-weight: 600; text-decoration: none; }
+  .pd-back:hover { color: var(--fr-brand-press); }
+  .pd-back:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
+`;
