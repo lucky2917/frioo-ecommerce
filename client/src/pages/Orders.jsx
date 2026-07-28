@@ -6,14 +6,51 @@ import { logger } from '../utils/logger';
 import Navbar from '../components/layout/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Link } from 'react-router-dom';
-
 import SEO from '../components/SEO';
+import {
+  ORDER_STATUS_FLOW,
+  getStatusPresentation,
+  getStatusStepIndex,
+  getStatusProgress,
+  isActiveStatus,
+  formatOrderAmount,
+} from '../utils/orderStatus';
+
+const parseItems = (raw) => {
+  let items = raw;
+  if (typeof items === 'string') {
+    try { items = JSON.parse(items); } catch { items = []; }
+  }
+  return Array.isArray(items) ? items : [];
+};
+
+const formatDate = (value) =>
+  new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+
+const formatTime = (value) =>
+  new Date(value).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+
+const SkeletonOrder = () => (
+  <div className="fr-ord-skel" aria-hidden="true">
+    <div className="fr-ord-skel-head">
+      <div className="fr-ord-skel-line fr-ord-skel-sm" />
+      <div className="fr-ord-skel-line fr-ord-skel-chip" />
+    </div>
+    <div className="fr-ord-skel-line" />
+    <div className="fr-ord-skel-line fr-ord-skel-short" />
+    <div className="fr-ord-skel-line fr-ord-skel-btn" />
+  </div>
+);
 
 export default function Orders() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signInWithGoogle } = useAuth();
   const { addToCart } = useCart();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [reorderedId, setReorderedId] = useState(null);
+  const [announcement, setAnnouncement] = useState('');
 
   useEffect(() => {
     if (!user?.id) {
@@ -21,18 +58,22 @@ export default function Orders() {
       return;
     }
 
+    setLoading(true);
+    setError(false);
+
     const fetchOrders = async () => {
       try {
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('orders')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (fetchError) throw fetchError;
         setOrders(data || []);
       } catch (err) {
         logger.error('Failed to fetch orders:', err);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -49,31 +90,16 @@ export default function Orders() {
         filter: `user_id=eq.${user.id}`
       }, (payload) => {
         setOrders(prev => prev.map(o => o.id === payload.new.id ? { ...o, ...payload.new } : o));
+        setAnnouncement(`Order #${payload.new.id} is now ${getStatusPresentation(payload.new.status).label}.`);
       })
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, [user?.id]);
+  }, [user?.id, reloadKey]);
 
-  const getStatusColor = (status) => {
-    const statusMap = {
-      'pending': 'status-orange',
-      'confirmed': 'status-blue',
-      'preparing': 'status-blue',
-      'ready': 'status-blue',
-      'out-for-delivery': 'status-purple',
-      'delivered': 'status-green',
-      'cancelled': 'status-red'
-    };
-    return statusMap[status] || 'status-blue';
-  };
-
-  const handleReorder = (rawItems) => {
-    let items = rawItems;
-    if (typeof items === 'string') {
-      try { items = JSON.parse(items); } catch { items = []; }
-    }
-    if (!Array.isArray(items) || items.length === 0) return;
+  const handleReorder = (order) => {
+    const items = parseItems(order.items);
+    if (items.length === 0) return;
 
     items.forEach(item => {
       const product = {
@@ -83,308 +109,622 @@ export default function Orders() {
       };
       addToCart(product, item.variant, item.price, item.preferences);
     });
+
+    setReorderedId(order.id);
   };
 
   if (authLoading) return <LoadingSpinner fullScreen />;
 
-  return (
-    <div className="orders-page">
-      <SEO title="My Orders" description="Track your order history." />
-      <Navbar />
+  const activeOrder = orders.find(o => isActiveStatus(o.status));
+  const historyOrders = activeOrder ? orders.filter(o => o.id !== activeOrder.id) : orders;
 
-      <div className="orders-container">
-        <div className="page-header">
-          <h1 className="page-title">Order History</h1>
-          <p className="page-subtitle">Track your past purchases and reorder favorites.</p>
+  const renderMeta = (order) => {
+    const isDelivery = order.order_type === 'delivery';
+    return (
+      <div className="fr-ord-meta">
+        <span className="fr-ord-meta-item">{isDelivery ? 'Delivery' : 'Pickup'}</span>
+        <span className="fr-ord-meta-sep" aria-hidden="true">&middot;</span>
+        <span className="fr-ord-meta-item">{formatDate(order.created_at)}</span>
+        <span className="fr-ord-meta-sep" aria-hidden="true">&middot;</span>
+        <span className="fr-ord-meta-item">{formatTime(order.created_at)}</span>
+      </div>
+    );
+  };
+
+  const renderItems = (order) => {
+    const items = parseItems(order.items);
+    return items.map((item, i) => {
+      const showVariant = item.variant && item.variant !== 'Standard';
+      const exclusions = item.preferences?.exclusions;
+      const removed = item.preferences?.removedIngredients;
+      return (
+        <div key={i} className="fr-ord-item">
+          <div className="fr-ord-item-qty">{item.qty}&times;</div>
+          <div className="fr-ord-item-details">
+            <span className="fr-ord-item-name">{item.title}</span>
+            {showVariant && <span className="fr-ord-item-variant">{item.variant}</span>}
+            {(exclusions?.length > 0 || removed?.length > 0) && (
+              <div className="fr-ord-item-prefs">
+                {exclusions?.length > 0 && <span>No {exclusions.join(', ')}</span>}
+                {removed?.length > 0 && <span>No {removed.join(', ')}</span>}
+              </div>
+            )}
+          </div>
+          <div className="fr-ord-item-price">&#8377;{formatOrderAmount(item.price * item.qty)}</div>
+        </div>
+      );
+    });
+  };
+
+  const renderTimeline = (order) => {
+    const currentStep = getStatusStepIndex(order.status);
+    const progress = getStatusProgress(order.status);
+    const { label } = getStatusPresentation(order.status);
+    const total = ORDER_STATUS_FLOW.length;
+    const stepNumber = Math.min(currentStep + 1, total);
+    return (
+      <div className="fr-ord-timeline">
+        <div className="fr-ord-timeline-head">
+          <span className="fr-ord-timeline-label">{label}</span>
+          <span className="fr-ord-timeline-step">Step {stepNumber} of {total}</span>
+        </div>
+        <div className="fr-ord-timeline-track">
+          <div className="fr-ord-timeline-fill" style={{ width: `${progress}%` }} />
+        </div>
+      </div>
+    );
+  };
+
+  const renderOrderCard = (order, active) => {
+    const { label: statusLabel, tone } = getStatusPresentation(order.status);
+    const isDelivery = order.order_type === 'delivery';
+    const hasDiscount = order.discount && Number(order.discount) > 0;
+    return (
+      <article key={order.id} className={`fr-ord-card${active ? ' fr-ord-card-active' : ''}`}>
+        {active && <div className="fr-ord-active-tag">Active order</div>}
+
+        <div className="fr-ord-card-head">
+          <div className="fr-ord-head-left">
+            <span className="fr-ord-id">Order #{order.id}</span>
+            {renderMeta(order)}
+          </div>
+          <div className="fr-ord-head-right">
+            <span className={`fr-ord-status fr-status--${tone}`}>{statusLabel}</span>
+            <span className="fr-ord-total">&#8377;{formatOrderAmount(order.total_amount)}</span>
+          </div>
         </div>
 
-        {loading ? (
-          <div className="loading-state">
-            <LoadingSpinner size="medium" />
-          </div>
-        ) : orders.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        {active && renderTimeline(order)}
+
+        <div className="fr-ord-card-body">
+          {renderItems(order)}
+
+          {isDelivery && order.address && (
+            <div className="fr-ord-detail-row">
+              <span className="fr-ord-detail-key">Delivering to</span>
+              <span className="fr-ord-detail-val">{order.address}</span>
             </div>
-            <h3>No Orders Yet</h3>
-            <p>Looks like you haven't placed an order yet.</p>
-            <Link to="/shop" className="btn-shop">Start Shopping</Link>
-          </div>
-        ) : (
-          <div className="orders-list">
-            {orders.map(order => (
-              <div key={order.id} className="order-card fade-in">
+          )}
+          {order.coupon_code && (
+            <div className="fr-ord-detail-row">
+              <span className="fr-ord-detail-key">Coupon</span>
+              <span className="fr-ord-detail-val">
+                {order.coupon_code}
+                {hasDiscount && <span className="fr-ord-discount"> &minus;&#8377;{formatOrderAmount(order.discount)}</span>}
+              </span>
+            </div>
+          )}
+          {order.notes && (
+            <div className="fr-ord-note">
+              <strong>Note</strong> {order.notes}
+            </div>
+          )}
+        </div>
 
-                <div className="card-header">
-                  <div className="ch-left">
-                    <span className="order-id">Order #{order.id}</span>
-                    <span className="order-date">{new Date(order.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                  </div>
-                  <div className="ch-right">
-                    <span className={`status-badge ${getStatusColor(order.status)}`}>
-                      {order.status}
-                    </span>
-                    <span className="order-total">₹{order.total_amount}</span>
-                  </div>
-                </div>
+        <div className="fr-ord-card-foot">
+          {reorderedId === order.id ? (
+            <div className="fr-ord-reordered">
+              <span className="fr-ord-reordered-text">Added to your cart.</span>
+              <Link to="/cart" className="fr-ord-cart-link">Review cart</Link>
+            </div>
+          ) : (
+            <button className="fr-ord-reorder" onClick={() => handleReorder(order)}>
+              Reorder these items
+            </button>
+          )}
+          <Link to="/contact" className="fr-ord-help">Need help?</Link>
+        </div>
+      </article>
+    );
+  };
 
-                <div className="card-body">
-                  {(() => {
-                    let items = order.items;
-                    if (typeof items === 'string') {
-                      try { items = JSON.parse(items); } catch (e) { items = []; }
-                    }
-                    if (!Array.isArray(items)) items = [];
+  const renderBody = () => {
+    if (!user) {
+      return (
+        <div className="fr-ord-state">
+          <StateIcon />
+          <h2 className="fr-ord-state-title">Sign in to view your orders</h2>
+          <p className="fr-ord-state-text">Your order history and live tracking live in your account.</p>
+          <button className="fr-ord-state-btn" onClick={signInWithGoogle}>Sign in</button>
+        </div>
+      );
+    }
 
-                    return items.map((item, i) => (
-                      <div key={i} className="order-item">
-                        <div className="item-qty">{item.qty}x</div>
-                        <div className="item-details">
-                          <span className="item-name">{item.title}</span>
-                          {item.variant && <span className="item-variant">Variant: {item.variant}</span>}
-                          {item.preferences && (
-                            <div className="item-prefs">
-                              {item.preferences.exclusions?.length > 0 && (
-                                <div className="pref-row">No {item.preferences.exclusions.join(', ')}</div>
-                              )}
-                              {item.preferences.removedIngredients?.length > 0 && (
-                                <div className="pref-row">No {item.preferences.removedIngredients.join(', ')}</div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        <div className="item-price">₹{item.price * item.qty}</div>
-                      </div>
-                    ));
-                  })()}
-                  {order.notes && (
-                    <div className="order-note-block">
-                      <strong>Note:</strong> {order.notes}
-                    </div>
-                  )}
-                </div>
+    if (loading) {
+      return (
+        <div className="fr-ord-list">
+          {Array.from({ length: 3 }).map((_, i) => <SkeletonOrder key={i} />)}
+        </div>
+      );
+    }
 
-                <div className="card-footer">
-                  <button className="btn-reorder" onClick={() => handleReorder(order.items)}>
-                    Reorder All Items
-                  </button>
-                  <Link to="/contact" className="link-help">Need Help?</Link>
-                </div>
+    if (error) {
+      return (
+        <div className="fr-ord-state">
+          <StateIcon />
+          <h2 className="fr-ord-state-title">We couldn't load your orders</h2>
+          <p className="fr-ord-state-text">Something went wrong on our side. Please try again.</p>
+          <button className="fr-ord-state-btn" onClick={() => setReloadKey(k => k + 1)}>Retry</button>
+        </div>
+      );
+    }
 
-              </div>
-            ))}
-          </div>
+    if (orders.length === 0) {
+      return (
+        <div className="fr-ord-state">
+          <StateIcon />
+          <h2 className="fr-ord-state-title">No orders yet</h2>
+          <p className="fr-ord-state-text">When you place your first order, it will show up here.</p>
+          <Link to="/shop" className="fr-ord-state-btn">Browse the shop</Link>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        {activeOrder && (
+          <section className="fr-ord-section" aria-label="Active order">
+            {renderOrderCard(activeOrder, true)}
+          </section>
         )}
+        {historyOrders.length > 0 && (
+          <section className="fr-ord-section" aria-label="Order history">
+            {activeOrder && <h2 className="fr-ord-section-title">Earlier orders</h2>}
+            <div className="fr-ord-list">
+              {historyOrders.map(order => renderOrderCard(order, false))}
+            </div>
+          </section>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <div className="fr-ord-page">
+      <SEO title="My Orders" description="Track your orders and reorder favourites." />
+      <Navbar />
+
+      <div className="fr-ord-live" aria-live="polite">{announcement}</div>
+
+      <div className="fr-ord-container">
+        <header className="fr-ord-header">
+          <h1 className="fr-ord-title">Your orders</h1>
+          <p className="fr-ord-subtitle">Track what's on the way and reorder what you love.</p>
+        </header>
+
+        {renderBody()}
       </div>
 
       <style>{`
-        .orders-page {
-            background-color: #FAFAFA;
-            min-height: 100vh;
-            padding-bottom: 80px;
-        }
-        .orders-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 120px 20px 20px;
+        .fr-ord-page {
+          background: var(--fr-canvas);
+          min-height: 100vh;
+          padding-bottom: var(--fr-s10);
         }
 
-        .page-header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        .page-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            color: #3E2723;
-            margin-bottom: 10px;
-        }
-        .page-subtitle {
-            font-family: 'Manrope', sans-serif;
-            color: #888;
-            font-size: 1.1rem;
+        .fr-ord-live {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
         }
 
-        .orders-list {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-        .order-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.03);
-            border: 1px solid #f0f0f0;
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .order-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+        .fr-ord-container {
+          max-width: 760px;
+          margin: 0 auto;
+          padding: calc(var(--navbar-height-mobile) + var(--fr-s6)) var(--fr-s4) var(--fr-s6);
         }
 
-        .card-header {
-            padding: 20px 25px;
-            background: #fffdf9;
-            border-bottom: 1px solid #f5f5f5;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .ch-left, .ch-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .order-id {
-            font-family: 'Manrope', sans-serif;
-            font-weight: 700;
-            color: #333;
-            background: #eee;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-        .order-date {
-            color: #888;
-            font-size: 0.9rem;
-        }
-        .order-total {
-            font-family: 'Playfair Display', serif;
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: #3E2723;
+        @media (min-width: 900px) {
+          .fr-ord-container {
+            padding-top: calc(var(--navbar-height-desktop) + var(--fr-s7));
+          }
         }
 
-        .status-badge {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .status-green { background: #e8f5e9; color: #2e7d32; }
-        .status-blue { background: #e3f2fd; color: #1565c0; }
-        .status-orange { background: #fff3e0; color: #ef6c00; }
-        .status-red { background: #ffebee; color: #c62828; }
-        .status-purple { background: #f3e8ff; color: #7e22ce; }
+        .fr-ord-header { margin-bottom: var(--fr-s7); }
 
-        .card-body {
-            padding: 20px 25px;
-      }
-        .order-item {
-            display: flex;
-            align-items: flex-start;
-            padding: 15px 0;
-            border-bottom: 1px solid #f9f9f9;
-        }
-        .order-item:last-child { border-bottom: none; }
-
-        .item-qty {
-            font-weight: 700;
-            color: #D4AF7A;
-            width: 40px;
-        }
-        .item-details { flex: 1; }
-        .item-name {
-            display: block;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 2px;
-        }
-        .item-variant {
-            display: block;
-            font-size: 0.85rem;
-            color: #888;
-        }
-        .item-price {
-            font-weight: 600;
-            color: #555;
+        .fr-ord-title {
+          font-family: var(--fr-font-display);
+          font-size: 2.25rem;
+          color: var(--fr-text);
+          margin: 0 0 var(--fr-s2);
         }
 
-        .item-prefs { margin-top: 4px; font-size: 0.8rem; }
-        .pref-row { color: #d32f2f; font-weight: 500; }
-
-        .order-note-block {
-            background: #fffbeb; padding: 10px; border-radius: 8px;
-            margin-top: 15px; border: 1px solid #fcd34d;
-            color: #b45309; font-size: 0.9rem;
+        .fr-ord-subtitle {
+          font-family: var(--fr-font-sans);
+          color: var(--fr-text-2);
+          font-size: 1.05rem;
+          margin: 0;
         }
 
-        .card-footer {
-            padding: 15px 25px;
-            background: white;
-            border-top: 1px solid #fbfbfb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .btn-reorder {
-            background: white;
-            border: 1px solid #D4AF7A;
-            color: #D4AF7A;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.9rem;
-        }
-        .btn-reorder:hover {
-            background: #D4AF7A;
-            color: white;
-        }
-        .link-help {
-            color: #999;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        .link-help:hover { color: #555; }
+        .fr-ord-section { margin-bottom: var(--fr-s7); }
+        .fr-ord-section:last-child { margin-bottom: 0; }
 
-        .empty-state {
-            text-align: center;
-            padding: 80px 20px;
-        }
-        .empty-icon { margin-bottom: 20px; display: flex; justify-content: center; color: #bbb; }
-        .empty-state h3 { font-family: 'Playfair Display'; margin-bottom: 10px; }
-        .empty-state p { margin-bottom: 30px; color: #888; }
-        .btn-shop {
-            background: #3E2723;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: 600;
+        .fr-ord-section-title {
+          font-family: var(--fr-font-sans);
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: var(--fr-text-2);
+          letter-spacing: 0.3px;
+          margin: 0 0 var(--fr-s4);
         }
 
-        .loading-state {
-            display: flex;
-            justify-content: center;
-            padding: 50px;
+        .fr-ord-list {
+          display: flex;
+          flex-direction: column;
+          gap: var(--fr-s5);
         }
 
-        .fade-in { animation: fadeIn 0.4s ease forwards; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .fr-ord-card {
+          background: var(--fr-surface);
+          border-radius: var(--fr-r-surface);
+          border: 1px solid var(--fr-line);
+          box-shadow: var(--fr-elev-1);
+          overflow: hidden;
         }
 
-        @media (max-width: 600px) {
-            .card-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-            .ch-left, .ch-right {
-                width: 100%;
-                justify-content: space-between;
-            }
+        .fr-ord-card-active {
+          border-color: var(--fr-line-strong);
+          box-shadow: var(--fr-elev-2);
+        }
+
+        .fr-ord-active-tag {
+          background: var(--fr-brand);
+          color: var(--fr-on-brand);
+          font-family: var(--fr-font-sans);
+          font-size: 0.72rem;
+          font-weight: 700;
+          letter-spacing: 0.4px;
+          text-transform: uppercase;
+          padding: var(--fr-s2) var(--fr-s5);
+        }
+
+        .fr-ord-card-head {
+          padding: var(--fr-s5);
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: var(--fr-s4);
+          border-bottom: 1px solid var(--fr-line);
+        }
+
+        .fr-ord-head-left { display: flex; flex-direction: column; gap: var(--fr-s2); min-width: 0; }
+
+        .fr-ord-id {
+          font-family: var(--fr-font-sans);
+          font-weight: 700;
+          font-size: 0.95rem;
+          color: var(--fr-text);
+        }
+
+        .fr-ord-meta {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: var(--fr-s2);
+          font-family: var(--fr-font-sans);
+          font-size: 0.85rem;
+          color: var(--fr-text-2);
+        }
+
+        .fr-ord-meta-sep { color: var(--fr-text-3); }
+
+        .fr-ord-head-right {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: var(--fr-s2);
+          flex-shrink: 0;
+        }
+
+        .fr-ord-status {
+          padding: var(--fr-s1) var(--fr-s3);
+          border-radius: var(--fr-r-pill);
+          font-family: var(--fr-font-sans);
+          font-size: 0.72rem;
+          font-weight: 700;
+          letter-spacing: 0.3px;
+          white-space: nowrap;
+        }
+
+        .fr-status--info { background: #E3EDF3; color: var(--fr-info); }
+        .fr-status--brand { background: var(--fr-brand-tint); color: var(--fr-brand); }
+        .fr-status--success { background: var(--fr-brand-tint); color: var(--fr-success); }
+        .fr-status--danger { background: var(--fr-warm-tint); color: var(--fr-danger); }
+
+        .fr-ord-total {
+          font-family: var(--fr-font-display);
+          font-weight: 700;
+          font-size: 1.2rem;
+          color: var(--fr-text);
+        }
+
+        .fr-ord-timeline {
+          padding: var(--fr-s4) var(--fr-s5);
+          border-bottom: 1px solid var(--fr-line);
+          background: var(--fr-brand-tint);
+        }
+
+        .fr-ord-timeline-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          margin-bottom: var(--fr-s2);
+        }
+
+        .fr-ord-timeline-label {
+          font-family: var(--fr-font-sans);
+          font-weight: 700;
+          font-size: 0.9rem;
+          color: var(--fr-brand);
+        }
+
+        .fr-ord-timeline-step {
+          font-family: var(--fr-font-sans);
+          font-size: 0.78rem;
+          color: var(--fr-text-2);
+        }
+
+        .fr-ord-timeline-track {
+          height: 4px;
+          background: var(--fr-surface);
+          border-radius: var(--fr-r-pill);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .fr-ord-timeline-fill {
+          position: absolute;
+          inset: 0;
+          height: 4px;
+          background: var(--fr-brand);
+          border-radius: var(--fr-r-pill);
+          transition: width var(--fr-dur-expressive) var(--fr-ease-settle);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .fr-ord-timeline-fill { transition: none; }
+        }
+
+        .fr-ord-card-body { padding: var(--fr-s5); }
+
+        .fr-ord-item {
+          display: flex;
+          align-items: flex-start;
+          gap: var(--fr-s3);
+          padding: var(--fr-s3) 0;
+          border-bottom: 1px solid var(--fr-line);
+        }
+
+        .fr-ord-item:first-child { padding-top: 0; }
+
+        .fr-ord-item-qty {
+          font-family: var(--fr-font-sans);
+          font-weight: 700;
+          color: var(--fr-brand);
+          min-width: 32px;
+        }
+
+        .fr-ord-item-details { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+
+        .fr-ord-item-name {
+          font-family: var(--fr-font-sans);
+          font-weight: 600;
+          color: var(--fr-text);
+        }
+
+        .fr-ord-item-variant {
+          font-family: var(--fr-font-sans);
+          font-size: 0.83rem;
+          color: var(--fr-text-2);
+        }
+
+        .fr-ord-item-prefs {
+          display: flex;
+          flex-wrap: wrap;
+          gap: var(--fr-s3);
+          font-family: var(--fr-font-sans);
+          font-size: 0.8rem;
+          color: var(--fr-warm);
+          margin-top: 2px;
+        }
+
+        .fr-ord-item-price {
+          font-family: var(--fr-font-sans);
+          font-weight: 600;
+          color: var(--fr-text);
+        }
+
+        .fr-ord-detail-row {
+          display: flex;
+          justify-content: space-between;
+          gap: var(--fr-s4);
+          padding-top: var(--fr-s3);
+          font-family: var(--fr-font-sans);
+          font-size: 0.85rem;
+        }
+
+        .fr-ord-detail-key { color: var(--fr-text-2); flex-shrink: 0; }
+        .fr-ord-detail-val { color: var(--fr-text); text-align: right; }
+        .fr-ord-discount { color: var(--fr-success); font-weight: 600; }
+
+        .fr-ord-note {
+          margin-top: var(--fr-s4);
+          padding: var(--fr-s3) var(--fr-s4);
+          background: var(--fr-warm-tint);
+          border-radius: var(--fr-r-card);
+          font-family: var(--fr-font-sans);
+          font-size: 0.85rem;
+          color: var(--fr-text);
+        }
+
+        .fr-ord-note strong { color: var(--fr-warm); margin-right: var(--fr-s2); }
+
+        .fr-ord-card-foot {
+          padding: var(--fr-s4) var(--fr-s5);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: var(--fr-s4);
+          border-top: 1px solid var(--fr-line);
+          background: var(--fr-surface);
+        }
+
+        .fr-ord-reorder {
+          background: var(--fr-surface);
+          border: 1px solid var(--fr-line-strong);
+          color: var(--fr-brand);
+          padding: var(--fr-s2) var(--fr-s4);
+          border-radius: var(--fr-r-control);
+          font-family: var(--fr-font-sans);
+          font-weight: 600;
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: background var(--fr-dur-quick) var(--fr-ease-standard), border-color var(--fr-dur-quick) var(--fr-ease-standard);
+        }
+
+        .fr-ord-reorder:hover { background: var(--fr-brand-tint); border-color: var(--fr-brand); }
+
+        .fr-ord-reordered { display: flex; align-items: center; gap: var(--fr-s3); flex-wrap: wrap; }
+
+        .fr-ord-reordered-text {
+          font-family: var(--fr-font-sans);
+          font-size: 0.88rem;
+          color: var(--fr-success);
+          font-weight: 600;
+        }
+
+        .fr-ord-cart-link {
+          font-family: var(--fr-font-sans);
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: var(--fr-brand);
+          text-decoration: underline;
+          text-underline-offset: 3px;
+        }
+
+        .fr-ord-help {
+          font-family: var(--fr-font-sans);
+          font-size: 0.88rem;
+          font-weight: 500;
+          color: var(--fr-text-2);
+          text-decoration: none;
+        }
+
+        .fr-ord-help:hover { color: var(--fr-text); }
+
+        .fr-ord-state {
+          text-align: center;
+          padding: var(--fr-s9) var(--fr-s4);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .fr-ord-state-icon { color: var(--fr-text-3); margin-bottom: var(--fr-s4); }
+
+        .fr-ord-state-title {
+          font-family: var(--fr-font-display);
+          font-size: 1.5rem;
+          color: var(--fr-text);
+          margin: 0 0 var(--fr-s2);
+        }
+
+        .fr-ord-state-text {
+          font-family: var(--fr-font-sans);
+          color: var(--fr-text-2);
+          margin: 0 0 var(--fr-s6);
+          max-width: 340px;
+        }
+
+        .fr-ord-state-btn {
+          display: inline-block;
+          background: var(--fr-brand);
+          color: var(--fr-on-brand);
+          padding: var(--fr-s3) var(--fr-s6);
+          border: none;
+          border-radius: var(--fr-r-control);
+          font-family: var(--fr-font-sans);
+          font-weight: 700;
+          font-size: 0.95rem;
+          text-decoration: none;
+          cursor: pointer;
+          transition: background var(--fr-dur-quick) var(--fr-ease-standard);
+        }
+
+        .fr-ord-state-btn:hover { background: var(--fr-brand-press); }
+
+        .fr-ord-skel {
+          background: var(--fr-surface);
+          border: 1px solid var(--fr-line);
+          border-radius: var(--fr-r-surface);
+          padding: var(--fr-s5);
+        }
+
+        .fr-ord-skel-head {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: var(--fr-s5);
+        }
+
+        .fr-ord-skel-line {
+          height: 14px;
+          background: var(--fr-surface-2);
+          border-radius: var(--fr-r-control);
+          margin-bottom: var(--fr-s3);
+        }
+
+        .fr-ord-skel-sm { width: 120px; height: 16px; margin: 0; }
+        .fr-ord-skel-chip { width: 90px; height: 22px; border-radius: var(--fr-r-pill); margin: 0; }
+        .fr-ord-skel-short { width: 60%; }
+        .fr-ord-skel-btn { width: 160px; height: 36px; margin-top: var(--fr-s4); margin-bottom: 0; }
+
+        @media (prefers-reduced-motion: no-preference) {
+          .fr-ord-skel-line { animation: fr-ord-shimmer 1.4s var(--fr-ease-standard) infinite; }
+        }
+
+        @keyframes fr-ord-shimmer {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.55; }
+        }
+
+        @media (max-width: 560px) {
+          .fr-ord-card-head { flex-direction: column; }
+          .fr-ord-head-right { flex-direction: row; align-items: center; width: 100%; justify-content: space-between; }
+          .fr-ord-title { font-size: 1.9rem; }
         }
       `}</style>
     </div>
   );
 }
+
+const StateIcon = () => (
+  <div className="fr-ord-state-icon">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
+  </div>
+);

@@ -1,27 +1,46 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabaseClient';
 import { DELIVERY_STATUS_DURATION_MS } from '../../config/constants';
+import {
+  ORDER_STATUS_FLOW,
+  getStatusPresentation,
+  getStatusStepIndex,
+  getStatusProgress,
+  formatOrderAmount,
+} from '../../utils/orderStatus';
 
-const STEPS = [
-  { key: 'pending', label: 'Received' },
-  { key: 'confirmed', label: 'Confirmed' },
-  { key: 'preparing', label: 'Preparing' },
-  { key: 'ready', label: 'Ready' },
-  { key: 'out-for-delivery', label: 'Out for Delivery' },
-  { key: 'delivered', label: 'Delivered' },
-];
+const buildItemLabel = (item) => {
+  const variant = item.variant && item.variant !== 'Standard' ? ` (${item.variant})` : '';
+  return `${item.qty}x ${item.title}${variant}`;
+};
 
 export default function OrderTracker() {
   const { user } = useAuth();
   const [activeOrder, setActiveOrder] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
+
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const triggerRef = useRef(null);
+  const previousStatusRef = useRef(null);
 
   const resolveOrder = useCallback((order) => {
-    if (!order) return setActiveOrder(null);
-    if (order.status !== 'delivered') return setActiveOrder(order);
-    const elapsed = Date.now() - new Date(order.updated_at || order.created_at).getTime();
-    setActiveOrder(elapsed < DELIVERY_STATUS_DURATION_MS ? order : null);
+    let next = order || null;
+    if (next && next.status === 'delivered') {
+      const elapsed = Date.now() - new Date(next.updated_at || next.created_at).getTime();
+      if (elapsed >= DELIVERY_STATUS_DURATION_MS) next = null;
+    }
+    if (next) {
+      if (previousStatusRef.current && previousStatusRef.current !== next.status) {
+        setAnnouncement(`Order ${next.id} is now ${getStatusPresentation(next.status).label}.`);
+      }
+      previousStatusRef.current = next.status;
+    } else {
+      previousStatusRef.current = null;
+    }
+    setActiveOrder(next);
   }, []);
 
   useEffect(() => {
@@ -52,6 +71,48 @@ export default function OrderTracker() {
     return () => supabase.removeChannel(channel);
   }, [user, resolveOrder]);
 
+  useEffect(() => {
+    if (!showDetails) return;
+
+    triggerRef.current = document.activeElement;
+    const dialog = dialogRef.current;
+    const getFocusable = () =>
+      Array.from(
+        dialog?.querySelectorAll(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ) || []
+      );
+
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        setShowDetails(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = getFocusable();
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      const trigger = triggerRef.current;
+      if (trigger && document.contains(trigger)) trigger.focus();
+    };
+  }, [showDetails]);
+
   if (!activeOrder) return null;
 
   let items = activeOrder.items;
@@ -60,54 +121,74 @@ export default function OrderTracker() {
   }
   if (!Array.isArray(items)) items = [];
 
-  const currentStep = STEPS.findIndex(s => s.key === activeOrder.status);
-  const progress = Math.max(0, (currentStep / (STEPS.length - 1)) * 100);
+  const currentStep = getStatusStepIndex(activeOrder.status);
+  const progress = getStatusProgress(activeOrder.status);
+  const { label: statusLabel, tone: statusTone } = getStatusPresentation(activeOrder.status);
+  const titleId = 'fr-ot-title';
 
   return (
     <>
-      <div className="ot-bar">
-        <div className="ot-bar-left">
-          <span className="ot-pulse" />
-          <span className="ot-bar-text">
-            Order #{activeOrder.id} — <strong>{activeOrder.status}</strong>
+      <div className="fr-ot-live" aria-live="polite">{announcement}</div>
+
+      <div className="fr-ot-bar">
+        <div className="fr-ot-bar-left">
+          <span className="fr-ot-pulse" aria-hidden="true" />
+          <span className="fr-ot-bar-text">
+            Order #{activeOrder.id} &middot; <strong>{statusLabel}</strong>
           </span>
         </div>
-        <button className="ot-track-btn" onClick={() => setShowDetails(true)}>Track</button>
+        <button className="fr-ot-track-btn" onClick={() => setShowDetails(true)}>Track</button>
       </div>
 
       {showDetails && (
-        <div className="ot-overlay" onClick={() => setShowDetails(false)}>
-          <div className="ot-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="ot-modal-header">
-              <h3 className="ot-modal-title">Order #{activeOrder.id}</h3>
-              <button className="ot-close-btn" onClick={() => setShowDetails(false)}>&times;</button>
+        <div className="fr-ot-overlay" onClick={() => setShowDetails(false)}>
+          <div
+            className="fr-ot-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            ref={dialogRef}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="fr-ot-modal-header">
+              <h3 className="fr-ot-modal-title" id={titleId}>Order #{activeOrder.id}</h3>
+              <button
+                className="fr-ot-close-btn"
+                onClick={() => setShowDetails(false)}
+                aria-label="Close order tracker"
+                ref={closeButtonRef}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
             </div>
 
-            <div className="ot-progress-wrap">
-              <div className="ot-progress-track">
-                <div className="ot-progress-fill" style={{ width: `${progress}%` }} />
+            <div className={`fr-ot-status-chip fr-status--${statusTone}`}>{statusLabel}</div>
+
+            <div className="fr-ot-progress-wrap">
+              <div className="fr-ot-progress-track">
+                <div className="fr-ot-progress-fill" style={{ width: `${progress}%` }} />
               </div>
-              <div className="ot-steps">
-                {STEPS.map((step, i) => (
-                  <div key={step.key} className={`ot-step${i <= currentStep ? ' done' : ''}`}>
-                    <div className="ot-dot" />
-                    <span className="ot-step-label">{step.label}</span>
-                  </div>
+              <ol className="fr-ot-steps">
+                {ORDER_STATUS_FLOW.map((stepKey, index) => (
+                  <li key={stepKey} className={`fr-ot-step${index <= currentStep ? ' done' : ''}`}>
+                    <span className="fr-ot-dot" aria-hidden="true" />
+                    <span className="fr-ot-step-label">{getStatusPresentation(stepKey).label}</span>
+                  </li>
                 ))}
-              </div>
+              </ol>
             </div>
 
-            <div className="ot-items-box">
-              <p className="ot-items-heading">Items</p>
+            <div className="fr-ot-items-box">
+              <p className="fr-ot-items-heading">Items</p>
               {items.map((item, i) => (
-                <div key={i} className="ot-item-row">
-                  <span>{item.qty}x {item.title} ({item.variant})</span>
-                  <span>&#8377;{item.price * item.qty}</span>
+                <div key={i} className="fr-ot-item-row">
+                  <span>{buildItemLabel(item)}</span>
+                  <span>&#8377;{formatOrderAmount(item.price * item.qty)}</span>
                 </div>
               ))}
-              <div className="ot-total-row">
-                <span>Total</span>
-                <span>&#8377;{activeOrder.total_amount}</span>
+              <div className="fr-ot-total-row">
+                <span>Total paid</span>
+                <span>&#8377;{formatOrderAmount(activeOrder.total_amount)}</span>
               </div>
             </div>
 
@@ -115,238 +196,296 @@ export default function OrderTracker() {
               href={`https://wa.me/919010900688?text=Help with Order #${activeOrder.id}`}
               target="_blank"
               rel="noreferrer"
-              className="ot-help-link"
+              className="fr-ot-help-link"
             >
-              Contact Shop / Help
+              Message the shop on WhatsApp
             </a>
           </div>
         </div>
       )}
 
       <style>{`
-        @keyframes ot-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(76,175,80,0.5); }
-          50% { box-shadow: 0 0 0 6px rgba(76,175,80,0); }
+        .fr-ot-live {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
         }
 
-        .ot-bar {
+        .fr-ot-bar {
           position: fixed;
-          top: 76px;
+          top: calc(var(--navbar-height-mobile) + var(--fr-s2));
           left: 50%;
           transform: translateX(-50%);
           width: min(92%, 560px);
-          background: #1a1a1a;
-          color: white;
-          padding: 10px 18px;
-          border-radius: 50px;
-          z-index: 900;
+          background: var(--fr-brand);
+          color: var(--fr-on-brand);
+          padding: var(--fr-s2) var(--fr-s4);
+          border-radius: var(--fr-r-pill);
+          z-index: var(--fr-z-cta);
           display: flex;
           justify-content: space-between;
           align-items: center;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.28);
-          border: 1px solid rgba(255,255,255,0.08);
+          gap: var(--fr-s3);
+          box-shadow: var(--fr-elev-2);
         }
 
-        .ot-bar-left {
+        @media (min-width: 900px) {
+          .fr-ot-bar { top: calc(var(--navbar-height-desktop) + var(--fr-s2)); }
+        }
+
+        .fr-ot-bar-left {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: var(--fr-s2);
+          min-width: 0;
         }
 
-        .ot-pulse {
+        .fr-ot-pulse {
           width: 9px;
           height: 9px;
-          background: #4CAF50;
+          background: var(--fr-on-brand);
           border-radius: 50%;
           flex-shrink: 0;
-          animation: ot-pulse 2s infinite;
         }
 
-        .ot-bar-text {
+        @media (prefers-reduced-motion: no-preference) {
+          .fr-ot-pulse { animation: fr-ot-pulse 2s var(--fr-ease-standard) infinite; }
+        }
+
+        @keyframes fr-ot-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+          50% { box-shadow: 0 0 0 6px rgba(255,255,255,0); }
+        }
+
+        .fr-ot-bar-text {
+          font-family: var(--fr-font-sans);
           font-size: 0.875rem;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
 
-        .ot-track-btn {
-          background: white;
-          color: #1a1a1a;
+        .fr-ot-track-btn {
+          background: var(--fr-on-brand);
+          color: var(--fr-brand);
           border: none;
-          padding: 5px 14px;
-          border-radius: 20px;
-          font-size: 0.78rem;
+          padding: var(--fr-s1) var(--fr-s4);
+          border-radius: var(--fr-r-pill);
+          font-family: var(--fr-font-sans);
+          font-size: 0.8rem;
           font-weight: 700;
           cursor: pointer;
           flex-shrink: 0;
-          transition: opacity 0.2s;
+          transition: opacity var(--fr-dur-quick) var(--fr-ease-standard);
         }
 
-        .ot-track-btn:hover { opacity: 0.85; }
+        .fr-ot-track-btn:hover { opacity: 0.9; }
 
-        .ot-overlay {
+        .fr-ot-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0,0,0,0.55);
-          z-index: 2000;
+          background: var(--fr-scrim);
+          z-index: var(--fr-z-modal);
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 20px;
+          padding: var(--fr-s5);
         }
 
-        .ot-modal {
-          background: white;
+        .fr-ot-modal {
+          background: var(--fr-surface);
           width: 100%;
           max-width: 480px;
-          border-radius: 18px;
-          padding: 28px;
+          border-radius: var(--fr-r-surface);
+          padding: var(--fr-s6);
           max-height: 88vh;
           overflow-y: auto;
+          box-shadow: var(--fr-elev-3);
         }
 
-        .ot-modal-header {
+        @media (prefers-reduced-motion: no-preference) {
+          .fr-ot-modal { animation: fr-ot-rise var(--fr-dur-base) var(--fr-ease-settle); }
+        }
+
+        @keyframes fr-ot-rise {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fr-ot-modal-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 24px;
+          margin-bottom: var(--fr-s4);
         }
 
-        .ot-modal-title {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.3rem;
-          color: #1a1a1a;
+        .fr-ot-modal-title {
+          font-family: var(--fr-font-display);
+          font-size: 1.35rem;
+          color: var(--fr-text);
           margin: 0;
         }
 
-        .ot-close-btn {
+        .fr-ot-close-btn {
           background: none;
           border: none;
-          font-size: 1.8rem;
-          line-height: 1;
+          line-height: 0;
           cursor: pointer;
-          color: #999;
-          padding: 0;
+          color: var(--fr-text-2);
+          padding: var(--fr-s2);
+          border-radius: var(--fr-r-control);
+          transition: background var(--fr-dur-quick) var(--fr-ease-standard);
         }
 
-        .ot-progress-wrap {
-          margin-bottom: 32px;
+        .fr-ot-close-btn:hover { background: var(--fr-surface-2); }
+
+        .fr-ot-status-chip {
+          display: inline-block;
+          padding: var(--fr-s1) var(--fr-s3);
+          border-radius: var(--fr-r-pill);
+          font-family: var(--fr-font-sans);
+          font-size: 0.75rem;
+          font-weight: 700;
+          letter-spacing: 0.3px;
+          margin-bottom: var(--fr-s5);
         }
 
-        .ot-progress-track {
+        .fr-status--info { background: #E3EDF3; color: var(--fr-info); }
+        .fr-status--brand { background: var(--fr-brand-tint); color: var(--fr-brand); }
+        .fr-status--success { background: var(--fr-brand-tint); color: var(--fr-success); }
+        .fr-status--danger { background: var(--fr-warm-tint); color: var(--fr-danger); }
+
+        .fr-ot-progress-wrap { margin-bottom: var(--fr-s6); }
+
+        .fr-ot-progress-track {
           height: 4px;
-          background: #eee;
-          border-radius: 2px;
-          margin-bottom: 14px;
+          background: var(--fr-line);
+          border-radius: var(--fr-r-pill);
+          margin-bottom: var(--fr-s3);
           position: relative;
         }
 
-        .ot-progress-fill {
+        .fr-ot-progress-fill {
           position: absolute;
           inset: 0;
           height: 4px;
-          background: #4CAF50;
-          border-radius: 2px;
-          transition: width 0.5s ease;
+          background: var(--fr-brand);
+          border-radius: var(--fr-r-pill);
+          transition: width var(--fr-dur-expressive) var(--fr-ease-settle);
         }
 
-        .ot-steps {
+        @media (prefers-reduced-motion: reduce) {
+          .fr-ot-progress-fill { transition: none; }
+        }
+
+        .fr-ot-steps {
           display: flex;
           justify-content: space-between;
+          list-style: none;
+          margin: 0;
+          padding: 0;
         }
 
-        .ot-step {
+        .fr-ot-step {
           display: flex;
           flex-direction: column;
           align-items: center;
-          width: 20%;
+          width: 16.66%;
         }
 
-        .ot-dot {
-          width: 13px;
-          height: 13px;
+        .fr-ot-dot {
+          width: 12px;
+          height: 12px;
           border-radius: 50%;
-          background: #ddd;
-          margin-bottom: 6px;
-          transition: background 0.3s;
+          background: var(--fr-line-strong);
+          margin-bottom: var(--fr-s2);
+          transition: background var(--fr-dur-base) var(--fr-ease-standard);
         }
 
-        .ot-step.done .ot-dot {
-          background: #4CAF50;
-          box-shadow: 0 0 0 2px white, 0 0 0 3px #4CAF50;
+        .fr-ot-step.done .fr-ot-dot {
+          background: var(--fr-brand);
+          box-shadow: 0 0 0 2px var(--fr-surface), 0 0 0 3px var(--fr-brand);
         }
 
-        .ot-step-label {
-          font-size: 0.6rem;
-          color: #aaa;
+        .fr-ot-step-label {
+          font-family: var(--fr-font-sans);
+          font-size: 0.62rem;
+          color: var(--fr-text-3);
           text-align: center;
           line-height: 1.3;
         }
 
-        .ot-step.done .ot-step-label {
-          color: #2F4F4F;
+        .fr-ot-step.done .fr-ot-step-label {
+          color: var(--fr-text-2);
           font-weight: 600;
         }
 
-        .ot-items-box {
-          background: #fafafa;
-          border: 1px solid #f0f0f0;
-          border-radius: 12px;
-          padding: 16px;
-          margin-bottom: 16px;
+        .fr-ot-items-box {
+          background: var(--fr-surface-2);
+          border: 1px solid var(--fr-line);
+          border-radius: var(--fr-r-card);
+          padding: var(--fr-s4);
+          margin-bottom: var(--fr-s4);
         }
 
-        .ot-items-heading {
+        .fr-ot-items-heading {
+          font-family: var(--fr-font-sans);
           font-weight: 700;
-          font-size: 0.85rem;
-          color: #555;
-          margin: 0 0 10px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
+          font-size: 0.82rem;
+          color: var(--fr-text-2);
+          margin: 0 0 var(--fr-s3);
+          letter-spacing: 0.3px;
         }
 
-        .ot-item-row {
+        .fr-ot-item-row {
           display: flex;
           justify-content: space-between;
+          gap: var(--fr-s3);
+          font-family: var(--fr-font-sans);
           font-size: 0.88rem;
-          color: #444;
-          margin-bottom: 6px;
+          color: var(--fr-text);
+          margin-bottom: var(--fr-s2);
         }
 
-        .ot-total-row {
+        .fr-ot-total-row {
           display: flex;
           justify-content: space-between;
-          font-size: 0.92rem;
+          font-family: var(--fr-font-sans);
+          font-size: 0.95rem;
           font-weight: 700;
-          color: #1a1a1a;
-          border-top: 1px solid #eee;
-          padding-top: 10px;
-          margin-top: 6px;
+          color: var(--fr-text);
+          border-top: 1px solid var(--fr-line);
+          padding-top: var(--fr-s3);
+          margin-top: var(--fr-s2);
         }
 
-        .ot-help-link {
+        .fr-ot-help-link {
           display: block;
           width: 100%;
-          padding: 14px;
-          background: #25D366;
-          color: white;
-          border: none;
-          border-radius: 10px;
+          padding: var(--fr-s4);
+          background: var(--fr-brand);
+          color: var(--fr-on-brand);
+          border-radius: var(--fr-r-control);
+          font-family: var(--fr-font-sans);
           font-weight: 700;
           font-size: 0.95rem;
           text-align: center;
           text-decoration: none;
-          cursor: pointer;
-          transition: opacity 0.2s;
           box-sizing: border-box;
+          transition: background var(--fr-dur-quick) var(--fr-ease-standard);
         }
 
-        .ot-help-link:hover { opacity: 0.88; }
+        .fr-ot-help-link:hover { background: var(--fr-brand-press); }
 
         @media (max-width: 480px) {
-          .ot-bar { top: 68px; padding: 9px 14px; }
-          .ot-bar-text { font-size: 0.8rem; }
-          .ot-step-label { font-size: 0.55rem; }
+          .fr-ot-bar-text { font-size: 0.8rem; }
+          .fr-ot-step-label { font-size: 0.55rem; }
         }
       `}</style>
     </>
