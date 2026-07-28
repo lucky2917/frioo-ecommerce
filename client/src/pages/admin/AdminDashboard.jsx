@@ -2,16 +2,42 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { showToast } from '../../utils/toast';
+import { formatOrderAmount, getStatusPresentation } from '../../utils/orderStatus';
+import { AdminPage, MetricCard, AdminTable, StatusChip } from '../../components/admin/ui';
 
-const STATUS_COLORS = {
-    pending: '#ea580c',
-    confirmed: '#2563eb',
-    preparing: '#ca8a04',
-    ready: '#16a34a',
-    'out-for-delivery': '#9333ea',
-    delivered: '#65a30d',
-    cancelled: '#dc2626'
+const TONE_VARS = {
+    info: 'var(--fr-info)',
+    brand: 'var(--fr-brand)',
+    success: 'var(--fr-success)',
+    danger: 'var(--fr-danger)',
 };
+
+const statusColor = (status) => TONE_VARS[getStatusPresentation(status).tone] || TONE_VARS.info;
+
+const DeliveryIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Delivery"><circle cx="6.5" cy="17.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" /><path d="M4 17.5H2.5v-4l2-4h6l3 4h4.5a2 2 0 0 1 2 2v2H20M9 17.5h6" /></svg>
+);
+
+const PickupIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Pickup"><path d="M3 9l1-5h16l1 5M4 9v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M3 9h18" /></svg>
+);
+
+const QA_ITEMS = [
+    { to: '/admin/orders', label: 'Manage orders', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
+    { to: '/admin/products', label: 'Inventory', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+    { to: '/admin/users', label: 'Users', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
+    { to: '/admin/coupons', label: 'Coupons', icon: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z' },
+];
+
+const RECENT_COLUMNS = [
+    { key: 'id', label: 'ID' },
+    { key: 'customer', label: 'Customer' },
+    { key: 'type', label: 'Type' },
+    { key: 'amount', label: 'Amount' },
+    { key: 'status', label: 'Status' },
+];
+
+const STATUS_ORDER = ['pending', 'confirmed', 'preparing', 'ready', 'out-for-delivery', 'delivered', 'cancelled'];
 
 export default function AdminDashboard() {
     const [orders, setOrders] = useState([]);
@@ -66,7 +92,7 @@ export default function AdminDashboard() {
             return { label: day.toLocaleDateString('en-IN', { weekday: 'short' }), revenue: rev };
         });
 
-        const statusCounts = Object.keys(STATUS_COLORS).map(s => ({
+        const statusCounts = STATUS_ORDER.map(s => ({
             status: s,
             count: orders.filter(o => o.status === s).length
         })).filter(s => s.count > 0);
@@ -89,181 +115,113 @@ export default function AdminDashboard() {
         };
     }, [orders, products, users]);
 
-    if (loading) return <div className="db-loading">Loading dashboard...</div>;
+    const subtitle = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    if (loading) {
+        return (
+            <AdminPage title="Dashboard" subtitle={subtitle}
+                metrics={Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="adm-metric">
+                        <div className="adm-skel-line" style={{ width: '55%', height: 12, marginBottom: 14 }} />
+                        <div className="adm-skel-line" style={{ width: '70%', height: 22 }} />
+                    </div>
+                ))}
+            >
+                <AdminTable columns={RECENT_COLUMNS} isLoading skeletonRows={6} />
+            </AdminPage>
+        );
+    }
 
     const maxBar = Math.max(...stats.revenueByDay.map(d => d.revenue), 1);
 
     return (
-        <div className="dashboard">
-            <div className="db-header">
-                <div>
-                    <h1 className="db-title">Dashboard</h1>
-                    <p className="db-subtitle">
-                        {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                    </p>
-                </div>
-            </div>
-
-            <div className="kpi-grid">
-                <div className="kpi-card dark">
-                    <div className="kpi-top">
-                        <span className="kpi-label">Today's Revenue</span>
-                        <span className="kpi-icon-wrap dark-icon">₹</span>
+        <AdminPage
+            title="Dashboard"
+            subtitle={subtitle}
+            metrics={
+                <>
+                    <MetricCard tone="brand" label="Today's revenue" value={`₹${formatOrderAmount(stats.todayRevenue)}`} sub={`${stats.deliveredToday} delivered today`} />
+                    <MetricCard label="This week" value={`₹${formatOrderAmount(stats.weekRevenue)}`} sub="Last 7 days" />
+                    <MetricCard label="All-time revenue" value={`₹${formatOrderAmount(stats.totalRevenue)}`} sub={`${stats.totalOrders} total orders`} />
+                    <MetricCard tone="warm" label="Pending orders" value={stats.pendingOrders} sub={`${stats.activeOrders} active total`} />
+                    <MetricCard tone="info" label="Total users" value={stats.totalUsers} sub={`+${stats.newUsersThisWeek} this week`} />
+                    <MetricCard tone="success" label="Products" value={stats.totalProducts} sub={`${stats.featuredProducts} featured`} />
+                </>
+            }
+        >
+            <div className="db-charts">
+                <div className="adm-card">
+                    <div className="db-chart-head">
+                        <div className="db-chart-title">Revenue, last 7 days</div>
+                        <div className="db-chart-total">₹{formatOrderAmount(stats.weekRevenue)} this week</div>
                     </div>
-                    <div className="kpi-value">₹{stats.todayRevenue.toFixed(0)}</div>
-                    <div className="kpi-sub">{stats.deliveredToday} delivered today</div>
-                </div>
-                <div className="kpi-card">
-                    <div className="kpi-top">
-                        <span className="kpi-label">This Week</span>
-                    </div>
-                    <div className="kpi-value">₹{stats.weekRevenue.toFixed(0)}</div>
-                    <div className="kpi-sub">Last 7 days</div>
-                </div>
-                <div className="kpi-card">
-                    <div className="kpi-top">
-                        <span className="kpi-label">All-Time Revenue</span>
-                    </div>
-                    <div className="kpi-value">₹{stats.totalRevenue.toFixed(0)}</div>
-                    <div className="kpi-sub">{stats.totalOrders} total orders</div>
-                </div>
-                <div className="kpi-card accent-orange">
-                    <div className="kpi-top">
-                        <span className="kpi-label">Pending Orders</span>
-                    </div>
-                    <div className="kpi-value">{stats.pendingOrders}</div>
-                    <div className="kpi-sub">{stats.activeOrders} active total</div>
-                </div>
-                <div className="kpi-card accent-blue">
-                    <div className="kpi-top">
-                        <span className="kpi-label">Total Users</span>
-                    </div>
-                    <div className="kpi-value">{stats.totalUsers}</div>
-                    <div className="kpi-sub">+{stats.newUsersThisWeek} this week</div>
-                </div>
-                <div className="kpi-card accent-green">
-                    <div className="kpi-top">
-                        <span className="kpi-label">Products</span>
-                    </div>
-                    <div className="kpi-value">{stats.totalProducts}</div>
-                    <div className="kpi-sub">{stats.featuredProducts} featured</div>
-                </div>
-            </div>
-
-            <div className="charts-row">
-                <div className="chart-card">
-                    <div className="chart-header">
-                        <div className="chart-title">Revenue — Last 7 Days</div>
-                        <div className="chart-total">₹{stats.weekRevenue.toFixed(0)} this week</div>
-                    </div>
-                    <div className="bar-chart">
+                    <div className="db-bars">
                         {stats.revenueByDay.map((d, i) => (
-                            <div key={i} className="bar-col">
-                                <div className="bar-amount">{d.revenue > 0 ? `₹${d.revenue >= 1000 ? (d.revenue / 1000).toFixed(1) + 'k' : d.revenue.toFixed(0)}` : ''}</div>
-                                <div className="bar-track">
-                                    <div className="bar-fill" style={{ height: `${(d.revenue / maxBar) * 100}%` }} />
+                            <div key={i} className="db-bar-col">
+                                <div className="db-bar-amount">{d.revenue > 0 ? `₹${d.revenue >= 1000 ? (d.revenue / 1000).toFixed(1) + 'k' : formatOrderAmount(d.revenue)}` : ''}</div>
+                                <div className="db-bar-track">
+                                    <div className="db-bar-fill" style={{ height: `${(d.revenue / maxBar) * 100}%` }} />
                                 </div>
-                                <div className="bar-day">{d.label}</div>
+                                <div className="db-bar-day">{d.label}</div>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <div className="chart-card">
-                    <div className="chart-header">
-                        <div className="chart-title">Order Status Breakdown</div>
-                        <div className="chart-total">{stats.totalOrders} total</div>
+                <div className="adm-card">
+                    <div className="db-chart-head">
+                        <div className="db-chart-title">Order status</div>
+                        <div className="db-chart-total">{stats.totalOrders} total</div>
                     </div>
-                    <div className="status-bars">
+                    <div className="db-status-list">
                         {stats.statusCounts.map(({ status, count }) => (
-                            <div key={status} className="status-bar-row">
-                                <div className="status-bar-meta">
-                                    <span className="status-dot" style={{ background: STATUS_COLORS[status] }} />
-                                    <span className="status-name">{status.replace(/-/g, ' ')}</span>
-                                    <span className="status-count">{count}</span>
+                            <div key={status} className="db-status-row">
+                                <div className="db-status-meta">
+                                    <span className="db-status-dot" style={{ background: statusColor(status) }} />
+                                    <span className="db-status-name">{getStatusPresentation(status).label}</span>
+                                    <span className="db-status-count">{count}</span>
                                 </div>
-                                <div className="status-bar-track">
-                                    <div
-                                        className="status-bar-fill"
-                                        style={{
-                                            width: `${(count / stats.totalOrders) * 100}%`,
-                                            background: STATUS_COLORS[status]
-                                        }}
-                                    />
+                                <div className="db-status-track">
+                                    <div className="db-status-fill" style={{ width: `${(count / stats.totalOrders) * 100}%`, background: statusColor(status) }} />
                                 </div>
                             </div>
                         ))}
-                        {stats.statusCounts.length === 0 && (
-                            <div className="no-data">No orders yet</div>
-                        )}
+                        {stats.statusCounts.length === 0 && <div className="adm-table-empty">No orders yet</div>}
                     </div>
                 </div>
             </div>
 
-            <div className="bottom-row">
-                <div className="recent-card">
-                    <div className="section-header">
-                        <div className="section-title">Recent Orders</div>
-                        <Link to="/admin/orders" className="see-all">View all →</Link>
+            <div className="db-bottom">
+                <div className="db-recent">
+                    <div className="db-section-head">
+                        <div className="db-chart-title">Recent orders</div>
+                        <Link to="/admin/orders" className="db-see-all">View all</Link>
                     </div>
-                    {stats.recentOrders.length > 0 ? (
-                        <table className="recent-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Customer</th>
-                                    <th>Type</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {stats.recentOrders.map(order => (
-                                    <tr key={order.id}>
-                                        <td className="mono-cell">#{order.id}</td>
-                                        <td className="name-cell">{order.profiles?.full_name || 'Guest'}</td>
-                                        <td>{order.order_type === 'delivery' ? '🛵' : '🏪'}</td>
-                                        <td className="amount-cell">₹{Number(order.total_amount).toFixed(0)}</td>
-                                        <td>
-                                            <span
-                                                className="status-chip"
-                                                style={{
-                                                    background: STATUS_COLORS[order.status] + '20',
-                                                    color: STATUS_COLORS[order.status]
-                                                }}
-                                            >
-                                                {order.status.replace(/-/g, ' ')}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <div className="no-data">No orders yet</div>
-                    )}
+                    <AdminTable columns={RECENT_COLUMNS} isEmpty={stats.recentOrders.length === 0} emptyLabel="No orders yet">
+                        {stats.recentOrders.map(order => (
+                            <tr key={order.id}>
+                                <td className="adm-mono">#{order.id}</td>
+                                <td className="db-name-cell">{order.profiles?.full_name || 'Guest'}</td>
+                                <td>{order.order_type === 'delivery' ? <DeliveryIcon /> : <PickupIcon />}</td>
+                                <td style={{ fontWeight: 700 }}>₹{formatOrderAmount(order.total_amount)}</td>
+                                <td><StatusChip status={order.status} /></td>
+                            </tr>
+                        ))}
+                    </AdminTable>
                 </div>
 
-                <div className="quick-card">
-                    <div className="section-title" style={{ marginBottom: '20px' }}>Quick Actions</div>
-                    <div className="qa-list">
-                        {[
-                            { to: '/admin/orders', label: 'Manage Orders', sub: `${stats.pendingOrders} pending`, color: '#ea580c', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
-                            { to: '/admin/products', label: 'Inventory', sub: `${stats.totalProducts} products`, color: '#2563eb', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-                            { to: '/admin/users', label: 'Users', sub: `+${stats.newUsersThisWeek} this week`, color: '#9333ea', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
-                            { to: '/admin/coupons', label: 'Coupons', sub: 'Manage discounts', color: '#16a34a', icon: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z' }
-                        ].map(({ to, label, sub, color, icon }) => (
-                            <Link key={to} to={to} className="qa-item">
-                                <div className="qa-icon" style={{ background: color + '15', color }}>
+                <div className="adm-card db-quick">
+                    <div className="db-chart-title" style={{ marginBottom: 'var(--fr-s4)' }}>Quick actions</div>
+                    <div className="db-qa-list">
+                        {QA_ITEMS.map(({ to, label, icon }) => (
+                            <Link key={to} to={to} className="db-qa-item">
+                                <span className="db-qa-icon" aria-hidden="true">
                                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d={icon} />
                                     </svg>
-                                </div>
-                                <div>
-                                    <div className="qa-label">{label}</div>
-                                    <div className="qa-sub">{sub}</div>
-                                </div>
-                                <svg className="qa-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                </span>
+                                <span className="db-qa-label">{label}</span>
+                                <svg className="db-qa-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                                 </svg>
                             </Link>
@@ -273,408 +231,51 @@ export default function AdminDashboard() {
             </div>
 
             <style>{`
-                .dashboard {
-                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-                    padding-bottom: 60px;
-                }
+                .db-charts { display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--fr-s4); margin-bottom: var(--fr-s4); }
+                .db-chart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--fr-s5); }
+                .db-chart-title { font-size: 0.95rem; font-weight: 700; color: var(--adm-text); }
+                .db-chart-total { font-size: 0.8rem; color: var(--adm-text-2); font-weight: 500; }
 
-                .db-loading {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    min-height: 400px;
-                    color: #64748b;
-                    font-size: 1.1rem;
-                    font-family: 'Inter', sans-serif;
-                }
+                .db-bars { display: flex; align-items: flex-end; gap: var(--fr-s3); height: 160px; }
+                .db-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+                .db-bar-amount { font-size: 0.65rem; color: var(--adm-text-2); margin-bottom: var(--fr-s1); height: 16px; line-height: 16px; font-weight: 600; white-space: nowrap; }
+                .db-bar-track { flex: 1; width: 100%; background: var(--adm-surface-2); border-radius: var(--fr-r-control); display: flex; align-items: flex-end; overflow: hidden; }
+                .db-bar-fill { width: 100%; background: var(--fr-brand); border-radius: var(--fr-r-control) var(--fr-r-control) 0 0; transition: height var(--fr-dur-expressive) var(--fr-ease-settle); min-height: 2px; }
+                .db-bar-day { font-size: 0.7rem; color: var(--adm-text-3); margin-top: var(--fr-s1); font-weight: 500; }
 
-                .db-header { margin-bottom: 32px; }
+                .db-status-list { display: flex; flex-direction: column; gap: var(--fr-s3); }
+                .db-status-row { display: flex; flex-direction: column; gap: var(--fr-s1); }
+                .db-status-meta { display: flex; align-items: center; gap: var(--fr-s2); }
+                .db-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+                .db-status-name { font-size: 0.8rem; color: var(--adm-text); font-weight: 500; flex: 1; }
+                .db-status-count { font-size: 0.8rem; font-weight: 700; color: var(--adm-text); }
+                .db-status-track { height: 6px; background: var(--adm-surface-2); border-radius: var(--fr-r-pill); overflow: hidden; }
+                .db-status-fill { height: 100%; border-radius: var(--fr-r-pill); transition: width var(--fr-dur-expressive) var(--fr-ease-settle); min-width: 4px; }
 
-                .db-title {
-                    font-size: 1.875rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                    margin: 0 0 4px;
-                    letter-spacing: -0.025em;
-                }
+                .db-bottom { display: grid; grid-template-columns: 1.6fr 1fr; gap: var(--fr-s4); }
+                .db-section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--fr-s4); }
+                .db-see-all { font-size: 0.85rem; color: var(--fr-brand); text-decoration: none; font-weight: 600; }
+                .db-see-all:hover { color: var(--fr-brand-press); }
+                .db-name-cell { font-weight: 600; color: var(--adm-text); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-                .db-subtitle { color: #64748b; font-size: 0.9rem; margin: 0; }
+                .db-quick { align-self: start; }
+                .db-qa-list { display: flex; flex-direction: column; gap: var(--fr-s1); }
+                .db-qa-item { display: flex; align-items: center; gap: var(--fr-s3); padding: var(--fr-s3); border-radius: var(--fr-r-card); text-decoration: none; border: 1px solid transparent; transition: background var(--fr-dur-quick) var(--fr-ease-standard), border-color var(--fr-dur-quick) var(--fr-ease-standard); }
+                .db-qa-item:hover { background: var(--adm-surface-2); border-color: var(--adm-border); }
+                .db-qa-item:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+                .db-qa-icon { width: 38px; height: 38px; border-radius: var(--fr-r-card); background: var(--fr-brand-tint); color: var(--fr-brand); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+                .db-qa-icon svg { width: 20px; height: 20px; }
+                .db-qa-label { font-size: 0.9rem; font-weight: 600; color: var(--adm-text); flex: 1; }
+                .db-qa-arrow { width: 16px; height: 16px; color: var(--adm-text-3); flex-shrink: 0; }
 
-                .kpi-grid {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 16px;
-                    margin-bottom: 24px;
-                }
-
-                .kpi-card {
-                    background: white;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 14px;
-                    padding: 22px 24px;
-                    transition: all 0.2s;
-                }
-
-                .kpi-card:hover {
-                    border-color: #cbd5e1;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-                    transform: translateY(-1px);
-                }
-
-                .kpi-card.dark {
-                    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-                    border: none;
-                    box-shadow: 0 8px 24px rgba(15,23,42,0.25);
-                }
-
-                .kpi-card.dark .kpi-label,
-                .kpi-card.dark .kpi-value,
-                .kpi-card.dark .kpi-sub { color: white; }
-
-                .kpi-card.dark .kpi-sub { opacity: 0.6; }
-
-                .kpi-card.accent-orange { border-top: 3px solid #ea580c; }
-                .kpi-card.accent-orange .kpi-value { color: #ea580c; }
-                .kpi-card.accent-blue { border-top: 3px solid #2563eb; }
-                .kpi-card.accent-blue .kpi-value { color: #2563eb; }
-                .kpi-card.accent-green { border-top: 3px solid #16a34a; }
-                .kpi-card.accent-green .kpi-value { color: #16a34a; }
-
-                .kpi-top {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    margin-bottom: 12px;
-                }
-
-                .kpi-label {
-                    font-size: 0.75rem;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    letter-spacing: 0.05em;
-                    color: #64748b;
-                }
-
-                .kpi-icon-wrap {
-                    width: 32px;
-                    height: 32px;
-                    background: rgba(255,255,255,0.15);
-                    border-radius: 8px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 1.1rem;
-                    font-weight: 700;
-                    color: white;
-                }
-
-                .kpi-value {
-                    font-size: 2rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                    letter-spacing: -0.02em;
-                    margin-bottom: 6px;
-                }
-
-                .kpi-sub {
-                    font-size: 0.8rem;
-                    color: #94a3b8;
-                }
-
-                .charts-row {
-                    display: grid;
-                    grid-template-columns: 1.4fr 1fr;
-                    gap: 20px;
-                    margin-bottom: 24px;
-                }
-
-                .chart-card {
-                    background: white;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 14px;
-                    padding: 24px;
-                }
-
-                .chart-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 24px;
-                }
-
-                .chart-title {
-                    font-size: 0.95rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                }
-
-                .chart-total {
-                    font-size: 0.8rem;
-                    color: #64748b;
-                    font-weight: 500;
-                }
-
-                .bar-chart {
-                    display: flex;
-                    align-items: flex-end;
-                    gap: 10px;
-                    height: 160px;
-                }
-
-                .bar-col {
-                    flex: 1;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    height: 100%;
-                }
-
-                .bar-amount {
-                    font-size: 0.65rem;
-                    color: #64748b;
-                    margin-bottom: 4px;
-                    height: 16px;
-                    line-height: 16px;
-                    font-weight: 600;
-                    white-space: nowrap;
-                }
-
-                .bar-track {
-                    flex: 1;
-                    width: 100%;
-                    background: #f1f5f9;
-                    border-radius: 6px 6px 4px 4px;
-                    display: flex;
-                    align-items: flex-end;
-                    overflow: hidden;
-                }
-
-                .bar-fill {
-                    width: 100%;
-                    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-                    border-radius: 6px 6px 0 0;
-                    transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-                    min-height: 2px;
-                }
-
-                .bar-day {
-                    font-size: 0.7rem;
-                    color: #94a3b8;
-                    margin-top: 6px;
-                    font-weight: 500;
-                }
-
-                .status-bars {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 14px;
-                }
-
-                .status-bar-row { display: flex; flex-direction: column; gap: 6px; }
-
-                .status-bar-meta {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
-
-                .status-dot {
-                    width: 8px;
-                    height: 8px;
-                    border-radius: 50%;
-                    flex-shrink: 0;
-                }
-
-                .status-name {
-                    font-size: 0.8rem;
-                    color: #334155;
-                    font-weight: 500;
-                    flex: 1;
-                    text-transform: capitalize;
-                }
-
-                .status-count {
-                    font-size: 0.8rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                }
-
-                .status-bar-track {
-                    height: 6px;
-                    background: #f1f5f9;
-                    border-radius: 3px;
-                    overflow: hidden;
-                }
-
-                .status-bar-fill {
-                    height: 100%;
-                    border-radius: 3px;
-                    transition: width 0.6s ease;
-                    min-width: 4px;
-                }
-
-                .bottom-row {
-                    display: grid;
-                    grid-template-columns: 1.6fr 1fr;
-                    gap: 20px;
-                }
-
-                .recent-card, .quick-card {
-                    background: white;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 14px;
-                    padding: 24px;
-                }
-
-                .section-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 20px;
-                }
-
-                .section-title {
-                    font-size: 0.95rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                }
-
-                .see-all {
-                    font-size: 0.85rem;
-                    color: #3b82f6;
-                    text-decoration: none;
-                    font-weight: 600;
-                    transition: color 0.2s;
-                }
-
-                .see-all:hover { color: #2563eb; }
-
-                .recent-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-
-                .recent-table th {
-                    text-align: left;
-                    font-size: 0.7rem;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.05em;
-                    color: #94a3b8;
-                    padding: 0 12px 10px 0;
-                    border-bottom: 1px solid #f1f5f9;
-                }
-
-                .recent-table td {
-                    padding: 12px 12px 12px 0;
-                    border-bottom: 1px solid #f8fafc;
-                    font-size: 0.875rem;
-                }
-
-                .recent-table tbody tr:last-child td { border-bottom: none; }
-
-                .mono-cell {
-                    font-family: 'Monaco', 'Courier New', monospace;
-                    font-size: 0.8rem;
-                    color: #475569;
-                    font-weight: 600;
-                }
-
-                .name-cell {
-                    font-weight: 600;
-                    color: #0f172a;
-                    max-width: 120px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
-
-                .amount-cell { font-weight: 700; color: #0f172a; }
-
-                .status-chip {
-                    padding: 3px 9px;
-                    border-radius: 20px;
-                    font-size: 0.7rem;
-                    font-weight: 700;
-                    text-transform: capitalize;
-                    white-space: nowrap;
-                }
-
-                .no-data {
-                    text-align: center;
-                    padding: 40px 20px;
-                    color: #94a3b8;
-                    font-size: 0.9rem;
-                }
-
-                .qa-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 6px;
-                }
-
-                .qa-item {
-                    display: flex;
-                    align-items: center;
-                    gap: 14px;
-                    padding: 14px;
-                    border-radius: 10px;
-                    text-decoration: none;
-                    transition: all 0.2s;
-                    border: 1px solid transparent;
-                }
-
-                .qa-item:hover {
-                    background: #f8fafc;
-                    border-color: #e2e8f0;
-                }
-
-                .qa-icon {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 10px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    flex-shrink: 0;
-                }
-
-                .qa-icon svg { width: 20px; height: 20px; }
-
-                .qa-label {
-                    font-size: 0.9rem;
-                    font-weight: 600;
-                    color: #0f172a;
-                    margin-bottom: 2px;
-                }
-
-                .qa-sub { font-size: 0.75rem; color: #94a3b8; }
-
-                .qa-arrow {
-                    width: 16px;
-                    height: 16px;
-                    color: #cbd5e1;
-                    margin-left: auto;
-                    flex-shrink: 0;
+                @media (prefers-reduced-motion: reduce) {
+                    .db-bar-fill, .db-status-fill, .db-qa-item { transition: none; }
                 }
 
                 @media (max-width: 1200px) {
-                    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-                    .charts-row { grid-template-columns: 1fr; }
-                    .bottom-row { grid-template-columns: 1fr; }
-                }
-
-                @media (max-width: 768px) {
-                    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-                    .charts-row { grid-template-columns: 1fr; }
-                    .bottom-row { grid-template-columns: 1fr; }
-                    .kpi-value { font-size: 1.5rem; }
-                }
-
-                @media (max-width: 480px) {
-                    .kpi-grid { grid-template-columns: 1fr; }
+                    .db-charts, .db-bottom { grid-template-columns: 1fr; }
                 }
             `}</style>
-        </div>
+        </AdminPage>
     );
 }
