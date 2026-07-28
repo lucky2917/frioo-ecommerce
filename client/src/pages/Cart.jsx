@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import { useAuth } from '../context/AuthContext';
@@ -14,8 +14,6 @@ import {
   MAX_TAKEAWAY_RANGE_KM,
   MIN_CART_VALUE
 } from '../config/constants';
-import ScrollReveal from '../components/animations/ScrollReveal';
-import StaggerText from '../components/animations/StaggerText';
 import SEO from '../components/SEO';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -30,6 +28,10 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const distance = R * c;
   return distance;
 };
+
+const CloseIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+);
 
 export default function Cart() {
   const { cart, addToCart, removeFromCart, deleteFromCart, updateCartItem, clearCart, appliedCoupon, verifyCoupon, removeCoupon, availableCoupons } = useCart();
@@ -66,19 +68,74 @@ export default function Cart() {
   const navigate = useNavigate();
   const { user, profile, loading: authLoading } = useAuth();
 
-  if (authLoading) return <div className="cart-page"><Navbar /><div style={{ padding: '100px', textAlign: 'center' }}>Loading...</div></div>;
+  const pendingFocusRef = useRef(null);
+  const modalTriggerRef = useRef(null);
+  const prevModalOpenRef = useRef(false);
+  const couponInputRef = useRef(null);
+  const removeCouponRef = useRef(null);
+  const continueRef = useRef(null);
+  const emptyBtnRef = useRef(null);
+  const summaryRef = useRef(null);
+  const couponActionRef = useRef(null);
+
+  const anyModalOpen = !!editingItem || showCouponModal || warningModal.show;
+
+  useEffect(() => {
+    if (pendingFocusRef.current) {
+      const fn = pendingFocusRef.current;
+      pendingFocusRef.current = null;
+      fn();
+    }
+  });
+
+  useEffect(() => {
+    if (prevModalOpenRef.current && !anyModalOpen) {
+      const trigger = modalTriggerRef.current;
+      if (trigger && document.contains(trigger)) trigger.focus();
+      else summaryRef.current?.focus();
+    }
+    prevModalOpenRef.current = anyModalOpen;
+  }, [anyModalOpen]);
+
+  useEffect(() => {
+    if (couponActionRef.current === 'apply' && appliedCoupon) {
+      couponActionRef.current = null;
+      removeCouponRef.current?.focus();
+    } else if (couponActionRef.current === 'remove' && !appliedCoupon) {
+      couponActionRef.current = null;
+      couponInputRef.current?.focus();
+    }
+  }, [appliedCoupon]);
+
+  const focusAfterListChange = () => {
+    pendingFocusRef.current = () => (continueRef.current || emptyBtnRef.current || summaryRef.current)?.focus();
+  };
+  const handleDelete = (key) => { focusAfterListChange(); deleteFromCart(key); };
+  const handleDecrease = (item) => { if (item.qty <= 1) focusAfterListChange(); removeFromCart(item.originalKey); };
+  const handleRemoveCoupon = () => { couponActionRef.current = 'remove'; removeCoupon(); };
+  const openCouponModal = () => { modalTriggerRef.current = document.activeElement; setShowCouponModal(true); };
+
+  if (authLoading) return (
+    <div className="cart-page">
+      <Navbar />
+      <div className="cart-loading">Loading your bag&hellip;</div>
+      <style>{cartBaseStyles}</style>
+    </div>
+  );
 
   const amountToMin = Math.max(0, MIN_CART_VALUE - finalTotal);
   const isBelowMin = orderType === 'delivery' && finalTotal < MIN_CART_VALUE;
 
   const handleApplyCoupon = () => {
     if (!couponInput.trim()) return;
+    couponActionRef.current = 'apply';
     verifyCoupon(couponInput, subTotal);
     setCouponInput('');
     setShowCouponModal(false);
   };
 
   const handleEditClick = async (item) => {
+    modalTriggerRef.current = document.activeElement;
     setEditingItem(item);
     setEditLoading(true);
     setEditExclusions(item.preferences?.exclusions || []);
@@ -215,6 +272,7 @@ export default function Cart() {
   };
 
   const handlePreCheckout = async () => {
+    modalTriggerRef.current = document.activeElement;
     if (cartItems.length === 0) return;
 
     if (!user || !user.id) {
@@ -279,181 +337,165 @@ export default function Cart() {
     }
   };
 
+  const placeOrderLabel = isChecking ? 'Checking…' : isPlacingOrder ? 'Placing order…' : 'Place order';
+  const placeOrderDisabled = isBelowMin || isChecking || isPlacingOrder;
+
   return (
     <div className="cart-page">
-      <SEO title="Your Cart" description="Review your fresh picks and checkout." />
+      <SEO title="Your Cart" description="Review your fresh picks and place your order." />
       <Navbar />
-      <div className="cart-container">
 
-        <div className="cart-header-modern">
-          <StaggerText text={`Your Bag (${cartItems.length})`} className="cart-title-modern" />
-        </div>
+      <main className="cart-container">
+        <header className="cart-head">
+          <h1 className="cart-title">Your bag</h1>
+          {cartItems.length > 0 && <p className="cart-count">{cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}</p>}
+        </header>
 
         {cartItems.length === 0 ? (
-          <div className="empty-cart-state">
-            <h2>Your bag is currently empty.</h2>
-            <Link to="/shop" className="start-shopping-btn">Start Shopping</Link>
+          <div className="cart-empty">
+            <p className="cart-empty-title">Your bag is empty</p>
+            <p className="cart-empty-sub">When you add something fresh, it'll show up here.</p>
+            <Link to="/shop" className="cart-empty-btn" ref={emptyBtnRef}>Browse the shop</Link>
           </div>
         ) : (
-          <div className="cart-layout-split">
-            <div className="cart-items-section">
-              <div className="cart-table-header">
-                <span>Product</span>
-                <span>Quantity</span>
-                <span className="align-right">Total</span>
-              </div>
-
-              {cartItems.map((item, index) => {
+          <div className="cart-split">
+            <section className="cart-review" aria-label="Items in your bag">
+              {cartItems.map((item) => {
                 const itemKey = item.originalKey;
+                const prefs = item.preferences;
+                const hasPrefs = prefs && (prefs.exclusions?.length > 0 || prefs.removedIngredients?.length > 0 || prefs.note);
                 return (
-                  <ScrollReveal key={itemKey} delay={0.1 * index} direction="up" className="cart-row-reveal">
-                    <div className="cart-row">
-                      <div className="cart-row-img-wrapper">
-                        <img src={item.image} alt={item.title} className="cart-row-img" />
+                  <div className="fr-ci" key={itemKey}>
+                    <Link to={`/product/${item.id}`} className="fr-ci-media"><img src={item.image} alt={item.title} /></Link>
+                    <div className="fr-ci-main">
+                      <div className="fr-ci-top">
+                        <Link to={`/product/${item.id}`} className="fr-ci-title">{item.title}</Link>
+                        <span className="fr-ci-total">&#8377;{(item.price * item.qty).toFixed(0)}</span>
                       </div>
-
-                      <div className="cart-row-info">
-                        <h3 className="row-title">{item.title}</h3>
-                        <p className="row-variant">{item.variant}</p>
-
-                        {(item.preferences && (item.preferences.exclusions?.length > 0 || item.preferences.removedIngredients?.length > 0 || item.preferences.note)) && (
-                          <div className="row-prefs">
-                            {item.preferences.exclusions?.map(e => <span key={e} className="pref-mini red">No {e}</span>)}
-                            {item.preferences.removedIngredients?.map(r => <span key={r} className="pref-mini orange">No {r}</span>)}
-                            {item.preferences.note && <span className="pref-mini note">Note added</span>}
-                          </div>
-                        )}
-
-                        <div className="row-actions-group">
-                          <button
-                            onClick={(e) => { e.preventDefault(); handleEditClick(item); }}
-                            className="row-edit-link"
-                          >
-                            Edit
-                          </button>
-                          <span className="sep">•</span>
-                          <button
-                            onClick={(e) => { e.preventDefault(); deleteFromCart(itemKey); }}
-                            className="row-remove-link"
-                          >
-                            Remove
-                          </button>
+                      <p className="fr-ci-variant">{item.variant && item.variant !== 'Standard' ? `${item.variant} · ` : ''}&#8377;{item.price.toFixed(0)} each</p>
+                      {hasPrefs && (
+                        <div className="fr-ci-prefs">
+                          {prefs.exclusions?.map(e => <span key={e} className="fr-ci-chip">No {e}</span>)}
+                          {prefs.removedIngredients?.map(r => <span key={r} className="fr-ci-chip">No {r}</span>)}
+                          {prefs.note && <span className="fr-ci-chip">Note added</span>}
                         </div>
-                      </div>
-
-                      <div className="cart-row-qty">
-                        <div className="modern-qty-selector">
-                          <button onClick={(e) => { e.preventDefault(); removeFromCart(itemKey); }}>−</button>
-                          <span>{item.qty}</span>
+                      )}
+                      <div className="fr-ci-controls">
+                        <div className="fr-ci-qty">
+                          <button onClick={(e) => { e.preventDefault(); handleDecrease(item); }} aria-label="Decrease quantity">&minus;</button>
+                          <span aria-live="polite">{item.qty}</span>
                           <button onClick={(e) => {
                             e.preventDefault();
                             const productForCart = { id: item.id, title: item.title, images: [item.image] };
                             addToCart(productForCart, item.variant, item.price, item.preferences);
-                          }}>+</button>
+                          }} aria-label="Increase quantity">+</button>
+                        </div>
+                        <div className="fr-ci-actions">
+                          <button onClick={(e) => { e.preventDefault(); handleEditClick(item); }} className="fr-ci-link">Edit</button>
+                          <span className="fr-ci-sep">&middot;</span>
+                          <button onClick={(e) => { e.preventDefault(); handleDelete(itemKey); }} className="fr-ci-link fr-ci-remove">Remove</button>
                         </div>
                       </div>
-
-                      <div className="cart-row-price">
-                        <span className="row-total-price">₹{(item.price * item.qty).toFixed(0)}</span>
-                      </div>
                     </div>
-                  </ScrollReveal>
+                  </div>
                 );
               })}
 
-              <Link to="/shop" className="continue-shopping-clean">
-                <span className="arrow">←</span> Continue Shopping
-              </Link>
-            </div>
+              <Link to="/shop" className="cart-continue" ref={continueRef}>&larr; Continue shopping</Link>
+            </section>
 
-            <div className="cart-summary-section">
-              <div className="order-summary-card">
-                <h3 className="os-title">Order Summary</h3>
-                <div className="os-toggle">
-                  <button className={orderType === 'delivery' ? 'active' : ''} onClick={() => setOrderType('delivery')}>Delivery</button>
-                  <button className={orderType === 'takeaway' ? 'active' : ''} onClick={() => setOrderType('takeaway')}>Pickup</button>
+            <aside className="cart-checkout">
+              <div className="cart-summary" ref={summaryRef} tabIndex={-1}>
+                <h2 className="cart-summary-title">Order summary</h2>
+
+                <div className="cart-seg" role="group" aria-label="Order type">
+                  <button className={orderType === 'delivery' ? 'cart-seg-on' : ''} onClick={() => setOrderType('delivery')} aria-pressed={orderType === 'delivery'}>Delivery</button>
+                  <button className={orderType === 'takeaway' ? 'cart-seg-on' : ''} onClick={() => setOrderType('takeaway')} aria-pressed={orderType === 'takeaway'}>Pickup</button>
                 </div>
+
                 {orderType === 'delivery' && (
-                  <div className="delivery-address-wrapper">
-                    <label className="address-label">Delivering to</label>
+                  <div className="cart-address">
+                    <span className="cart-address-label">Delivering to</span>
                     {profile?.address ? (
-                      <div className="address-display">
-                        <span className="address-text">{profile.address}</span>
-                        <Link to="/profile" className="address-change-link">Change</Link>
+                      <div className="cart-address-row">
+                        <span className="cart-address-text">{profile.address}</span>
+                        <Link to="/profile" className="cart-address-link">Change</Link>
                       </div>
                     ) : (
-                      <Link to="/profile" className="address-missing-link">Set your delivery address in Profile</Link>
+                      <Link to="/profile" className="cart-address-link">Set your delivery address in Profile</Link>
                     )}
                   </div>
                 )}
 
-                <div className="os-rows">
-                  <div className="os-row"><span>Subtotal</span><span>₹{subTotal.toFixed(2)}</span></div>
-                  {appliedCoupon && <div className="os-row discount"><span>Discount ({appliedCoupon.code})</span><span>-₹{discountAmount.toFixed(2)}</span></div>}
-                  <div className="os-row grand-total"><span>Total</span><span>₹{finalTotal.toFixed(2)}</span></div>
+                <div className="cart-rows">
+                  <div className="cart-row"><span>Subtotal</span><span>&#8377;{subTotal.toFixed(0)}</span></div>
+                  {appliedCoupon && <div className="cart-row cart-row-discount"><span>Discount ({appliedCoupon.code})</span><span>&minus;&#8377;{discountAmount.toFixed(0)}</span></div>}
+                  {orderType === 'delivery' && <div className="cart-row"><span>Delivery</span><span className="cart-free">Free</span></div>}
+                  <div className="cart-row cart-row-total"><span>Total</span><span>&#8377;{finalTotal.toFixed(0)}</span></div>
                 </div>
 
-                {!appliedCoupon && (
-                  <div className="modern-coupon-input-wrapper">
-                    <div className="modern-coupon-input">
-                      <input type="text" placeholder="Gift card or discount code" value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} />
-                      <button onClick={handleApplyCoupon} disabled={!couponInput} className={couponInput ? 'active' : ''}>→</button>
+                {!appliedCoupon ? (
+                  <div className="cart-coupon">
+                    <div className="cart-coupon-input">
+                      <input ref={couponInputRef} type="text" placeholder="Discount code" aria-label="Discount code" value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} />
+                      <button onClick={handleApplyCoupon} disabled={!couponInput}>Apply</button>
                     </div>
                     {availableCoupons && availableCoupons.length > 0 && (
-                      <button onClick={() => setShowCouponModal(true)} className="view-offers-link">View Available Offers</button>
+                      <button onClick={openCouponModal} className="cart-offers-link">View available offers</button>
                     )}
                   </div>
+                ) : (
+                  <button ref={removeCouponRef} onClick={handleRemoveCoupon} className="cart-offers-link">Remove coupon</button>
                 )}
-                {appliedCoupon && <button onClick={removeCoupon} className="remove-coupon-link">Remove Coupon</button>}
 
-                <button className={`checkout-btn-modern ${isBelowMin || isChecking || isPlacingOrder ? 'disabled' : ''}`} onClick={handlePreCheckout} disabled={isBelowMin || isChecking || isPlacingOrder}>
-                  {isChecking ? 'Checking...' : isPlacingOrder ? 'Processing...' : 'Checkout'}
-                </button>
-                {isBelowMin && <p className="os-warning">Add ₹{amountToMin.toFixed(0)} more for delivery.</p>}
-                <p className="secure-badge">Secure Checkout</p>
+                {isBelowMin && <p className="cart-nudge">Add &#8377;{amountToMin.toFixed(0)} more to place a delivery order.</p>}
+
+                <button className="cart-place fr-only-desktop" onClick={handlePreCheckout} disabled={placeOrderDisabled}>{placeOrderLabel}</button>
+
+                <p className="cart-next">You'll receive an order confirmation. Live tracking begins once your order is accepted.</p>
               </div>
-            </div>
+            </aside>
           </div>
         )}
-      </div>
+      </main>
+
+      {cartItems.length > 0 && (
+        <div className="cart-mobilebar fr-only-mobile">
+          <div className="cart-mobilebar-info"><span>Total</span><strong>&#8377;{finalTotal.toFixed(0)}</strong></div>
+          <button className="cart-mobilebar-btn" onClick={handlePreCheckout} disabled={placeOrderDisabled}>{placeOrderLabel}</button>
+        </div>
+      )}
 
       {warningModal.show && (
-        <div className="modal-overlay" onClick={() => setWarningModal({ show: false, distance: 0, lat: null, lng: null })}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h3>Confirm Pickup</h3>
-            <p>You are <strong>{warningModal.distance.toFixed(1)}km</strong> away. Are you sure you want to pick up?</p>
-            <div className="modal-actions">
-              <button onClick={() => setWarningModal({ show: false, distance: 0, lat: null, lng: null })} className="cancel-btn">Cancel</button>
-              <button onClick={() => placeOrderInDB(warningModal.distance, warningModal.lat, warningModal.lng)} className="confirm-btn">Confirm Order</button>
+        <div className="cart-modal-scrim" onClick={() => setWarningModal({ show: false, distance: 0, lat: null, lng: null })}>
+          <div className="cart-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Confirm pickup">
+            <div className="cart-modal-head"><h3>Confirm pickup</h3><button autoFocus onClick={() => setWarningModal({ show: false, distance: 0, lat: null, lng: null })} className="cart-modal-close" aria-label="Close"><CloseIcon /></button></div>
+            <div className="cart-modal-body"><p>You're <strong>{warningModal.distance.toFixed(1)} km</strong> away. Are you sure you'd like to pick up?</p></div>
+            <div className="cart-modal-foot">
+              <button onClick={() => setWarningModal({ show: false, distance: 0, lat: null, lng: null })} className="cart-modal-secondary">Cancel</button>
+              <button onClick={() => placeOrderInDB(warningModal.distance, warningModal.lat, warningModal.lng)} className="cart-modal-primary">Confirm order</button>
             </div>
           </div>
         </div>
       )}
 
       {showCouponModal && (
-        <div className="modal-overlay" onClick={() => setShowCouponModal(false)}>
-          <div className="modal-content coupon-modal" onClick={e => e.stopPropagation()}>
-            <div className="cm-header">
-              <h3>Available Offers</h3>
-              <button onClick={() => setShowCouponModal(false)} className="cm-close">✕</button>
-            </div>
-            <div className="cm-list">
+        <div className="cart-modal-scrim" onClick={() => setShowCouponModal(false)}>
+          <div className="cart-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Available offers">
+            <div className="cart-modal-head"><h3>Available offers</h3><button autoFocus onClick={() => setShowCouponModal(false)} className="cart-modal-close" aria-label="Close"><CloseIcon /></button></div>
+            <div className="cart-modal-body cart-offers">
               {availableCoupons.map(coupon => {
                 const needed = coupon.min_order_value - subTotal;
                 const isEligible = needed <= 0;
                 return (
-                  <div key={coupon.id} className={`cm-card ${isEligible ? 'eligible' : ''}`}>
-                    <div className="cm-card-left">
-                      <div className="cm-code">{coupon.code}</div>
-                      <div className="cm-desc">
-                        {coupon.discount_type === 'percentage' ? `${coupon.value}% OFF` : `₹${coupon.value} OFF`}<span className="cm-min"> (Min ₹{coupon.min_order_value})</span>
-                      </div>
+                  <div key={coupon.id} className="cart-offer">
+                    <div>
+                      <div className="cart-offer-code">{coupon.code}</div>
+                      <div className="cart-offer-desc">{coupon.discount_type === 'percentage' ? `${coupon.value}% off` : `₹${coupon.value} off`}<span> · min ₹{coupon.min_order_value}</span></div>
                     </div>
-                    {isEligible ? (
-                      <button className="cm-apply-btn" onClick={() => { verifyCoupon(coupon.code, subTotal); setShowCouponModal(false); }}>APPLY</button>
-                    ) : (
-                      <span className="cm-locked">Add ₹{needed.toFixed(0)}</span>
-                    )}
+                    {isEligible
+                      ? <button className="cart-offer-apply" onClick={() => { couponActionRef.current = 'apply'; verifyCoupon(coupon.code, subTotal); setShowCouponModal(false); }}>Apply</button>
+                      : <span className="cart-offer-locked">Add &#8377;{needed.toFixed(0)}</span>}
                   </div>
                 );
               })}
@@ -463,226 +505,193 @@ export default function Cart() {
       )}
 
       {editingItem && (
-        <div className="modal-overlay" onClick={() => setEditingItem(null)}>
-          <div className="modal-content edit-modal" onClick={e => e.stopPropagation()}>
-            <div className="cm-header">
-              <h3>Edit {editingItem.title}</h3>
-              <button onClick={() => setEditingItem(null)} className="cm-close">✕</button>
-            </div>
-            <div className="em-body">
-              {editLoading ? <p>Loading options...</p> : (
-                editProduct ? (
-                  <>
-                    {editProduct.nutrition?.ingredients?.length > 0 && (
-                      <div className="em-section">
-                        <label>Customize Ingredients</label>
-                        <div className="pd-pill-row">
-                          {editProduct.nutrition.ingredients.map(ing => (
-                            <button
-                              key={ing}
-                              className={`pd-pill glass-red ${editRemovedIngredients.includes(ing) ? 'active' : ''}`}
-                              onClick={() => toggleEditIngredient(ing)}
-                            >
-                              {editRemovedIngredients.includes(ing) ? '✕ No ' : ''}{ing}
-                            </button>
-                          ))}
-                        </div>
+        <div className="cart-modal-scrim" onClick={() => setEditingItem(null)}>
+          <div className="cart-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Edit ${editingItem.title}`}>
+            <div className="cart-modal-head"><h3>Edit {editingItem.title}</h3><button autoFocus onClick={() => setEditingItem(null)} className="cart-modal-close" aria-label="Close"><CloseIcon /></button></div>
+            <div className="cart-modal-body">
+              {editLoading ? <p className="cart-modal-muted">Loading options&hellip;</p> : editProduct ? (
+                <div className="cart-edit">
+                  {editProduct.nutrition?.ingredients?.length > 0 && (
+                    <div className="cart-edit-group">
+                      <span className="cart-edit-label">Customize ingredients</span>
+                      <div className="cart-edit-pills">
+                        {editProduct.nutrition.ingredients.map(ing => (
+                          <button key={ing} className={`cart-pill${editRemovedIngredients.includes(ing) ? ' cart-pill-on' : ''}`} onClick={() => toggleEditIngredient(ing)} aria-pressed={editRemovedIngredients.includes(ing)}>No {ing}</button>
+                        ))}
                       </div>
-                    )}
-
-                    {editProduct.nutrition?.exclusions?.length > 0 && (
-                      <div className="em-section">
-                        <label>Allergies & Exclusions</label>
-                        <div className="pd-pill-row">
-                          {editProduct.nutrition.exclusions.map(ex => (
-                            <button
-                              key={ex}
-                              className={`pd-pill ${editExclusions.includes(ex) ? 'active' : ''}`}
-                              onClick={() => toggleEditExclusion(ex)}
-                            >
-                              {editExclusions.includes(ex) ? '✓ No ' : ''}{ex}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="em-section">
-                      <label>Special Instructions</label>
-                      <textarea
-                        className="em-note-input"
-                        placeholder="Add a note... (e.g. Extra spicy)"
-                        value={editNote}
-                        onChange={e => setEditNote(e.target.value)}
-                        rows={3}
-                      />
                     </div>
-                  </>
-                ) : (
-                  <p>Product details unavailable.</p>
-                )
-              )}
+                  )}
+                  {editProduct.nutrition?.exclusions?.length > 0 && (
+                    <div className="cart-edit-group">
+                      <span className="cart-edit-label">Allergies &amp; exclusions</span>
+                      <div className="cart-edit-pills">
+                        {editProduct.nutrition.exclusions.map(ex => (
+                          <button key={ex} className={`cart-pill${editExclusions.includes(ex) ? ' cart-pill-on' : ''}`} onClick={() => toggleEditExclusion(ex)} aria-pressed={editExclusions.includes(ex)}>{editExclusions.includes(ex) ? 'No ' : ''}{ex}</button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="cart-edit-group">
+                    <span className="cart-edit-label">Special instructions</span>
+                    <textarea className="cart-edit-note" placeholder="Add a note, e.g. extra ripe" value={editNote} onChange={e => setEditNote(e.target.value)} rows={3} />
+                  </div>
+                </div>
+              ) : <p className="cart-modal-muted">Product details unavailable.</p>}
             </div>
-            <div className="em-footer">
-              <button onClick={() => setEditingItem(null)} className="cancel-btn">Cancel</button>
-              <button onClick={handleSaveEdit} className="confirm-btn">Save Changes</button>
+            <div className="cart-modal-foot">
+              <button onClick={() => setEditingItem(null)} className="cart-modal-secondary">Cancel</button>
+              <button onClick={handleSaveEdit} className="cart-modal-primary">Save changes</button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="mobile-bar-modern">
-        <div className="mb-info"><span>Total</span><strong>₹{finalTotal.toFixed(0)}</strong></div>
-        <button className="mb-btn" onClick={handlePreCheckout} disabled={isBelowMin || isChecking || isPlacingOrder}>Checkout</button>
-      </div>
-
-      <style>{`
-        .cart-page { background-color: #ffffff; min-height: 100vh; color: #1a1a1a; font-family: 'Manrope', sans-serif; padding-bottom: 80px; }
-        .cart-container { max-width: 1200px; margin: 0 auto; padding: 140px 40px 80px; }
-        .cart-header-modern { margin-bottom: 60px; border-bottom: 1px solid #eee; padding-bottom: 20px; }
-        .cart-title-modern { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: #111; font-weight: 500; }
-        .empty-cart-state { text-align: center; padding: 100px 0; }
-        .empty-cart-state h2 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 30px; color: #333; }
-        .start-shopping-btn { background: #111; color: white; padding: 15px 40px; text-decoration: none; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; transition: background 0.3s; }
-        .start-shopping-btn:hover { background: #333; }
-        .cart-layout-split { display: grid; grid-template-columns: 2fr 1fr; gap: 80px; }
-        .cart-table-header { display: grid; grid-template-columns: 3fr 1fr 1fr; padding-bottom: 15px; border-bottom: 1px solid #eee; margin-bottom: 30px; color: #888; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-        .align-right { text-align: right; }
-        .cart-row {
-          display: grid;
-          grid-template-columns: 80px 1fr auto auto;
-          gap: 20px;
-          align-items: center;
-          background: white;
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-          will-change: transform;
-          transform: translateZ(0);
-        }
-        .cart-row:hover {
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-          transform: translateY(-2px);
-        }
-        .cart-row-img-wrapper {
-          width: 80px;
-          height: 80px;
-          border-radius: 8px;
-          overflow: hidden;
-          flex-shrink: 0;
-        }
-        .cart-row-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .cart-row-info { display: flex; flex-direction: column; gap: 6px; }
-        .row-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin: 0; color: #111; }
-        .row-variant { color: #666; font-size: 0.9rem; margin: 0; }
-
-        .row-actions-group { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
-        .sep { color: #ccc; font-size: 0.8rem; }
-        .row-remove-link, .row-edit-link { background: none; border: none; padding: 0; color: #999; font-size: 0.8rem; text-decoration: underline; cursor: pointer; transition: color 0.2s; }
-        .row-remove-link:hover { color: #d32f2f; }
-        .row-edit-link:hover { color: #111; }
-
-        .row-prefs { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
-        .pref-mini { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: #eee; color: #555; }
-        .pref-mini.red { background: #ffebee; color: #c62828; }
-        .pref-mini.orange { background: #fff3e0; color: #ef6c00; }
-        .modern-qty-selector { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; width: fit-content; }
-        .modern-qty-selector button { background: none; border: none; padding: 8px 12px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #333; transition: background 0.1s; }
-        .modern-qty-selector button:hover { background: #f5f5f5; }
-        .modern-qty-selector span { padding: 0 10px; font-weight: 600; font-size: 0.95rem; min-width: 20px; text-align: center; }
-        .cart-row-price { text-align: right; }
-        .row-total-price { font-weight: 600; font-size: 1.1rem; color: #111; }
-        .continue-shopping-clean { display: inline-block; margin-top: 40px; color: #111; text-decoration: none; font-weight: 600; font-size: 0.9rem; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
-        .continue-shopping-clean:hover { border-bottom-color: #111; }
-        .arrow { margin-right: 8px; }
-        .cart-summary-section { position: relative; }
-        .order-summary-card { background: #ffffff; padding: 40px; border: 1px solid #f0f0f0; border-radius: 4px; position: sticky; top: 100px; }
-        .os-title { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 25px; border-bottom: 1px solid #111; padding-bottom: 15px; }
-        .os-toggle { display: flex; border: 1px solid #eee; border-radius: 4px; margin-bottom: 30px; overflow: hidden; }
-        .os-toggle button { flex: 1; padding: 12px; border: none; background: white; color: #666; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
-        .os-toggle button.active { background: #f5f5f5; color: #111; }
-        .os-rows { margin-bottom: 30px; }
-        .os-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.95rem; color: #555; }
-        .os-row.grand-total { border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px; font-size: 1.2rem; color: #111; font-weight: 700; font-family: 'Playfair Display', serif; }
-        .os-row.discount { color: #2e7d32; }
-        .modern-coupon-input-wrapper { margin-bottom: 20px; }
-        .modern-coupon-input { display: flex; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
-        .modern-coupon-input input { flex: 1; padding: 12px; border: none; font-family: 'Manrope'; outline: none; font-size: 0.9rem; }
-        .modern-coupon-input button { padding: 0 15px; background: #f9f9f9; border: none; color: #ccc; cursor: default; transition: all 0.2s; }
-        .modern-coupon-input button.active { background: #111; color: white; cursor: pointer; }
-        .view-offers-link { background: none; border: none; padding: 0; color: #15803d; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 5px; }
-        .view-offers-link:hover { text-decoration: underline; }
-        .remove-coupon-link { background: none; border: none; padding: 0; color: #d32f2f; text-decoration: underline; font-size: 0.85rem; cursor: pointer; display: block; margin-bottom: 20px; }
-        .checkout-btn-modern { width: 100%; background: #3E2723; color: white; padding: 18px; border: none; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; cursor: pointer; transition: background 0.3s; margin-bottom: 15px; }
-        .checkout-btn-modern:hover:not(.disabled) { background: #2a1a17; }
-        .checkout-btn-modern.disabled { background: #ccc; cursor: not-allowed; }
-        .os-warning { font-size: 0.8rem; color: #d32f2f; text-align: center; margin-bottom: 10px; }
-        .coupons-hint { font-size: 0.8rem; color: #888; margin-bottom: 20px; font-style: italic; }
-        .secure-badge { text-align: center; font-size: 0.8rem; color: #999; }
-        .delivery-address-wrapper { margin-bottom: 20px; }
-        .address-label { display: block; font-size: 0.75rem; font-weight: 700; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.6px; }
-        .address-display { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; background: #f9f9f9; border: 1px solid #eee; border-radius: 4px; padding: 10px 12px; }
-        .address-text { font-size: 0.9rem; color: #333; line-height: 1.5; flex: 1; }
-        .address-change-link { font-size: 0.8rem; font-weight: 600; color: #3E2723; text-decoration: underline; white-space: nowrap; flex-shrink: 0; }
-        .address-missing-link { display: block; font-size: 0.85rem; font-weight: 600; color: #c0392b; text-decoration: underline; padding: 8px 0; }
-        .mobile-bar-modern { display: none; }
-        .coupon-modal { max-width: 450px; width: 90%; padding: 0; overflow: hidden; border-radius: 12px; }
-        .cm-header { padding: 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; background: #fff; }
-        .cm-header h3 { margin: 0; font-family: 'Playfair Display'; font-size: 1.4rem; }
-        .cm-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #888; }
-        .cm-list { padding: 20px; max-height: 60vh; overflow-y: auto; background: #fafafa; display: flex; flex-direction: column; gap: 15px; }
-        .cm-card { background: white; padding: 15px; border-radius: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .cm-card.eligible { border-left: 4px solid #15803d; border-color: #dcfce7; }
-        .cm-code { font-weight: 800; font-size: 1rem; color: #333; letter-spacing: 1px; }
-        .cm-desc { font-size: 0.85rem; color: #666; margin-top: 4px; }
-        .cm-min { font-size: 0.75rem; color: #999; }
-        .cm-apply-btn { background: #111; color: white; border: none; padding: 8px 16px; font-size: 0.75rem; font-weight: 700; cursor: pointer; border-radius: 4px; }
-        .cm-locked { font-size: 0.75rem; color: #999; font-weight: 600; background: #eee; padding: 5px 10px; border-radius: 4px; }
-
-        .edit-modal { max-width: 500px; width: 90%; padding: 0; overflow: hidden; border-radius: 12px; }
-        .em-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
-        .em-section { margin-bottom: 25px; }
-        .em-section label { display: block; font-weight: 600; margin-bottom: 10px; color: #333; font-size: 0.95rem; }
-        .em-footer { padding: 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; background: #f9f9f9; }
-
-        .pd-pill-row { display: flex; flex-wrap: wrap; gap: 10px; }
-        .pd-pill { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 50px; font-size: 0.85rem; color: #555; cursor: pointer; transition: all 0.2s; }
-        .pd-pill:hover { border-color: #C5A065; }
-        .pd-pill.active { border-color: #C5A065; background: #C5A065; color: white; }
-        .pd-pill.glass-red:hover { border-color: #e57373; }
-        .pd-pill.glass-red.active { border-color: #e57373; background: #e57373; color: white; }
-
-        .em-note-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Manrope'; resize: vertical; box-sizing: border-box;}
-
-        .confirm-btn { background: #3E2723; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        .cancel-btn { background: #eee; color: #333; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
-        .modal-content { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
-        .modal-actions { margin-top: 25px; display: flex; gap: 15px; justify-content: center; }
-
-        @media (max-width: 968px) {
-            .cart-container { padding: 100px 20px 80px; }
-            .cart-layout-split { grid-template-columns: 1fr; gap: 40px; }
-            .cart-table-header { display: none; }
-            .cart-row { grid-template-columns: 80px 1fr; grid-template-rows: auto auto; gap: 15px; align-items: start; display: flex; flex-wrap: wrap; justify-content: space-between; }
-            .cart-row-img-wrapper { width: 80px; height: 80px; margin-right: 15px; }
-            .cart-row-info { flex: 1; min-width: 150px; }
-            .cart-row-qty { margin-top: 15px; width: auto; }
-            .cart-row-price { width: 100%; text-align: right; margin-top: -30px; }
-            .cart-summary-section { margin-top: 20px; }
-            .checkout-btn-modern { display: none; }
-            .mobile-bar-modern { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
-            .mb-info span { display: block; font-size: 0.8rem; color: #888; }
-            .mb-info strong { font-size: 1.2rem; }
-            .mb-btn { background: #3E2723; color: white; border: none; padding: 12px 30px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-        }
-      `}</style>
+      <style>{cartBaseStyles}</style>
     </div>
   );
 }
+
+const cartBaseStyles = `
+  .cart-page { background: var(--fr-canvas); min-height: 100vh; padding-top: var(--navbar-height-mobile); }
+  @media (min-width: 901px) { .cart-page { padding-top: var(--navbar-height-desktop); } }
+  .cart-loading { text-align: center; padding: var(--fr-s10); color: var(--fr-text-2); font-family: var(--fr-font-sans); }
+  .cart-container { max-width: 1160px; margin: 0 auto; padding: var(--fr-s7) var(--fr-s7) var(--fr-s10); }
+
+  .cart-head { margin-bottom: var(--fr-s6); }
+  .cart-title { font-family: var(--fr-font-display); font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 700; letter-spacing: -0.015em; color: var(--fr-text); margin: 0 0 var(--fr-s1); }
+  .cart-count { font-size: 0.95rem; color: var(--fr-text-2); margin: 0; }
+
+  .cart-empty { text-align: center; padding: var(--fr-s10) var(--fr-s5); display: flex; flex-direction: column; align-items: center; gap: var(--fr-s2); }
+  .cart-empty-title { font-family: var(--fr-font-display); font-size: 1.5rem; font-weight: 700; color: var(--fr-text); margin: 0; }
+  .cart-empty-sub { color: var(--fr-text-2); margin: 0 0 var(--fr-s4); }
+  .cart-empty-btn { display: inline-flex; align-items: center; height: 48px; padding: 0 var(--fr-s6); background: var(--fr-brand); color: var(--fr-on-brand); border-radius: var(--fr-r-control); font-size: 0.95rem; font-weight: 600; text-decoration: none; }
+  .cart-empty-btn:hover { background: var(--fr-brand-press); }
+  .cart-empty-btn:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+
+  .cart-split { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--fr-s8); align-items: start; }
+
+  .cart-review { display: flex; flex-direction: column; }
+  .fr-ci { display: flex; gap: var(--fr-s4); padding: var(--fr-s5) 0; border-bottom: 1px solid var(--fr-line); }
+  .fr-ci-media { flex-shrink: 0; width: 96px; height: 120px; border-radius: var(--fr-r-card); overflow: hidden; background: var(--fr-surface-2); }
+  .fr-ci-media img { width: 100%; height: 100%; object-fit: cover; }
+  .fr-ci-media:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+  .fr-ci-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--fr-s2); }
+  .fr-ci-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--fr-s3); }
+  .fr-ci-title { font-family: var(--fr-font-sans); font-size: 1rem; font-weight: 600; color: var(--fr-text); text-decoration: none; }
+  .fr-ci-title:hover { color: var(--fr-brand); }
+  .fr-ci-title:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
+  .fr-ci-total { font-size: 1rem; font-weight: 700; color: var(--fr-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .fr-ci-variant { font-size: 0.85rem; color: var(--fr-text-2); margin: 0; }
+  .fr-ci-prefs { display: flex; flex-wrap: wrap; gap: var(--fr-s2); }
+  .fr-ci-chip { font-size: 0.74rem; color: var(--fr-text-2); background: var(--fr-surface-2); border-radius: var(--fr-r-pill); padding: 3px 9px; }
+  .fr-ci-controls { display: flex; align-items: center; justify-content: space-between; gap: var(--fr-s3); margin-top: var(--fr-s1); }
+  .fr-ci-qty { display: inline-flex; align-items: center; border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); overflow: hidden; }
+  .fr-ci-qty button { width: 44px; height: 44px; background: var(--fr-surface); border: none; font-size: 1.1rem; color: var(--fr-text); cursor: pointer; }
+  .fr-ci-qty button:hover { background: var(--fr-surface-2); }
+  .fr-ci-qty button:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: -2px; }
+  .fr-ci-qty span { min-width: 36px; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .fr-ci-actions { display: flex; align-items: center; gap: var(--fr-s2); }
+  .fr-ci-link { background: none; border: none; font-family: var(--fr-font-sans); font-size: 0.85rem; font-weight: 600; color: var(--fr-text-2); cursor: pointer; padding: var(--fr-s1); }
+  .fr-ci-link:hover { color: var(--fr-brand); }
+  .fr-ci-remove:hover { color: var(--fr-danger); }
+  .fr-ci-link:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
+  .fr-ci-sep { color: var(--fr-line-strong); }
+  .cart-continue { display: inline-block; margin-top: var(--fr-s5); font-size: 0.9rem; font-weight: 600; color: var(--fr-brand); text-decoration: none; }
+  .cart-continue:hover { color: var(--fr-brand-press); }
+  .cart-continue:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
+
+  .cart-checkout { position: sticky; top: calc(var(--navbar-height-desktop) + var(--fr-s5)); }
+  .cart-summary { background: var(--fr-surface); border: 1px solid var(--fr-line); border-radius: var(--fr-r-surface); box-shadow: var(--fr-elev-1); padding: var(--fr-s5); }
+  .cart-summary-title { font-family: var(--fr-font-display); font-size: 1.25rem; font-weight: 700; color: var(--fr-text); margin: 0 0 var(--fr-s4); }
+  .cart-seg { display: flex; gap: 4px; background: var(--fr-surface-2); border-radius: var(--fr-r-control); padding: 4px; margin-bottom: var(--fr-s4); }
+  .cart-seg button { flex: 1; min-height: 44px; background: none; border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.88rem; font-weight: 600; color: var(--fr-text-2); cursor: pointer; }
+  .cart-seg-on { background: var(--fr-surface) !important; color: var(--fr-text) !important; box-shadow: var(--fr-elev-1); }
+  .cart-seg button:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: -2px; }
+  .cart-address { margin-bottom: var(--fr-s4); display: flex; flex-direction: column; gap: var(--fr-s2); }
+  .cart-address-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--fr-text-3); }
+  .cart-address-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--fr-s3); }
+  .cart-address-text { font-size: 0.9rem; color: var(--fr-text); line-height: 1.5; }
+  .cart-address-link { font-size: 0.85rem; font-weight: 600; color: var(--fr-brand); text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+  .cart-address-link:hover { color: var(--fr-brand-press); }
+  .cart-address-link:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
+  .cart-rows { display: flex; flex-direction: column; gap: var(--fr-s3); padding: var(--fr-s4) 0; border-top: 1px solid var(--fr-line); }
+  .cart-row { display: flex; align-items: baseline; justify-content: space-between; font-size: 0.92rem; color: var(--fr-text-2); font-variant-numeric: tabular-nums; }
+  .cart-row span:last-child { color: var(--fr-text); font-weight: 500; }
+  .cart-row-discount span:last-child { color: var(--fr-brand); }
+  .cart-free { color: var(--fr-brand) !important; font-weight: 600 !important; }
+  .cart-row-total { padding-top: var(--fr-s3); border-top: 1px solid var(--fr-line); }
+  .cart-row-total span { font-size: 1.15rem; font-weight: 700; color: var(--fr-text) !important; }
+  .cart-coupon { margin: var(--fr-s2) 0 var(--fr-s4); }
+  .cart-coupon-input { display: flex; gap: var(--fr-s2); }
+  .cart-coupon-input input { flex: 1; min-width: 0; height: 44px; padding: 0 var(--fr-s3); background: var(--fr-surface-2); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.88rem; color: var(--fr-text); outline: none; }
+  .cart-coupon-input input:focus { border-color: var(--fr-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fr-brand) 16%, transparent); background: var(--fr-surface); }
+  .cart-coupon-input button { flex-shrink: 0; height: 44px; padding: 0 var(--fr-s4); background: var(--fr-surface); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.88rem; font-weight: 600; color: var(--fr-text); cursor: pointer; }
+  .cart-coupon-input button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .cart-coupon-input button:not(:disabled):hover { border-color: var(--fr-brand); color: var(--fr-brand); }
+  .cart-coupon-input button:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+  .cart-offers-link { display: inline-block; margin-top: var(--fr-s2); background: none; border: none; font-family: var(--fr-font-sans); font-size: 0.85rem; font-weight: 600; color: var(--fr-brand); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: var(--fr-s1) 0; }
+  .cart-offers-link:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
+  .cart-nudge { font-size: 0.85rem; color: var(--fr-text-2); margin: 0 0 var(--fr-s3); }
+  .cart-place { width: 100%; height: 52px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 1rem; font-weight: 600; cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+  .cart-place:hover:not(:disabled) { background: var(--fr-brand-press); }
+  .cart-place:disabled { opacity: 0.5; cursor: not-allowed; }
+  .cart-place:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+  .cart-next { font-size: 0.8rem; color: var(--fr-text-2); text-align: center; margin: var(--fr-s3) 0 0; line-height: 1.5; }
+
+  .cart-mobilebar { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: var(--fr-z-cta); align-items: center; gap: var(--fr-s3); background: var(--fr-surface); border-top: 1px solid var(--fr-line); box-shadow: var(--fr-elev-2); padding: var(--fr-s3) var(--fr-s4); padding-bottom: calc(var(--fr-s3) + env(safe-area-inset-bottom)); }
+  .cart-mobilebar-info { display: flex; flex-direction: column; }
+  .cart-mobilebar-info span { font-size: 0.72rem; color: var(--fr-text-3); }
+  .cart-mobilebar-info strong { font-size: 1.2rem; color: var(--fr-text); font-variant-numeric: tabular-nums; }
+  .cart-mobilebar-btn { flex: 1; height: 48px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+  .cart-mobilebar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .cart-mobilebar-btn:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+
+  .cart-modal-scrim { position: fixed; inset: 0; z-index: var(--fr-z-modal); background: var(--fr-scrim); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: var(--fr-s5); }
+  .cart-modal { width: 100%; max-width: 440px; max-height: 82vh; display: flex; flex-direction: column; background: var(--fr-surface); border-radius: var(--fr-r-surface); box-shadow: var(--fr-elev-3); overflow: hidden; }
+  .cart-modal-head { display: flex; align-items: center; justify-content: space-between; padding: var(--fr-s4) var(--fr-s5); border-bottom: 1px solid var(--fr-line); }
+  .cart-modal-head h3 { font-family: var(--fr-font-display); font-size: 1.2rem; font-weight: 700; color: var(--fr-text); margin: 0; }
+  .cart-modal-close { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }
+  .cart-modal-close:hover { background: var(--fr-surface-2); }
+  .cart-modal-close:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+  .cart-modal-body { padding: var(--fr-s5); overflow-y: auto; }
+  .cart-modal-body p { margin: 0; color: var(--fr-text-2); line-height: 1.6; }
+  .cart-modal-body p strong { color: var(--fr-text); }
+  .cart-modal-muted { color: var(--fr-text-3) !important; }
+  .cart-modal-foot { display: flex; gap: var(--fr-s3); padding: var(--fr-s4) var(--fr-s5); border-top: 1px solid var(--fr-line); }
+  .cart-modal-secondary { flex: 1; height: 48px; background: var(--fr-surface); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.92rem; font-weight: 600; color: var(--fr-text); cursor: pointer; }
+  .cart-modal-primary { flex: 1; height: 48px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.92rem; font-weight: 600; cursor: pointer; }
+  .cart-modal-primary:hover { background: var(--fr-brand-press); }
+  .cart-modal-secondary:focus-visible, .cart-modal-primary:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+
+  .cart-offers { display: flex; flex-direction: column; gap: var(--fr-s3); }
+  .cart-offer { display: flex; align-items: center; justify-content: space-between; gap: var(--fr-s3); padding: var(--fr-s4); border: 1px solid var(--fr-line); border-radius: var(--fr-r-card); }
+  .cart-offer-code { font-family: var(--fr-font-mono); font-size: 0.95rem; font-weight: 700; color: var(--fr-text); letter-spacing: 0.06em; }
+  .cart-offer-desc { font-size: 0.82rem; color: var(--fr-text-2); }
+  .cart-offer-apply { height: 40px; padding: 0 var(--fr-s4); background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+  .cart-offer-apply:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+  .cart-offer-locked { font-size: 0.82rem; color: var(--fr-text-3); white-space: nowrap; }
+
+  .cart-edit { display: flex; flex-direction: column; gap: var(--fr-s5); }
+  .cart-edit-group { display: flex; flex-direction: column; gap: var(--fr-s3); }
+  .cart-edit-label { font-size: 0.82rem; font-weight: 600; color: var(--fr-text); }
+  .cart-edit-pills { display: flex; flex-wrap: wrap; gap: var(--fr-s2); }
+  .cart-pill { min-height: 44px; padding: 0 var(--fr-s4); background: var(--fr-surface); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-pill); font-family: var(--fr-font-sans); font-size: 0.88rem; color: var(--fr-text); cursor: pointer; }
+  .cart-pill:hover { border-color: var(--fr-brand); color: var(--fr-brand); }
+  .cart-pill-on { background: var(--fr-brand); border-color: var(--fr-brand); color: var(--fr-on-brand); }
+  .cart-pill:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+  .cart-edit-note { width: 100%; box-sizing: border-box; padding: var(--fr-s3); background: var(--fr-surface-2); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.9rem; color: var(--fr-text); resize: vertical; outline: none; }
+  .cart-edit-note:focus { border-color: var(--fr-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fr-brand) 16%, transparent); background: var(--fr-surface); }
+
+  .fr-only-desktop { display: block; }
+  .fr-only-mobile { display: none; }
+
+  @media (max-width: 900px) {
+    .cart-container { padding: var(--fr-s5) var(--fr-s4) calc(var(--fr-s9) + 80px); }
+    .cart-split { grid-template-columns: 1fr; gap: var(--fr-s6); }
+    .cart-checkout { position: static; }
+    .cart-place.fr-only-desktop { display: none; }
+    .cart-mobilebar { display: flex; }
+  }
+
+  @media (prefers-reduced-motion: reduce) { .cart-place, .cart-coupon-input button { transition: none; } }
+`;
