@@ -30,6 +30,7 @@ export default function Navbar() {
 
     setIsSearching(true);
 
+    const controller = new AbortController();
     const debounceTimer = setTimeout(async () => {
       try {
         const term = searchQuery.replace(/["\\]/g, '\\$&');
@@ -37,19 +38,26 @@ export default function Navbar() {
           .from('products')
           .select('id, title, category, price_cents, images')
           .or(`title.ilike."%${term}%",category.ilike."%${term}%"`)
-          .limit(5);
+          .limit(5)
+          .abortSignal(controller.signal);
+
+        if (controller.signal.aborted) return;
 
         if (!error && data) {
           setSearchResults(data);
         }
+        setIsSearching(false);
       } catch (err) {
+        if (controller.signal.aborted) return;
         logger.error('Search error:', err);
-      } finally {
         setIsSearching(false);
       }
     }, 300);
 
-    return () => clearTimeout(debounceTimer);
+    return () => {
+      clearTimeout(debounceTimer);
+      controller.abort();
+    };
   }, [searchQuery]);
 
   const [activeOrder, setActiveOrder] = useState(null);
