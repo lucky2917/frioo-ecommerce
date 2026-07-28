@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import Navbar from '../components/layout/Navbar';
@@ -8,12 +8,11 @@ import VideoModal from '../components/shop/VideoModal';
 import ProductCard from '../components/shop/ProductCard';
 import OptimizedImage from '../components/OptimizedImage';
 import { showToast } from '../utils/toast';
-import { logger } from '../utils/logger';
 import ScrollReveal from '../components/animations/ScrollReveal';
 import StaggerText from '../components/animations/StaggerText';
 
 import { useCart } from '../context/CartContext';
-import { API_BASE_URL } from '../config/constants';
+import { useProduct } from '../hooks/useProduct';
 
 const WEIGHT_OPTIONS = [
   { label: '250g', multiplier: 0.25 },
@@ -21,13 +20,16 @@ const WEIGHT_OPTIONS = [
   { label: '1kg', multiplier: 1.0 }
 ];
 
+const rotateByOffset = (items, offset) => {
+  if (items.length === 0) return items;
+  const shift = offset % items.length;
+  return [...items.slice(shift), ...items.slice(0, shift)];
+};
+
 export default function ProductDetails() {
   const { addToCart } = useCart();
   const { id } = useParams();
-  const [product, setProduct] = useState(null);
-  const [error, setError] = useState(false);
-  const [relatedProducts, setRelatedProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { product, products, loading, error, refetch } = useProduct(id);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [showPrepVideo, setShowPrepVideo] = useState(false);
@@ -37,48 +39,29 @@ export default function ProductDetails() {
   const [selectedExclusions, setSelectedExclusions] = useState([]);
   const [removedIngredients, setRemovedIngredients] = useState([]);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(false);
-    window.scrollTo(0, 0);
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/products`);
-      if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
-      const response = await res.json();
-      const data = response.data || {};
-      const items = data.items || [];
-      const found = items.find(p => p.id === parseInt(id));
-
-      if (found) {
-        setProduct(found);
-        setQty(1);
-        setSelectedExclusions([]);
-        setRemovedIngredients([]);
-
-        if (found.category === 'Fresh Fruit' && found.unit === 'kg') {
-          setSelectedWeight(WEIGHT_OPTIONS[2]);
-        } else {
-          setSelectedWeight(null);
-        }
-
-        const others = items.filter(p => p.id !== found.id);
-        const sameCat = others.filter(p => p.category === found.category);
-        const randomMix = others.filter(p => p.category !== found.category).sort(() => 0.5 - Math.random());
-        setRelatedProducts([...sameCat, ...randomMix].slice(0, 4));
-      } else {
-        setProduct(null);
-      }
-    } catch (err) {
-      logger.error("Error loading product:", err);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+  const [initializedProductId, setInitializedProductId] = useState(null);
+  if (product && product.id !== initializedProductId) {
+    setInitializedProductId(product.id);
+    setQty(1);
+    setSelectedExclusions([]);
+    setRemovedIngredients([]);
+    setSelectedWeight(product.category === 'Fresh Fruit' && product.unit === 'kg' ? WEIGHT_OPTIONS[2] : null);
+  }
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    window.scrollTo(0, 0);
+  }, [id]);
+
+  const relatedProducts = useMemo(() => {
+    if (!product) return [];
+    const others = products.filter(p => p.id !== product.id);
+    const sameCategory = others.filter(p => p.category === product.category);
+    const otherCategories = others
+      .filter(p => p.category !== product.category)
+      .sort((a, b) => a.id - b.id);
+    const variedOthers = rotateByOffset(otherCategories, product.id);
+    return [...sameCategory, ...variedOthers].slice(0, 4);
+  }, [products, product]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -135,7 +118,7 @@ export default function ProductDetails() {
       <div className="pd-error">
         <FetchError
           message="We couldn't load this product. Please check your connection and try again."
-          onRetry={fetchData}
+          onRetry={refetch}
         />
         <Link to="/shop" className="back-link">Return to Shop</Link>
       </div>
