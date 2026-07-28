@@ -2,8 +2,34 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { logger } from '../../utils/logger';
 import { showToast } from '../../utils/toast';
+import { formatOrderAmount, getStatusPresentation } from '../../utils/orderStatus';
+import { AdminPage, MetricCard, StatusChip, SearchInput } from '../../components/admin/ui';
 
 const STATUS_ORDER = ['pending', 'confirmed', 'preparing', 'ready', 'out-for-delivery', 'delivered', 'cancelled'];
+
+const TONE_VARS = {
+    info: 'var(--fr-info)',
+    brand: 'var(--fr-brand)',
+    success: 'var(--fr-success)',
+    danger: 'var(--fr-danger)',
+};
+
+const statusColor = (status) => TONE_VARS[getStatusPresentation(status).tone] || TONE_VARS.info;
+const statusLabel = (s) => s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+const OrderTypeBadge = ({ type }) => {
+    const delivery = type === 'delivery';
+    return (
+        <span className="ao-type">
+            {delivery ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="6.5" cy="17.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" /><path d="M4 17.5H2.5v-4l2-4h6l3 4h4.5a2 2 0 0 1 2 2v2H20M9 17.5h6" /></svg>
+            ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 9l1-5h16l1 5M4 9v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M3 9h18" /></svg>
+            )}
+            {delivery ? 'Delivery' : 'Pickup'}
+        </span>
+    );
+};
 
 export default function AdminOrders() {
     const [orders, setOrders] = useState([]);
@@ -125,796 +151,300 @@ export default function AdminOrders() {
         window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`, '_blank');
     };
 
-    if (loading) return <div className="loading-state">Loading orders...</div>;
+    const metricCards = (
+        <>
+            <MetricCard label="Total orders" value={metrics.total} />
+            <MetricCard tone="warm" label="Pending" value={metrics.pending} />
+            <MetricCard tone="info" label="Out for delivery" value={metrics.outForDelivery} />
+            <MetricCard label="Today's revenue" value={`₹${formatOrderAmount(metrics.todayRevenue)}`} />
+            <MetricCard tone="brand" label="Total revenue" value={`₹${formatOrderAmount(metrics.totalRevenue)}`} />
+        </>
+    );
 
     return (
-        <div className="admin-orders-page">
-            <div className="orders-header">
-                <div className="header-top">
-                    <div>
-                        <h1 className="page-title">Orders Management</h1>
-                        <p className="page-subtitle">Monitor and manage all customer orders</p>
-                    </div>
-                </div>
+        <AdminPage title="Orders" subtitle="Monitor and manage customer orders" metrics={loading ? undefined : metricCards}>
+            <div className="ao-tabs" role="tablist" aria-label="Order category">
+                {[
+                    { key: 'active', label: 'Active', count: metrics.active },
+                    { key: 'completed', label: 'Completed', count: metrics.completed },
+                    { key: 'all', label: 'All orders', count: metrics.total }
+                ].map(({ key, label, count }) => (
+                    <button
+                        key={key}
+                        role="tab"
+                        aria-selected={categoryFilter === key}
+                        className={`ao-tab ${categoryFilter === key ? 'active' : ''}`}
+                        onClick={() => setCategoryFilter(key)}
+                    >
+                        {label}
+                        <span className="ao-tab-count">{count}</span>
+                    </button>
+                ))}
+            </div>
 
-                <div className="category-tabs">
-                    {[
-                        { key: 'active', label: 'Active Orders', count: metrics.active },
-                        { key: 'completed', label: 'Completed', count: metrics.completed },
-                        { key: 'all', label: 'All Orders', count: metrics.total }
-                    ].map(({ key, label, count }) => (
-                        <button
-                            key={key}
-                            className={`category-tab ${categoryFilter === key ? 'active' : ''}`}
-                            onClick={() => setCategoryFilter(key)}
-                        >
-                            {label}
-                            <span className="tab-count">{count}</span>
-                        </button>
+            <div className="ao-filters">
+                <SearchInput
+                    value={searchTerm}
+                    onChange={setSearchTerm}
+                    placeholder="Search by ID, name, phone, or address"
+                    ariaLabel="Search orders"
+                />
+                <select className="adm-select ao-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label="Filter by status">
+                    <option value="all">All status</option>
+                    {STATUS_ORDER.map(s => <option key={s} value={s}>{statusLabel(s)}</option>)}
+                </select>
+                <select className="adm-select ao-select" value={orderTypeFilter} onChange={e => setOrderTypeFilter(e.target.value)} aria-label="Filter by type">
+                    <option value="all">All types</option>
+                    <option value="delivery">Delivery</option>
+                    <option value="takeaway">Pickup</option>
+                </select>
+            </div>
+
+            {loading ? (
+                <div className="ao-list">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="ao-card">
+                            <div className="ao-card-head">
+                                <div style={{ flex: 1 }}>
+                                    <div className="adm-skel-line" style={{ width: '40%', height: 16, marginBottom: 10 }} />
+                                    <div className="adm-skel-line" style={{ width: '60%' }} />
+                                </div>
+                                <div className="adm-skel-line" style={{ width: 80, height: 24 }} />
+                            </div>
+                        </div>
                     ))}
                 </div>
-
-                <div className="metrics-grid">
-                    <div className="metric-card">
-                        <div className="metric-label">Total Orders</div>
-                        <div className="metric-value">{metrics.total}</div>
-                    </div>
-                    <div className="metric-card">
-                        <div className="metric-label">Pending</div>
-                        <div className="metric-value pending">{metrics.pending}</div>
-                    </div>
-                    <div className="metric-card">
-                        <div className="metric-label">Out for Delivery</div>
-                        <div className="metric-value out-delivery">{metrics.outForDelivery}</div>
-                    </div>
-                    <div className="metric-card">
-                        <div className="metric-label">Today's Revenue</div>
-                        <div className="metric-value">₹{metrics.todayRevenue.toFixed(0)}</div>
-                    </div>
-                    <div className="metric-card revenue">
-                        <div className="metric-label">Total Revenue</div>
-                        <div className="metric-value">₹{metrics.totalRevenue.toFixed(0)}</div>
-                    </div>
+            ) : filteredOrders.length === 0 ? (
+                <div className="adm-card adm-state">
+                    <h2 className="adm-state-title">No orders found</h2>
+                    <p className="adm-state-text">Try adjusting your filters or search term.</p>
                 </div>
+            ) : (
+                <div className="ao-list">
+                    {filteredOrders.map(order => {
+                        const isExpanded = expandedOrders.has(order.id);
+                        const items = parseItems(order.items);
+                        const totalItems = items.reduce((s, i) => s + (i.qty || 1), 0);
+                        const subtotal = (order.total_amount || 0) + (order.discount || 0);
 
-                <div className="filters-bar">
-                    <input
-                        type="text"
-                        placeholder="Search by order ID, name, phone, or address..."
-                        className="search-input"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                    />
-                    <select className="filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-                        <option value="all">All Status</option>
-                        {STATUS_ORDER.map(s => (
-                            <option key={s} value={s}>{s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</option>
-                        ))}
-                    </select>
-                    <select className="filter-select" value={orderTypeFilter} onChange={e => setOrderTypeFilter(e.target.value)}>
-                        <option value="all">All Types</option>
-                        <option value="delivery">Delivery</option>
-                        <option value="takeaway">Pickup</option>
-                    </select>
-                </div>
-            </div>
-
-            <div className="orders-grid">
-                {filteredOrders.map(order => {
-                    const isExpanded = expandedOrders.has(order.id);
-                    const items = parseItems(order.items);
-                    const totalItems = items.reduce((s, i) => s + (i.qty || 1), 0);
-                    const subtotal = (order.total_amount || 0) + (order.discount || 0);
-
-                    return (
-                        <div key={order.id} className={`order-card status-${order.status}`}>
-                            <div className="card-header-compact">
-                                <div className="compact-left">
-                                    <div className="order-id-row">
-                                        <span className="order-id">#{String(order.id).slice(0, 8).toUpperCase()}</span>
-                                        <span className={`status-badge-small ${order.status}`}>
-                                            {order.status.replace(/-/g, ' ')}
-                                        </span>
-                                        <span className={`type-badge ${order.order_type}`}>
-                                            {order.order_type === 'delivery' ? '🛵 Delivery' : '🏪 Pickup'}
-                                        </span>
-                                    </div>
-                                    <div className="customer-row">
-                                        <div className="customer-avatar-small">
-                                            {order.profiles?.full_name?.charAt(0).toUpperCase() || 'G'}
+                        return (
+                            <div key={order.id} className="ao-card" style={{ borderLeft: `3px solid ${statusColor(order.status)}` }}>
+                                <div className="ao-card-head">
+                                    <div className="ao-head-left">
+                                        <div className="ao-id-row">
+                                            <span className="ao-id">#{String(order.id).slice(0, 8).toUpperCase()}</span>
+                                            <StatusChip status={order.status} />
+                                            <OrderTypeBadge type={order.order_type} />
                                         </div>
-                                        <div className="customer-info-compact">
-                                            <div className="customer-name-small">{order.profiles?.full_name || 'Guest'}</div>
-                                            <div className="order-meta-row">
-                                                <span className="order-time-small">{new Date(order.created_at).toLocaleString('en-IN', {
-                                                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                                                })}</span>
-                                                <span className="items-pill">{totalItems} item{totalItems !== 1 ? 's' : ''}</span>
+                                        <div className="ao-customer-row">
+                                            <div className="ao-avatar" aria-hidden="true">
+                                                {order.profiles?.full_name?.charAt(0).toUpperCase() || 'G'}
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="compact-right">
-                                    <div className="total-amount-compact">₹{order.total_amount}</div>
-                                    <button className="expand-btn" onClick={() => toggleOrder(order.id)}>
-                                        {isExpanded ? '▲ Collapse' : '▼ Expand'}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {isExpanded && (
-                                <div className="order-details">
-                                    <div className="details-section">
-                                        <div className="section-title">Customer & Order Info</div>
-                                        <div className="detail-row">
-                                            <span className="detail-label">Phone:</span>
-                                            <a href={`tel:${order.profiles?.phone_number}`} className="detail-link">
-                                                {order.profiles?.phone_number || 'No phone'}
-                                            </a>
-                                        </div>
-                                        <div className="detail-row">
-                                            <span className="detail-label">Email:</span>
-                                            <span className="detail-value">{order.profiles?.email || '—'}</span>
-                                        </div>
-                                        <div className="detail-row">
-                                            <span className="detail-label">Type:</span>
-                                            <span className="detail-value" style={{ textTransform: 'capitalize' }}>{order.order_type || 'delivery'}</span>
-                                        </div>
-                                        {order.order_type === 'delivery' && order.address && (
-                                            <div className="detail-row">
-                                                <span className="detail-label">Address:</span>
-                                                <span className="detail-value address-value">{order.address}</span>
-                                            </div>
-                                        )}
-                                        {order.order_type === 'delivery' && order.distance > 0 && (
-                                            <div className="detail-row">
-                                                <span className="detail-label">Distance:</span>
-                                                <span className="detail-value">{Number(order.distance).toFixed(1)} km</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {order.order_type === 'delivery' && order.address && (
-                                        <div className="details-section directions-section">
-                                            <button className="directions-btn" onClick={() => openDirections(order)}>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                    <polygon points="3 11 22 2 13 21 11 13 3 11" />
-                                                </svg>
-                                                Get Directions
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    <div className="details-section">
-                                        <div className="section-title">Order Items</div>
-                                        {items.map((item, idx) => (
-                                            <div key={idx} className="item-row">
-                                                <div className="item-main">
-                                                    <span className="item-qty">{item.qty}×</span>
-                                                    <div className="item-info">
-                                                        <div className="item-title-row">
-                                                            <span className="item-title">{item.title}</span>
-                                                            {item.isVirtual && <span className="ai-label">AI</span>}
-                                                        </div>
-                                                        <span className="item-variant">{item.variant}</span>
-                                                    </div>
-                                                    <span className="item-price">₹{((item.price || 0) * (item.qty || 1)).toFixed(0)}</span>
-                                                </div>
-
-                                                {item.preferences && (item.preferences.exclusions?.length > 0 || item.preferences.removedIngredients?.length > 0 || item.preferences.note) && (
-                                                    <div className="item-customizations">
-                                                        {item.preferences.exclusions?.length > 0 && (
-                                                            <div className="custom-row allergies">
-                                                                <span className="custom-label">Allergies:</span>
-                                                                <span className="custom-value">No {item.preferences.exclusions.join(', ')}</span>
-                                                            </div>
-                                                        )}
-                                                        {item.preferences.removedIngredients?.length > 0 && (
-                                                            <div className="custom-row removed">
-                                                                <span className="custom-label">Removed:</span>
-                                                                <span className="custom-value">{item.preferences.removedIngredients.join(', ')}</span>
-                                                            </div>
-                                                        )}
-                                                        {item.preferences.note && (
-                                                            <div className="custom-row note">
-                                                                <span className="custom-label">Note:</span>
-                                                                <span className="custom-value">{item.preferences.note}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {order.discount > 0 && (
-                                        <div className="details-section">
-                                            <div className="section-title">Price Breakdown</div>
-                                            <div className="price-breakdown">
-                                                <div className="price-line">
-                                                    <span>Subtotal</span>
-                                                    <span>₹{subtotal.toFixed(0)}</span>
-                                                </div>
-                                                <div className="price-line discount">
-                                                    <span>
-                                                        Discount {order.coupon_code && <span className="coupon-chip">{order.coupon_code}</span>}
-                                                    </span>
-                                                    <span>−₹{Number(order.discount).toFixed(0)}</span>
-                                                </div>
-                                                <div className="price-line total">
-                                                    <span>Total</span>
-                                                    <span>₹{Number(order.total_amount).toFixed(0)}</span>
+                                            <div>
+                                                <div className="ao-customer-name">{order.profiles?.full_name || 'Guest'}</div>
+                                                <div className="ao-meta">
+                                                    <span>{new Date(order.created_at).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                                    <span className="ao-items-pill">{totalItems} item{totalItems !== 1 ? 's' : ''}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                    )}
-
-                                    {order.notes && (
-                                        <div className="details-section">
-                                            <div className="order-notes-section">
-                                                <span className="notes-label">Order Note:</span>
-                                                <span className="notes-text">{order.notes}</span>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="details-section">
-                                        <div className="section-title">Update Status</div>
-                                        <select
-                                            className="status-select"
-                                            value={order.status}
-                                            onChange={e => updateStatus(order.id, e.target.value)}
+                                    </div>
+                                    <div className="ao-head-right">
+                                        <div className="ao-total">₹{formatOrderAmount(order.total_amount)}</div>
+                                        <button
+                                            className="adm-btn adm-btn-secondary adm-btn-sm"
+                                            onClick={() => toggleOrder(order.id)}
+                                            aria-expanded={isExpanded}
                                         >
-                                            {STATUS_ORDER.map(s => (
-                                                <option key={s} value={s}>
-                                                    {s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            <svg className={`ao-chevron ${isExpanded ? 'up' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
+                                            {isExpanded ? 'Collapse' : 'Expand'}
+                                        </button>
                                     </div>
                                 </div>
-                            )}
-                        </div>
-                    );
-                })}
 
-                {filteredOrders.length === 0 && (
-                    <div className="empty-state">
-                        <div className="empty-title">No orders found</div>
-                        <div className="empty-subtitle">Try adjusting your filters or search term</div>
-                    </div>
-                )}
-            </div>
+                                {isExpanded && (
+                                    <div className="ao-details">
+                                        <div className="ao-section">
+                                            <div className="ao-section-title">Customer &amp; order info</div>
+                                            <div className="ao-detail-row">
+                                                <span className="ao-detail-label">Phone</span>
+                                                <a href={`tel:${order.profiles?.phone_number}`} className="ao-detail-link">{order.profiles?.phone_number || 'No phone'}</a>
+                                            </div>
+                                            <div className="ao-detail-row">
+                                                <span className="ao-detail-label">Email</span>
+                                                <span className="ao-detail-value">{order.profiles?.email || '—'}</span>
+                                            </div>
+                                            <div className="ao-detail-row">
+                                                <span className="ao-detail-label">Type</span>
+                                                <span className="ao-detail-value">{order.order_type === 'delivery' ? 'Delivery' : 'Pickup'}</span>
+                                            </div>
+                                            {order.order_type === 'delivery' && order.address && (
+                                                <div className="ao-detail-row">
+                                                    <span className="ao-detail-label">Address</span>
+                                                    <span className="ao-detail-value ao-address">{order.address}</span>
+                                                </div>
+                                            )}
+                                            {order.order_type === 'delivery' && order.distance > 0 && (
+                                                <div className="ao-detail-row">
+                                                    <span className="ao-detail-label">Distance</span>
+                                                    <span className="ao-detail-value">{Number(order.distance).toFixed(1)} km</span>
+                                                </div>
+                                            )}
+                                            {order.order_type === 'delivery' && order.address && (
+                                                <button className="adm-btn adm-btn-secondary adm-btn-sm ao-directions" onClick={() => openDirections(order)}>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>
+                                                    Get directions
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        <div className="ao-section">
+                                            <div className="ao-section-title">Order items</div>
+                                            {items.map((item, idx) => (
+                                                <div key={idx} className="ao-item">
+                                                    <div className="ao-item-main">
+                                                        <span className="ao-item-qty">{item.qty}&times;</span>
+                                                        <div className="ao-item-info">
+                                                            <div className="ao-item-title-row">
+                                                                <span className="ao-item-title">{item.title}</span>
+                                                                {item.isVirtual && <span className="ao-ai-label">AI</span>}
+                                                            </div>
+                                                            {item.variant && item.variant !== 'Standard' && <span className="ao-item-variant">{item.variant}</span>}
+                                                        </div>
+                                                        <span className="ao-item-price">₹{formatOrderAmount((item.price || 0) * (item.qty || 1))}</span>
+                                                    </div>
+
+                                                    {item.preferences && (item.preferences.exclusions?.length > 0 || item.preferences.removedIngredients?.length > 0 || item.preferences.note) && (
+                                                        <div className="ao-item-custom">
+                                                            {item.preferences.exclusions?.length > 0 && (
+                                                                <div className="ao-custom-row"><span className="ao-custom-label">Allergies</span><span>No {item.preferences.exclusions.join(', ')}</span></div>
+                                                            )}
+                                                            {item.preferences.removedIngredients?.length > 0 && (
+                                                                <div className="ao-custom-row"><span className="ao-custom-label">Removed</span><span>{item.preferences.removedIngredients.join(', ')}</span></div>
+                                                            )}
+                                                            {item.preferences.note && (
+                                                                <div className="ao-custom-row"><span className="ao-custom-label">Note</span><span>{item.preferences.note}</span></div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {order.discount > 0 && (
+                                            <div className="ao-section">
+                                                <div className="ao-section-title">Price breakdown</div>
+                                                <div className="ao-price">
+                                                    <div className="ao-price-line"><span>Subtotal</span><span>₹{formatOrderAmount(subtotal)}</span></div>
+                                                    <div className="ao-price-line ao-discount">
+                                                        <span>Discount {order.coupon_code && <span className="ao-coupon">{order.coupon_code}</span>}</span>
+                                                        <span>&minus;₹{formatOrderAmount(order.discount)}</span>
+                                                    </div>
+                                                    <div className="ao-price-line ao-price-total"><span>Total</span><span>₹{formatOrderAmount(order.total_amount)}</span></div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {order.notes && (
+                                            <div className="ao-section">
+                                                <div className="ao-notes"><span className="ao-section-title">Order note</span><span>{order.notes}</span></div>
+                                            </div>
+                                        )}
+
+                                        <div className="ao-section">
+                                            <label className="ao-section-title" htmlFor={`status-${order.id}`}>Update status</label>
+                                            <select
+                                                id={`status-${order.id}`}
+                                                className="adm-select"
+                                                value={order.status}
+                                                onChange={e => updateStatus(order.id, e.target.value)}
+                                            >
+                                                {STATUS_ORDER.map(s => <option key={s} value={s}>{statusLabel(s)}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
 
             <style>{`
-                .admin-orders-page {
-                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                    padding-bottom: 40px;
+                .ao-tabs { display: flex; gap: var(--fr-s1); margin-bottom: var(--fr-s5); border-bottom: 1px solid var(--adm-border); }
+                .ao-tab { background: none; border: none; padding: var(--fr-s3) var(--fr-s4); font-family: var(--fr-font-sans); font-size: 0.9rem; font-weight: 600; color: var(--adm-text-2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; display: flex; align-items: center; gap: var(--fr-s2); transition: color var(--fr-dur-quick) var(--fr-ease-standard); }
+                .ao-tab:hover { color: var(--fr-brand); }
+                .ao-tab.active { color: var(--fr-brand); border-bottom-color: var(--fr-brand); }
+                .ao-tab-count { background: var(--adm-surface-2); color: var(--adm-text-2); padding: 1px var(--fr-s2); border-radius: var(--fr-r-pill); font-size: 0.72rem; font-weight: 700; }
+                .ao-tab.active .ao-tab-count { background: var(--fr-brand-tint); color: var(--fr-brand); }
+
+                .ao-filters { display: flex; gap: var(--fr-s3); flex-wrap: wrap; align-items: center; margin-bottom: var(--fr-s5); }
+                .ao-select { width: auto; min-width: 150px; }
+
+                .ao-list { display: flex; flex-direction: column; gap: var(--fr-s3); }
+
+                .ao-card { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--fr-r-card); overflow: hidden; }
+                .ao-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--fr-s4); padding: var(--fr-s4); }
+                .ao-head-left { display: flex; flex-direction: column; gap: var(--fr-s3); min-width: 0; }
+                .ao-id-row { display: flex; align-items: center; gap: var(--fr-s2); flex-wrap: wrap; }
+                .ao-id { font-family: var(--fr-font-mono); font-size: 0.8rem; font-weight: 700; color: var(--adm-text); }
+
+                .ao-type { display: inline-flex; align-items: center; gap: var(--fr-s1); font-size: 0.72rem; font-weight: 700; color: var(--adm-text-2); background: var(--adm-surface-2); padding: var(--fr-s1) var(--fr-s2); border-radius: var(--fr-r-pill); }
+
+                .ao-customer-row { display: flex; align-items: center; gap: var(--fr-s3); }
+                .ao-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--fr-brand-tint); color: var(--fr-brand); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+                .ao-customer-name { font-size: 0.9rem; font-weight: 600; color: var(--adm-text); }
+                .ao-meta { display: flex; align-items: center; gap: var(--fr-s2); font-size: 0.78rem; color: var(--adm-text-3); }
+                .ao-items-pill { background: var(--adm-surface-2); padding: 0 var(--fr-s2); border-radius: var(--fr-r-pill); color: var(--adm-text-2); font-weight: 600; }
+
+                .ao-head-right { display: flex; flex-direction: column; align-items: flex-end; gap: var(--fr-s2); flex-shrink: 0; }
+                .ao-total { font-size: 1.15rem; font-weight: 700; color: var(--adm-text); }
+                .ao-chevron { transition: transform var(--fr-dur-quick) var(--fr-ease-standard); }
+                .ao-chevron.up { transform: rotate(180deg); }
+
+                .ao-details { border-top: 1px solid var(--adm-border); padding: var(--fr-s4); display: flex; flex-direction: column; gap: var(--fr-s4); background: var(--adm-canvas); }
+                .ao-section { display: flex; flex-direction: column; gap: var(--fr-s2); }
+                .ao-section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--adm-text-3); }
+                .ao-detail-row { display: flex; justify-content: space-between; gap: var(--fr-s4); font-size: 0.85rem; }
+                .ao-detail-label { color: var(--adm-text-2); flex-shrink: 0; }
+                .ao-detail-value { color: var(--adm-text); text-align: right; }
+                .ao-address { max-width: 60%; }
+                .ao-detail-link { color: var(--fr-brand); text-decoration: none; font-weight: 600; }
+                .ao-detail-link:hover { text-decoration: underline; }
+                .ao-directions { align-self: flex-start; margin-top: var(--fr-s2); }
+
+                .ao-item { padding: var(--fr-s3) 0; border-bottom: 1px solid var(--adm-border); }
+                .ao-item:last-child { border-bottom: none; }
+                .ao-item-main { display: flex; align-items: flex-start; gap: var(--fr-s3); }
+                .ao-item-qty { font-weight: 700; color: var(--fr-brand); min-width: 28px; }
+                .ao-item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+                .ao-item-title-row { display: flex; align-items: center; gap: var(--fr-s2); }
+                .ao-item-title { font-weight: 600; color: var(--adm-text); font-size: 0.9rem; }
+                .ao-ai-label { font-size: 0.62rem; font-weight: 700; color: var(--fr-info); background: #E3EDF3; padding: 0 var(--fr-s1); border-radius: var(--fr-r-control); }
+                .ao-item-variant { font-size: 0.8rem; color: var(--adm-text-2); }
+                .ao-item-price { font-weight: 600; color: var(--adm-text); font-size: 0.9rem; }
+                .ao-item-custom { margin-top: var(--fr-s2); margin-left: 28px; display: flex; flex-direction: column; gap: 2px; }
+                .ao-custom-row { display: flex; gap: var(--fr-s2); font-size: 0.78rem; color: var(--fr-warm); }
+                .ao-custom-label { font-weight: 700; }
+
+                .ao-price { display: flex; flex-direction: column; gap: var(--fr-s2); }
+                .ao-price-line { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--adm-text); }
+                .ao-discount { color: var(--fr-success); }
+                .ao-coupon { background: var(--fr-brand-tint); color: var(--fr-brand); padding: 0 var(--fr-s2); border-radius: var(--fr-r-control); font-size: 0.72rem; font-weight: 700; }
+                .ao-price-total { font-weight: 700; border-top: 1px solid var(--adm-border); padding-top: var(--fr-s2); }
+
+                .ao-notes { display: flex; flex-direction: column; gap: var(--fr-s1); background: var(--fr-warm-tint); padding: var(--fr-s3); border-radius: var(--fr-r-card); font-size: 0.85rem; color: var(--adm-text); }
+
+                @media (prefers-reduced-motion: reduce) {
+                    .ao-tab, .ao-chevron { transition: none; }
                 }
 
-                .loading-state {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    min-height: 400px;
-                    color: #64748b;
-                    font-size: 1.1rem;
-                }
-
-                .orders-header { margin-bottom: 32px; }
-
-                .header-top { margin-bottom: 24px; }
-
-                .page-title {
-                    font-size: 1.875rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                    margin: 0 0 4px;
-                    letter-spacing: -0.025em;
-                }
-
-                .page-subtitle { color: #64748b; font-size: 0.95rem; margin: 0; }
-
-                .category-tabs {
-                    display: flex;
-                    gap: 8px;
-                    margin-bottom: 24px;
-                    border-bottom: 2px solid #e2e8f0;
-                }
-
-                .category-tab {
-                    background: none;
-                    border: none;
-                    padding: 12px 20px;
-                    font-size: 0.9rem;
-                    font-weight: 600;
-                    color: #64748b;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    border-bottom: 3px solid transparent;
-                    margin-bottom: -2px;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
-
-                .category-tab:hover { color: #3b82f6; }
-                .category-tab.active { color: #3b82f6; border-bottom-color: #3b82f6; }
-
-                .tab-count {
-                    background: #e2e8f0;
-                    color: #475569;
-                    padding: 2px 8px;
-                    border-radius: 12px;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                }
-
-                .category-tab.active .tab-count { background: #dbeafe; color: #1e40af; }
-
-                .metrics-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-                    gap: 16px;
-                    margin-bottom: 24px;
-                }
-
-                .metric-card {
-                    background: white;
-                    padding: 20px;
-                    border-radius: 12px;
-                    border: 1px solid #e2e8f0;
-                    transition: all 0.2s;
-                }
-
-                .metric-card:hover {
-                    border-color: #cbd5e1;
-                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-                }
-
-                .metric-card.revenue {
-                    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-                    border: none;
-                }
-
-                .metric-card.revenue .metric-label,
-                .metric-card.revenue .metric-value { color: white; }
-
-                .metric-label {
-                    font-size: 0.75rem;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    letter-spacing: 0.05em;
-                    color: #64748b;
-                    margin-bottom: 8px;
-                }
-
-                .metric-value {
-                    font-size: 1.875rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                }
-
-                .metric-value.pending { color: #ea580c; }
-                .metric-value.out-delivery { color: #9333ea; }
-
-                .filters-bar {
-                    display: flex;
-                    gap: 12px;
-                    flex-wrap: wrap;
-                }
-
-                .search-input,
-                .filter-select {
-                    padding: 10px 14px;
-                    border: 1px solid #cbd5e1;
-                    border-radius: 8px;
-                    font-size: 0.9rem;
-                    outline: none;
-                    transition: all 0.2s;
-                    background: white;
-                }
-
-                .search-input { flex: 1; min-width: 280px; }
-
-                .search-input:focus {
-                    border-color: #2563eb;
-                    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-                }
-
-                .filter-select { min-width: 150px; cursor: pointer; }
-                .filter-select:hover { border-color: #94a3b8; }
-
-                .orders-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-                    gap: 20px;
-                    margin-top: 24px;
-                }
-
-                .order-card {
-                    background: white;
-                    border-radius: 12px;
-                    padding: 20px;
-                    border: 1px solid #e2e8f0;
-                    border-left: 4px solid #cbd5e1;
-                    transition: all 0.2s;
-                }
-
-                .order-card:hover {
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-                    transform: translateY(-2px);
-                }
-
-                .order-card.status-pending { border-left-color: #ea580c; }
-                .order-card.status-confirmed { border-left-color: #2563eb; }
-                .order-card.status-preparing { border-left-color: #ca8a04; }
-                .order-card.status-ready { border-left-color: #16a34a; }
-                .order-card.status-out-for-delivery { border-left-color: #9333ea; }
-                .order-card.status-delivered { border-left-color: #65a30d; }
-                .order-card.status-cancelled { border-left-color: #dc2626; }
-
-                .card-header-compact {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    gap: 16px;
-                }
-
-                .compact-left { flex: 1; min-width: 0; }
-
-                .order-id-row {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    margin-bottom: 10px;
-                    flex-wrap: wrap;
-                }
-
-                .order-id {
-                    font-family: 'Monaco', 'Courier New', monospace;
-                    font-size: 0.875rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                    letter-spacing: 0.5px;
-                }
-
-                .status-badge-small {
-                    padding: 3px 8px;
-                    border-radius: 4px;
-                    font-size: 0.65rem;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-
-                .status-badge-small.pending { background: #ffedd5; color: #9a3412; }
-                .status-badge-small.confirmed { background: #dbeafe; color: #1e40af; }
-                .status-badge-small.preparing { background: #fef3c7; color: #92400e; }
-                .status-badge-small.ready { background: #dcfce7; color: #166534; }
-                .status-badge-small.out-for-delivery { background: #f3e8ff; color: #6b21a8; }
-                .status-badge-small.delivered { background: #ecfccb; color: #3f6212; }
-                .status-badge-small.cancelled { background: #fee2e2; color: #991b1b; }
-
-                .type-badge {
-                    padding: 3px 8px;
-                    border-radius: 4px;
-                    font-size: 0.65rem;
-                    font-weight: 600;
-                    background: #f1f5f9;
-                    color: #475569;
-                }
-
-                .type-badge.delivery { background: #eff6ff; color: #1d4ed8; }
-                .type-badge.takeaway { background: #f0fdf4; color: #15803d; }
-
-                .customer-row {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-
-                .customer-avatar-small {
-                    width: 36px;
-                    height: 36px;
-                    background: linear-gradient(135deg, #3b82f6, #2563eb);
-                    color: white;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 700;
-                    font-size: 0.95rem;
-                    flex-shrink: 0;
-                }
-
-                .customer-info-compact { flex: 1; min-width: 0; }
-
-                .customer-name-small {
-                    font-weight: 600;
-                    color: #0f172a;
-                    font-size: 0.9rem;
-                    margin-bottom: 3px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
-
-                .order-meta-row {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
-
-                .order-time-small { font-size: 0.75rem; color: #94a3b8; }
-
-                .items-pill {
-                    font-size: 0.7rem;
-                    padding: 2px 7px;
-                    background: #f1f5f9;
-                    color: #64748b;
-                    border-radius: 10px;
-                    font-weight: 600;
-                }
-
-                .compact-right {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-end;
-                    gap: 8px;
-                }
-
-                .total-amount-compact {
-                    font-size: 1.25rem;
-                    font-weight: 700;
-                    color: #0f172a;
-                }
-
-                .expand-btn {
-                    background: #f1f5f9;
-                    color: #475569;
-                    border: none;
-                    padding: 6px 12px;
-                    border-radius: 6px;
-                    font-size: 0.75rem;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    white-space: nowrap;
-                }
-
-                .expand-btn:hover { background: #e2e8f0; color: #334155; }
-
-                .order-details {
-                    margin-top: 16px;
-                    padding-top: 16px;
-                    border-top: 1px solid #e2e8f0;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 12px;
-                }
-
-                .details-section {
-                    background: #f8fafc;
-                    padding: 14px;
-                    border-radius: 8px;
-                }
-
-                .directions-section {
-                    background: #eff6ff;
-                    padding: 12px 14px;
-                    border: 1px solid #bfdbfe;
-                }
-
-                .section-title {
-                    font-size: 0.7rem;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.06em;
-                    color: #64748b;
-                    margin-bottom: 10px;
-                }
-
-                .detail-row {
-                    display: flex;
-                    gap: 8px;
-                    font-size: 0.85rem;
-                    margin-bottom: 7px;
-                    align-items: flex-start;
-                }
-
-                .detail-row:last-child { margin-bottom: 0; }
-
-                .detail-label {
-                    font-weight: 700;
-                    color: #475569;
-                    min-width: 65px;
-                    flex-shrink: 0;
-                }
-
-                .detail-value { color: #1e293b; }
-                .address-value { line-height: 1.4; }
-
-                .detail-link { color: #3b82f6; text-decoration: none; }
-                .detail-link:hover { text-decoration: underline; }
-
-                .directions-btn {
-                    background: #3b82f6;
-                    color: white;
-                    border: none;
-                    padding: 8px 16px;
-                    border-radius: 6px;
-                    font-size: 0.85rem;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                }
-
-                .directions-btn:hover {
-                    background: #2563eb;
-                    transform: translateY(-1px);
-                    box-shadow: 0 4px 8px rgba(59,130,246,0.25);
-                }
-
-                .item-row {
-                    background: white;
-                    padding: 10px 12px;
-                    border-radius: 8px;
-                    border: 1px solid #e2e8f0;
-                    margin-bottom: 8px;
-                }
-
-                .item-row:last-child { margin-bottom: 0; }
-
-                .item-main {
-                    display: flex;
-                    align-items: flex-start;
-                    gap: 10px;
-                }
-
-                .item-qty { font-weight: 700; color: #0f172a; flex-shrink: 0; min-width: 26px; }
-                .item-info { flex: 1; }
-
-                .item-title-row {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    flex-wrap: wrap;
-                    margin-bottom: 3px;
-                }
-
-                .item-title { font-weight: 600; color: #1e293b; font-size: 0.9rem; }
-
-                .ai-label {
-                    padding: 2px 6px;
-                    background: linear-gradient(135deg, #06b6d4, #3b82f6);
-                    color: white;
-                    border-radius: 4px;
-                    font-size: 0.6rem;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                }
-
-                .item-variant { font-size: 0.8rem; color: #64748b; }
-
-                .item-price {
-                    font-weight: 700;
-                    color: #0f172a;
-                    font-size: 0.9rem;
-                    margin-left: auto;
-                    flex-shrink: 0;
-                }
-
-                .item-customizations {
-                    margin-top: 8px;
-                    padding: 8px 10px;
-                    background: #f8fafc;
-                    border-radius: 6px;
-                    border: 1px solid #e5e7eb;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 6px;
-                }
-
-                .custom-row { display: flex; gap: 8px; font-size: 0.8rem; }
-                .custom-label { font-weight: 700; color: #475569; min-width: 75px; }
-                .custom-value { color: #1e293b; }
-                .custom-row.allergies .custom-label,
-                .custom-row.allergies .custom-value { color: #dc2626; }
-                .custom-row.removed .custom-label,
-                .custom-row.removed .custom-value { color: #ea580c; }
-                .custom-row.note { background: #f0f9ff; padding: 6px 8px; border-radius: 4px; border-left: 3px solid #0ea5e9; }
-                .custom-row.note .custom-label { color: #0369a1; }
-                .custom-row.note .custom-value { color: #0c4a6e; }
-
-                .price-breakdown { display: flex; flex-direction: column; gap: 8px; }
-
-                .price-line {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    font-size: 0.875rem;
-                    color: #475569;
-                }
-
-                .price-line.discount { color: #16a34a; }
-
-                .price-line.total {
-                    font-weight: 700;
-                    color: #0f172a;
-                    font-size: 1rem;
-                    padding-top: 8px;
-                    border-top: 1px solid #e2e8f0;
-                }
-
-                .coupon-chip {
-                    display: inline-block;
-                    background: #dcfce7;
-                    color: #166534;
-                    padding: 2px 7px;
-                    border-radius: 4px;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    font-family: 'Monaco', monospace;
-                    margin-left: 6px;
-                }
-
-                .order-notes-section {
-                    background: #fffbeb;
-                    padding: 12px;
-                    border-radius: 6px;
-                    border-left: 3px solid #eab308;
-                    display: flex;
-                    gap: 8px;
-                    font-size: 0.85rem;
-                }
-
-                .notes-label { font-weight: 700; color: #92400e; }
-                .notes-text { color: #713f12; }
-
-                .status-select {
-                    width: 100%;
-                    padding: 8px 12px;
-                    border: 1px solid #cbd5e1;
-                    border-radius: 6px;
-                    background: white;
-                    color: #334155;
-                    font-size: 0.85rem;
-                    font-weight: 500;
-                    cursor: pointer;
-                    outline: none;
-                    transition: all 0.2s;
-                }
-
-                .status-select:hover { border-color: #94a3b8; }
-                .status-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-
-                .empty-state {
-                    grid-column: 1 / -1;
-                    text-align: center;
-                    padding: 80px 20px;
-                    background: white;
-                    border-radius: 12px;
-                    border: 1px solid #e2e8f0;
-                }
-
-                .empty-title { font-size: 1.25rem; font-weight: 600; color: #334155; margin-bottom: 8px; }
-                .empty-subtitle { font-size: 0.95rem; color: #94a3b8; }
-
-                @media (max-width: 768px) {
-                    .orders-grid { grid-template-columns: 1fr; }
-                    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
-                    .category-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-                    .category-tab { white-space: nowrap; }
-                    .filters-bar { flex-direction: column; }
-                    .search-input, .filter-select { width: 100%; }
-                    .card-header-compact { flex-direction: column; align-items: stretch; }
-                    .compact-right { flex-direction: row; justify-content: space-between; align-items: center; }
+                @media (max-width: 640px) {
+                    .ao-card-head { flex-direction: column; }
+                    .ao-head-right { flex-direction: row; align-items: center; width: 100%; justify-content: space-between; }
+                    .ao-select { flex: 1; }
                 }
             `}</style>
-        </div>
+        </AdminPage>
     );
 }
