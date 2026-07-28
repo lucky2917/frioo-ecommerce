@@ -1,17 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
-import ScrollReveal from '../components/animations/ScrollReveal';
-import StaggerText from '../components/animations/StaggerText';
-
 import ProductCard from '../components/shop/ProductCard';
 import ShopFilters from '../components/shop/ShopFilters';
 import BundleDeals from '../components/shop/BundleDeals';
-import LoadingSpinner from '../components/LoadingSpinner';
 import FetchError from '../components/FetchError';
 import { useCart } from '../context/CartContext';
 import { showToast } from '../utils/toast';
-
 import SEO from '../components/SEO';
 import { useProducts } from '../hooks/useProducts';
 import { PRODUCT_CATEGORIES } from '../config/constants';
@@ -19,13 +14,29 @@ import { PRODUCT_CATEGORIES } from '../config/constants';
 const TABS = PRODUCT_CATEGORIES.map(c => c.label);
 const ITEMS_PER_PAGE = 12;
 
+const SORT_OPTIONS = [
+  { value: 'recommended', label: 'Featured' },
+  { value: 'price-asc', label: 'Price: Low → High' },
+  { value: 'price-desc', label: 'Price: High → Low' },
+  { value: 'alpha-asc', label: 'A → Z' },
+];
+
+const ShopSkeleton = () => (
+  <div className="shop-skel" aria-hidden="true">
+    <div className="shop-skel-img" />
+    <div className="shop-skel-line" />
+    <div className="shop-skel-line shop-skel-short" />
+    <div className="shop-skel-btn" />
+  </div>
+);
+
 export default function Shop() {
-  const { cart, addToCart } = useCart();
+  const { addToCart } = useCart();
   const { products, loading, error, refetch: fetchShopProducts } = useProducts();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortOption, setSortOption] = useState('recommended');
-  const [showFilters, setShowFilters] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [priceRange, setPriceRange] = useState([0, Infinity]);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
@@ -101,8 +112,6 @@ export default function Shop() {
     showToast(`${bundleProducts.length} items added to cart`, 'success');
   };
 
-  const safeCart = cart || {};
-
   const shopStructuredData = useMemo(() => {
     const listProducts = processedProducts.slice(0, 20);
     if (listProducts.length === 0) return undefined;
@@ -153,6 +162,23 @@ export default function Shop() {
 
   const activeSeo = categoryParam ? CATEGORY_SEO[categoryParam] : null;
 
+  const priceActive = priceRange[1] !== Infinity && (priceRange[0] > 0 || priceRange[1] < maxPrice);
+  const clearPrice = () => setPriceRange([0, maxPrice]);
+  const clearSearch = () => setSearchParams({});
+  const clearAll = () => { clearPrice(); if (isSearchMode) clearSearch(); };
+
+  const filtersEl = (
+    <ShopFilters
+      activeTab={activeTab}
+      setActiveTab={handleTabChange}
+      tabs={TABS}
+      products={products}
+      priceRange={priceRange}
+      onPriceChange={setPriceRange}
+      maxPrice={maxPrice}
+    />
+  );
+
   return (
     <div className="shop-page">
       <SEO
@@ -164,378 +190,186 @@ export default function Shop() {
       />
       <Navbar />
 
-      <div className="visible-mobile shop-toolbar-container-mobile">
-        <ScrollReveal>
-          <div className="mobile-header-content">
-            <StaggerText
-              text={isSearchMode ? `Results for "${searchParam}"` : 'Fresh Collection'}
-              className="header-title-mobile"
-            />
-            <p className="header-desc-mobile">
-              {isSearchMode ? `${processedProducts.length} items found` : 'Handpicked goodness for you.'}
-            </p>
-          </div>
-        </ScrollReveal>
+      <main className="shop-main">
+        <header className="shop-head">
+          <p className="shop-eyebrow">{isSearchMode ? 'Search' : 'Shop'}</p>
+          <h1 className="shop-title">{isSearchMode ? `Results for “${searchParam}”` : activeTab}</h1>
+          <p className="shop-sub">{processedProducts.length} {processedProducts.length === 1 ? 'item' : 'items'}, freshly stocked.</p>
+        </header>
 
-        <ScrollReveal delay={0.1}>
-          <div className="mobile-category-scroll">
-            {TABS.map((cat) => (
-              <button
-                key={cat}
-                className={`mobile-cat-pill ${!isSearchMode && activeTab === cat ? 'active' : ''}`}
-                onClick={() => handleTabChange(cat)}
-              >
-                {cat}
-              </button>
+        {!isSearchMode && (
+          <div className="shop-pills fr-only-mobile">
+            {TABS.map((tab) => (
+              <button key={tab} className={`shop-pill${activeTab === tab ? ' shop-pill-on' : ''}`} onClick={() => handleTabChange(tab)}>{tab}</button>
             ))}
           </div>
-        </ScrollReveal>
+        )}
 
-        <div className="mobile-sort-wrapper">
-          <span className="sort-label">Sort by:</span>
-          <select
-            className="toolbar-select"
-            value={sortOption}
-            onChange={(e) => setSortOption(e.target.value)}
-          >
-            <option value="recommended">Best</option>
-            <option value="price-asc">Price: Low</option>
-            <option value="price-desc">Price: High</option>
-          </select>
-        </div>
-      </div>
+        <div className="shop-layout">
+          {!isSearchMode && <aside className="shop-rail fr-only-desktop">{filtersEl}</aside>}
 
-      <section className="shop-header hidden-mobile">
-        <StaggerText
-          text={isSearchMode ? `Search Results: "${searchParam}"` : 'Fresh Collection'}
-          className="header-title"
-          stagger={0.06}
-        />
-        <ScrollReveal delay={0.3}>
-          <p className="header-desc">
-            {isSearchMode
-              ? `Found ${processedProducts.length} items matching your search.`
-              : 'From buttery pastries to fresh fruit medleys, our collection has something for every craving.'
-            }
-          </p>
-        </ScrollReveal>
-      </section>
-
-      <div className="shop-toolbar-container hidden-mobile">
-        <ScrollReveal direction="up" delay={0.4}>
-          <div className="shop-toolbar">
-            <div className="toolbar-left">
-              {!isSearchMode && (
-                <button
-                  onClick={() => setShowFilters(s => !s)}
-                  className="filter-toggle-btn"
-                >
-                  ☰ {showFilters ? 'Hide' : 'Show'} Filters
-                </button>
-              )}
-              {isSearchMode && (
-                <button onClick={() => handleTabChange('Pure Juices')} className="filter-toggle-btn">
-                  ← Back to Categories
-                </button>
-              )}
-            </div>
-
-            <div className="toolbar-right">
-              <span className="sort-label">Sort by:</span>
-              <select
-                className="toolbar-select"
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
-              >
-                <option value="recommended">Best selling</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-              </select>
-              <span className="item-count">{processedProducts.length} items</span>
-            </div>
-          </div>
-        </ScrollReveal>
-      </div>
-
-      <div className="shop-main-layout">
-        <div className="layout-inner">
-          {showFilters && !isSearchMode && (
-            <div className="sidebar-wrapper">
-              <ShopFilters
-                activeTab={activeTab}
-                setActiveTab={handleTabChange}
-                tabs={TABS}
-                products={products}
-                priceRange={priceRange}
-                onPriceChange={setPriceRange}
-                maxPrice={maxPrice}
-              />
-            </div>
-          )}
-
-          <main className="grid-wrapper">
-            {loading ? (
-              <div className="loading-area"><LoadingSpinner /></div>
-            ) : error ? (
-              <FetchError
-                message="We couldn't load the products. Please check your connection and try again."
-                onRetry={fetchShopProducts}
-              />
-            ) : (
-              <>
-                <div className="product-grid">
-                  {displayedProducts.length > 0 ? (
-                    displayedProducts.map((p, idx) => (
-                      <ScrollReveal key={p.id} delay={0.05 * (idx % 8)} direction="fade" className="grid-item-reveal">
-                        <ProductCard product={p} cart={safeCart} onAdd={addToCart} />
-                      </ScrollReveal>
-                    ))
-                  ) : (
-                    <div className="no-res">
-                      {isSearchMode ? `No products found for "${searchParam}"` : 'No products found.'}
-                    </div>
-                  )}
-                </div>
-
-                {hasMore && (
-                  <div className="load-more-wrapper">
-                    <button
-                      className="load-more-btn"
-                      onClick={() => setVisibleCount(c => c + ITEMS_PER_PAGE)}
-                    >
-                      Load More
-                    </button>
-                    <p className="load-more-hint">
-                      Showing {displayedProducts.length} of {processedProducts.length}
-                    </p>
+          <div className="shop-content">
+            <div className="shop-toolbar">
+              <div className="shop-toolbar-left">
+                {!isSearchMode && (
+                  <button className="shop-filter-btn fr-only-mobile" onClick={() => setShowMobileFilters(true)}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6" /><line x1="7" y1="12" x2="17" y2="12" /><line x1="10" y1="18" x2="14" y2="18" /></svg>
+                    Filters
+                  </button>
+                )}
+                {isSearchMode && (
+                  <button className="shop-back" onClick={clearSearch}>&larr; Back to shop</button>
+                )}
+                {(priceActive || isSearchMode) && (
+                  <div className="shop-chips">
+                    {isSearchMode && <span className="shop-chip">&ldquo;{searchParam}&rdquo;<button onClick={clearSearch} aria-label="Clear search">&times;</button></span>}
+                    {priceActive && <span className="shop-chip">&#8377;{priceRange[0]} &ndash; &#8377;{priceRange[1]}<button onClick={clearPrice} aria-label="Clear price filter">&times;</button></span>}
+                    <button className="shop-clear-all" onClick={clearAll}>Clear all</button>
                   </div>
                 )}
+              </div>
+              <div className="shop-toolbar-right">
+                <label className="shop-sort">
+                  <span className="shop-sort-label">Sort</span>
+                  <select className="shop-sort-select" value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+                    {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </label>
+              </div>
+            </div>
 
-                {!isSearchMode && !loading && products.length > 0 && (
-                  <BundleDeals products={products} onAddBundle={handleAddBundle} />
+            {loading && products.length === 0 ? (
+              <div className="shop-grid">{Array.from({ length: 8 }).map((_, i) => <ShopSkeleton key={i} />)}</div>
+            ) : error ? (
+              <FetchError message="We couldn't load the products. Please check your connection and try again." onRetry={fetchShopProducts} />
+            ) : displayedProducts.length > 0 ? (
+              <>
+                <div className="shop-grid">
+                  {displayedProducts.map((p) => <ProductCard key={p.id} product={p} onAdd={addToCart} />)}
+                </div>
+                {hasMore && (
+                  <div className="shop-loadmore">
+                    <button className="shop-loadmore-btn" onClick={() => setVisibleCount(c => c + ITEMS_PER_PAGE)}>Load more</button>
+                    <p className="shop-loadmore-hint">Showing {displayedProducts.length} of {processedProducts.length}</p>
+                  </div>
                 )}
+                {!isSearchMode && <BundleDeals products={products} onAddBundle={handleAddBundle} />}
               </>
+            ) : (
+              <div className="shop-empty">
+                <p className="shop-empty-title">{isSearchMode ? `No results for “${searchParam}”` : 'Nothing matches these filters'}</p>
+                <p className="shop-empty-sub">{isSearchMode ? 'Try a different search, or browse the shop.' : 'Try widening your price range or pick another category.'}</p>
+                <div className="shop-empty-actions">
+                  {priceActive && <button className="shop-empty-btn" onClick={clearPrice}>Clear filters</button>}
+                  {isSearchMode && <button className="shop-empty-btn" onClick={clearSearch}>Browse the shop</button>}
+                </div>
+              </div>
             )}
-          </main>
+          </div>
         </div>
-      </div>
+      </main>
+
+      {showMobileFilters && (
+        <div className="shop-sheet-scrim" onClick={() => setShowMobileFilters(false)}>
+          <div className="shop-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Filters">
+            <div className="shop-sheet-head">
+              <span className="shop-sheet-title">Filters</span>
+              <button className="shop-sheet-close" onClick={() => setShowMobileFilters(false)} aria-label="Close">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+            <div className="shop-sheet-body">{filtersEl}</div>
+            <div className="shop-sheet-foot">
+              <button className="shop-sheet-clear" onClick={clearAll}>Clear all</button>
+              <button className="shop-sheet-done" onClick={() => setShowMobileFilters(false)}>Show {processedProducts.length} items</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
-        .shop-page {
-          min-height: 100vh;
-          background: white;
-          color: #1a1a1a;
-          padding-top: var(--navbar-height-mobile);
-        }
+        .shop-page { background: var(--fr-canvas); min-height: 100vh; padding-top: var(--navbar-height-mobile); }
+        @media (min-width: 901px) { .shop-page { padding-top: var(--navbar-height-desktop); } }
+        .shop-main { max-width: 1280px; margin: 0 auto; padding: var(--fr-s7) var(--fr-s7) var(--fr-s9); }
+        .shop-head { margin-bottom: var(--fr-s6); }
+        .shop-eyebrow { font-family: var(--fr-font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fr-brand); margin: 0 0 var(--fr-s2); }
+        .shop-title { font-family: var(--fr-font-display); font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 700; letter-spacing: -0.015em; color: var(--fr-text); margin: 0 0 var(--fr-s2); }
+        .shop-sub { font-size: 0.95rem; color: var(--fr-text-2); margin: 0; }
 
-        .shop-header {
-          text-align: center;
-          padding: 60px 20px 40px;
-          max-width: 800px;
-          margin: 0 auto;
-        }
-        .header-title {
-          font-family: 'Playfair Display', serif;
-          font-size: 3rem;
-          color: #967E76;
-          margin-bottom: 20px;
-        }
-        .header-desc {
-          font-family: 'Inter', sans-serif;
-          color: #555;
-          line-height: 1.6;
-          font-size: 1.05rem;
-        }
+        .shop-pills { display: flex; gap: var(--fr-s2); overflow-x: auto; padding-bottom: var(--fr-s2); margin-bottom: var(--fr-s5); scrollbar-width: none; }
+        .shop-pills::-webkit-scrollbar { display: none; }
+        .shop-pill { flex-shrink: 0; min-height: 44px; padding: 0 var(--fr-s4); background: var(--fr-surface); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-pill); font-family: var(--fr-font-sans); font-size: 0.88rem; font-weight: 500; color: var(--fr-text-2); cursor: pointer; white-space: nowrap; }
+        .shop-pill-on { background: var(--fr-brand); border-color: var(--fr-brand); color: var(--fr-on-brand); }
 
-        .shop-toolbar-container {
-          border-top: 1px solid #eee;
-          border-bottom: 1px solid #eee;
-          background: white;
-          position: sticky;
-          top: 80px;
-          z-index: 90;
-        }
-        .shop-toolbar {
-          max-width: 1400px;
-          margin: 0 auto;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 15px 40px;
-        }
-        .toolbar-left, .toolbar-right {
-          display: flex;
-          align-items: center;
-          gap: 20px;
-        }
-        .filter-toggle-btn {
-          background: none;
-          border: none;
-          font-size: 0.95rem;
-          font-weight: 600;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          color: #333;
-          transition: color 0.2s;
-        }
-        .filter-toggle-btn:hover { color: #C5A065; }
-        .toolbar-select {
-          border: none;
-          background: transparent;
-          font-family: 'Inter', sans-serif;
-          font-size: 0.95rem;
-          font-weight: 600;
-          cursor: pointer;
-          color: #333;
-          padding-right: 10px;
-        }
-        .item-count {
-          color: #999;
-          font-size: 0.9rem;
-          border-left: 1px solid #ddd;
-          padding-left: 20px;
-        }
+        .shop-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: var(--fr-s8); align-items: start; }
+        .shop-rail { position: sticky; top: calc(var(--navbar-height-desktop) + var(--fr-s5)); }
+        .shop-content { min-width: 0; }
 
-        .shop-main-layout {
-          max-width: 1400px;
-          margin: 0 auto;
-          padding: 40px;
-        }
-        .layout-inner {
-          display: flex;
-          gap: 40px;
-        }
+        .shop-toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--fr-s4); flex-wrap: wrap; margin-bottom: var(--fr-s5); padding-bottom: var(--fr-s4); border-bottom: 1px solid var(--fr-line); }
+        .shop-toolbar-left { display: flex; align-items: center; gap: var(--fr-s3); flex-wrap: wrap; }
+        .shop-filter-btn { display: inline-flex; align-items: center; gap: var(--fr-s2); min-height: 44px; padding: 0 var(--fr-s4); background: var(--fr-surface); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.88rem; font-weight: 600; color: var(--fr-text); cursor: pointer; }
+        .shop-filter-btn:focus-visible, .shop-back:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        .shop-back { background: none; border: none; font-family: var(--fr-font-sans); font-size: 0.9rem; font-weight: 600; color: var(--fr-brand); cursor: pointer; padding: var(--fr-s2) 0; }
+        .shop-chips { display: flex; align-items: center; gap: var(--fr-s2); flex-wrap: wrap; }
+        .shop-chip { display: inline-flex; align-items: center; gap: var(--fr-s2); font-size: 0.82rem; color: var(--fr-brand); background: var(--fr-brand-tint); border-radius: var(--fr-r-pill); padding: 5px 6px 5px var(--fr-s3); }
+        .shop-chip button { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: none; background: none; color: var(--fr-brand); cursor: pointer; font-size: 1rem; border-radius: var(--fr-r-pill); }
+        .shop-chip button:hover { background: color-mix(in srgb, var(--fr-brand) 16%, transparent); }
+        .shop-clear-all { background: none; border: none; font-size: 0.82rem; font-weight: 600; color: var(--fr-text-2); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+        .shop-clear-all:hover { color: var(--fr-brand); }
+        .shop-sort { display: inline-flex; align-items: center; gap: var(--fr-s2); }
+        .shop-sort-label { font-size: 0.85rem; color: var(--fr-text-2); }
+        .shop-sort-select { height: 44px; padding: 0 var(--fr-s3); background: var(--fr-surface); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.88rem; font-weight: 500; color: var(--fr-text); cursor: pointer; }
+        .shop-sort-select:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 
-        .sidebar-wrapper {
-          width: 250px;
-          flex-shrink: 0;
-        }
+        .shop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--fr-s5); }
 
-        .grid-wrapper { flex: 1; }
+        .shop-loadmore { display: flex; flex-direction: column; align-items: center; gap: var(--fr-s3); padding: var(--fr-s8) 0 0; }
+        .shop-loadmore-btn { min-height: 48px; padding: 0 var(--fr-s7); background: var(--fr-surface); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.92rem; font-weight: 600; color: var(--fr-text); cursor: pointer; transition: border-color var(--fr-dur-quick) var(--fr-ease-standard), color var(--fr-dur-quick) var(--fr-ease-standard); }
+        .shop-loadmore-btn:hover { border-color: var(--fr-brand); color: var(--fr-brand); }
+        .shop-loadmore-btn:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        .shop-loadmore-hint { font-size: 0.82rem; color: var(--fr-text-3); margin: 0; }
 
-        .product-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 40px 30px;
-        }
+        .shop-empty { text-align: center; padding: var(--fr-s10) var(--fr-s5); display: flex; flex-direction: column; align-items: center; gap: var(--fr-s2); }
+        .shop-empty-title { font-family: var(--fr-font-display); font-size: 1.3rem; font-weight: 700; color: var(--fr-text); margin: 0; }
+        .shop-empty-sub { color: var(--fr-text-2); margin: 0 0 var(--fr-s3); }
+        .shop-empty-actions { display: flex; gap: var(--fr-s3); }
+        .shop-empty-btn { min-height: 44px; padding: 0 var(--fr-s5); background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+        .shop-empty-btn:hover { background: var(--fr-brand-press); }
 
-        .hidden-mobile { display: block; }
-        .visible-mobile { display: none; }
+        .shop-skel { display: flex; flex-direction: column; gap: var(--fr-s3); background: var(--fr-surface); border-radius: var(--fr-r-card); box-shadow: var(--fr-elev-1); overflow: hidden; padding-bottom: var(--fr-s4); }
+        .shop-skel-img { aspect-ratio: 4 / 5; background: var(--fr-surface-2); }
+        .shop-skel-line { height: 12px; border-radius: var(--fr-r-control); background: var(--fr-surface-2); margin: 0 var(--fr-s4); }
+        .shop-skel-short { width: 50%; }
+        .shop-skel-btn { height: 44px; border-radius: var(--fr-r-control); background: var(--fr-surface-2); margin: var(--fr-s2) var(--fr-s4) 0; }
+        @media (prefers-reduced-motion: no-preference) { .shop-skel-img, .shop-skel-line, .shop-skel-btn { animation: shop-shimmer 1.4s var(--fr-ease-standard) infinite; } }
+        @keyframes shop-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+        .shop-sheet-scrim { position: fixed; inset: 0; z-index: var(--fr-z-sheet); background: var(--fr-scrim); display: flex; align-items: flex-end; }
+        .shop-sheet { width: 100%; max-height: 82vh; display: flex; flex-direction: column; background: var(--fr-surface); border-radius: var(--fr-r-surface) var(--fr-r-surface) 0 0; box-shadow: var(--fr-elev-3); padding-bottom: env(safe-area-inset-bottom); }
+        .shop-sheet-head { display: flex; align-items: center; justify-content: space-between; padding: var(--fr-s4) var(--fr-s5); border-bottom: 1px solid var(--fr-line); }
+        .shop-sheet-title { font-family: var(--fr-font-display); font-size: 1.2rem; font-weight: 700; color: var(--fr-text); }
+        .shop-sheet-close { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }
+        .shop-sheet-close:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        .shop-sheet-body { padding: var(--fr-s5); overflow-y: auto; }
+        .shop-sheet-foot { display: flex; gap: var(--fr-s3); padding: var(--fr-s4) var(--fr-s5); border-top: 1px solid var(--fr-line); }
+        .shop-sheet-clear { flex-shrink: 0; min-height: 48px; padding: 0 var(--fr-s5); background: var(--fr-surface); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.9rem; font-weight: 600; color: var(--fr-text); cursor: pointer; }
+        .shop-sheet-done { flex: 1; min-height: 48px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.92rem; font-weight: 600; cursor: pointer; }
+        .shop-sheet-done:focus-visible, .shop-sheet-clear:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+
+        .fr-only-mobile { display: none; }
+        .fr-only-desktop { display: block; }
 
         @media (max-width: 900px) {
-          .hidden-mobile { display: none !important; }
-          .visible-mobile { display: block !important; }
-
-          .shop-page {
-            padding-top: var(--navbar-height-desktop);
-          }
-
-          .shop-toolbar-container-mobile {
-            background: white;
-            padding: 15px 20px;
-            border-bottom: 1px solid #f0f0f0;
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-          }
-
-          .mobile-header-content { text-align: left; }
-          .header-title-mobile {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            color: #2F4F4F;
-            margin-bottom: 5px;
-          }
-          .header-desc-mobile { color: #666; font-size: 0.9rem; }
-
-          .mobile-category-scroll {
-            display: flex;
-            overflow-x: auto;
-            gap: 10px;
-            padding-bottom: 5px;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-          }
-          .mobile-category-scroll::-webkit-scrollbar { display: none; }
-
-          .mobile-cat-pill {
-            white-space: nowrap;
-            padding: 8px 16px;
-            border-radius: 50px;
-            background: #f5f5f5;
-            border: 1px solid transparent;
-            color: #555;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            flex-shrink: 0;
-          }
-          .mobile-cat-pill.active {
-            background: #1a1a1a;
-            color: white;
-            border-color: #1a1a1a;
-          }
-
-          .mobile-sort-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-          }
-          .sort-label { display: inline-block; font-size: 0.9rem; color: #666; margin-right: 5px; }
-
-          .shop-main-layout { padding: 0 15px 40px; }
-
-          .product-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 20px 10px;
-          }
+          .shop-main { padding: var(--fr-s5) var(--fr-s4) var(--fr-s8); }
+          .shop-layout { grid-template-columns: 1fr; gap: 0; }
+          .shop-grid { grid-template-columns: repeat(2, 1fr); gap: var(--fr-s4); }
+          .fr-only-mobile { display: flex; }
+          .fr-only-desktop { display: none; }
         }
+        @media (max-width: 400px) { .shop-grid { grid-template-columns: repeat(2, 1fr); } }
 
-        @media (max-width: 400px) {
-          .product-grid { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-
-        .load-more-wrapper {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 40px 20px;
-          gap: 15px;
-        }
-        .load-more-btn {
-          background: #1a1a1a;
-          color: white;
-          border: none;
-          padding: 15px 40px;
-          font-size: 0.95rem;
-          font-weight: 600;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .load-more-btn:hover {
-          background: #333;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .load-more-hint {
-          font-size: 0.85rem;
-          color: #888;
-          margin: 0;
-        }
-
-        .no-res {
-          grid-column: 1 / -1;
-          text-align: center;
-          padding: 60px 0;
-          color: #888;
-          font-size: 1rem;
+        @media (prefers-reduced-motion: reduce) {
+          .shop-loadmore-btn, .shop-filter-btn { transition: none; }
         }
       `}</style>
     </div>
