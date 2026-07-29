@@ -42,21 +42,21 @@ export default function ShopFilters({ activeTab, setActiveTab, tabs, products, p
       <style>{`
         .fr-filters { display: flex; flex-direction: column; gap: var(--fr-s6); }
         .fr-filter-group { display: flex; flex-direction: column; gap: var(--fr-s3); }
-        .fr-filter-heading { font-family: var(--fr-font-sans); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fr-text-3); margin: 0; }
+        .fr-filter-heading { font-family: var(--fr-font-sans); font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-eyebrow); text-transform: uppercase; color: var(--fr-text-3); margin: 0; }
         .fr-filter-list { display: flex; flex-direction: column; }
-        .fr-filter-row { display: flex; align-items: center; gap: var(--fr-s3); min-height: 44px; cursor: pointer; font-family: var(--fr-font-sans); font-size: 0.94rem; color: var(--fr-text-2); }
+        .fr-filter-row { display: flex; align-items: center; gap: var(--fr-s3); min-height: 44px; cursor: pointer; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-control); color: var(--fr-text-2); }
         .fr-filter-row:hover .fr-filter-label { color: var(--fr-brand); }
         .fr-filter-radio { width: 18px; height: 18px; accent-color: var(--fr-brand); cursor: pointer; flex-shrink: 0; }
         .fr-filter-radio:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
         .fr-filter-label { flex: 1; }
-        .fr-filter-count { font-family: var(--fr-font-mono); font-size: 0.8rem; color: var(--fr-text-3); font-variant-numeric: tabular-nums; }
-        .fr-filter-hint { font-size: 0.85rem; color: var(--fr-text-2); margin: 0; }
+        .fr-filter-count { font-family: var(--fr-font-mono); font-size: var(--fr-fs-measure); font-weight: var(--fr-fw-regular); color: var(--fr-text-3); font-variant-numeric: tabular-nums; }
+        .fr-filter-hint { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0; }
         .fr-filter-price { display: flex; align-items: center; gap: var(--fr-s2); }
         .fr-price-field { display: flex; align-items: center; gap: var(--fr-s1); flex: 1; min-width: 0; background: var(--fr-surface-2); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); padding: 0 var(--fr-s3); height: 44px; transition: border-color var(--fr-dur-quick) var(--fr-ease-standard), box-shadow var(--fr-dur-quick) var(--fr-ease-standard); }
         .fr-price-field:focus-within { border-color: var(--fr-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fr-brand) 16%, transparent); background: var(--fr-surface); }
-        .fr-price-sym { color: var(--fr-text-3); font-size: 0.9rem; }
-        .fr-price-field input { width: 100%; min-width: 0; background: none; border: none; outline: none; font-family: var(--fr-font-sans); font-size: 0.9rem; color: var(--fr-text); }
-        .fr-price-to { font-size: 0.85rem; color: var(--fr-text-3); }
+        .fr-price-sym { color: var(--fr-text-3); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); }
+        .fr-price-field input { width: 100%; min-width: 0; background: none; border: none; outline: none; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-control); color: var(--fr-text); }
+        .fr-price-to { font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); color: var(--fr-text-3); }
       `}</style>
     </div>
   );
