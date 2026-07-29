@@ -59,6 +59,33 @@
   --fr-font-sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --fr-font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
+  --fr-fs-display: clamp(2.25rem, 4vw, 3rem);
+  --fr-fs-headline: clamp(1.75rem, 3vw, 2.25rem);
+  --fr-fs-title: 1.375rem;
+  --fr-fs-lead: 1.125rem;
+  --fr-fs-body: 1rem;
+  --fr-fs-control: 1rem;
+  --fr-fs-caption: 0.875rem;
+  --fr-fs-label: 0.75rem;
+  --fr-fs-eyebrow: 0.75rem;
+  --fr-fs-measure: 0.875rem;
+
+  --fr-lh-tight: 1.1;
+  --fr-lh-snug: 1.3;
+  --fr-lh-normal: 1.6;
+  --fr-lh-relaxed: 1.7;
+  --fr-lh-control: 1.2;
+
+  --fr-fw-regular: 500;
+  --fr-fw-medium: 600;
+  --fr-fw-bold: 700;
+
+  --fr-track-display: -0.015em;
+  --fr-track-headline: -0.01em;
+  --fr-track-eyebrow: 0.14em;
+
+  --fr-measure: 68ch;
+
   --fr-s1: 4px;
   --fr-s2: 8px;
   --fr-s3: 12px;
