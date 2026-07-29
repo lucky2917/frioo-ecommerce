@@ -60,7 +60,9 @@ const OptimizedImage = ({
                     justifyContent: 'center',
                     background: '#f5f5f5',
                     color: '#999',
-                    fontSize: '0.8rem'
+                    fontFamily: 'var(--fr-font-sans)',
+                    fontSize: 'var(--fr-fs-caption)',
+                    lineHeight: 'var(--fr-lh-normal)'
                 }}
                 className={className}
             >

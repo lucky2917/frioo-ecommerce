@@ -45,9 +45,11 @@ const LoadingSpinner = ({
     };
 
     const messageStyle = {
-        fontSize: '0.95rem',
+        fontFamily: 'var(--fr-font-sans)',
+        fontSize: 'var(--fr-fs-body)',
+        fontWeight: 'var(--fr-fw-regular)',
+        lineHeight: 'var(--fr-lh-normal)',
         color: '#666',
-        fontWeight: '500',
         marginTop: '10px'
     };
 

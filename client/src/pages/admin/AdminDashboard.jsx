@@ -203,7 +203,7 @@ export default function AdminDashboard() {
                                 <td className="adm-mono">#{order.id}</td>
                                 <td className="db-name-cell">{order.profiles?.full_name || 'Guest'}</td>
                                 <td>{order.order_type === 'delivery' ? <DeliveryIcon /> : <PickupIcon />}</td>
-                                <td style={{ fontWeight: 700 }}>₹{formatOrderAmount(order.total_amount)}</td>
+                                <td style={{ fontWeight: 'var(--fr-fw-bold)' }}>₹{formatOrderAmount(order.total_amount)}</td>
                                 <td><StatusChip status={order.status} /></td>
                             </tr>
                         ))}

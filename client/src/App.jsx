@@ -69,7 +69,7 @@ const AppInner = () => {
         <Suspense fallback={
           <div className="app-loading">
             <LoadingSpinner />
-            <p style={{ color: '#666', fontSize: '0.9rem' }}>Freshness loading...</p>
+            <p style={{ color: '#666', fontFamily: 'var(--fr-font-sans)', fontSize: 'var(--fr-fs-body)', fontWeight: 'var(--fr-fw-regular)', lineHeight: 'var(--fr-lh-normal)' }}>Freshness loading...</p>
           </div>
         }>
           <Routes>

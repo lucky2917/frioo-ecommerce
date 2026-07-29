@@ -131,16 +131,20 @@ const styles = {
         boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
     },
     title: {
-        fontSize: '2rem',
+        fontSize: 'var(--fr-fs-headline)',
+        fontWeight: 'var(--fr-fw-bold)',
+        lineHeight: 'var(--fr-lh-tight)',
+        letterSpacing: 'var(--fr-track-headline)',
         marginBottom: '20px',
         color: '#1a1a1a',
-        fontFamily: 'Playfair Display, serif'
+        fontFamily: 'var(--fr-font-display)'
     },
     message: {
-        fontSize: '1rem',
+        fontSize: 'var(--fr-fs-body)',
+        fontWeight: 'var(--fr-fw-regular)',
+        lineHeight: 'var(--fr-lh-normal)',
         color: '#666',
-        marginBottom: '30px',
-        lineHeight: '1.6'
+        marginBottom: '30px'
     },
     errorDetailsContainer: {
         marginBottom: '30px',
@@ -151,8 +155,9 @@ const styles = {
         padding: '10px',
         background: '#f5f5f5',
         borderRadius: '8px',
-        fontSize: '0.9rem',
-        fontWeight: 'bold',
+        fontSize: 'var(--fr-fs-control)',
+        fontWeight: 'var(--fr-fw-medium)',
+        lineHeight: 'var(--fr-lh-control)',
         userSelect: 'none'
     },
     errorDetails: {
@@ -160,7 +165,9 @@ const styles = {
         border: '1px solid #ffc107',
         padding: '15px',
         borderRadius: '8px',
-        fontSize: '0.75rem',
+        fontFamily: 'var(--fr-font-mono)',
+        fontSize: 'var(--fr-fs-label)',
+        lineHeight: 'var(--fr-lh-snug)',
         color: '#856404',
         textAlign: 'left',
         overflow: 'auto',
@@ -181,8 +188,10 @@ const styles = {
         border: 'none',
         padding: '15px 30px',
         borderRadius: '30px',
-        fontSize: '1rem',
-        fontWeight: 'bold',
+        fontFamily: 'var(--fr-font-sans)',
+        fontSize: 'var(--fr-fs-control)',
+        fontWeight: 'var(--fr-fw-medium)',
+        lineHeight: 'var(--fr-lh-control)',
         cursor: 'pointer',
         transition: 'all 0.2s'
     },
@@ -192,8 +201,10 @@ const styles = {
         border: '2px solid #1a1a1a',
         padding: '15px 30px',
         borderRadius: '30px',
-        fontSize: '1rem',
-        fontWeight: 'bold',
+        fontFamily: 'var(--fr-font-sans)',
+        fontSize: 'var(--fr-fs-control)',
+        fontWeight: 'var(--fr-fw-medium)',
+        lineHeight: 'var(--fr-lh-control)',
         cursor: 'pointer',
         transition: 'all 0.2s'
     }
