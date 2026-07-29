@@ -265,7 +265,9 @@ export default function OrderTracker() {
 
         .fr-ot-bar-text {
           font-family: var(--fr-font-sans);
-          font-size: 0.875rem;
+          font-size: var(--fr-fs-caption);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -278,8 +280,9 @@ export default function OrderTracker() {
           padding: var(--fr-s1) var(--fr-s4);
           border-radius: var(--fr-r-pill);
           font-family: var(--fr-font-sans);
-          font-size: 0.8rem;
-          font-weight: 700;
+          font-size: var(--fr-fs-control);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-control);
           cursor: pointer;
           flex-shrink: 0;
           transition: opacity var(--fr-dur-quick) var(--fr-ease-standard);
@@ -327,7 +330,9 @@ export default function OrderTracker() {
 
         .fr-ot-modal-title {
           font-family: var(--fr-font-display);
-          font-size: 1.35rem;
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
           color: var(--fr-text);
           margin: 0;
         }
@@ -350,9 +355,9 @@ export default function OrderTracker() {
           padding: var(--fr-s1) var(--fr-s3);
           border-radius: var(--fr-r-pill);
           font-family: var(--fr-font-sans);
-          font-size: 0.75rem;
-          font-weight: 700;
-          letter-spacing: 0.3px;
+          font-size: var(--fr-fs-caption);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-snug);
           margin-bottom: var(--fr-s5);
         }
 
@@ -415,15 +420,16 @@ export default function OrderTracker() {
 
         .fr-ot-step-label {
           font-family: var(--fr-font-sans);
-          font-size: 0.62rem;
+          font-size: var(--fr-fs-label);
+          font-weight: var(--fr-fw-regular);
           color: var(--fr-text-3);
           text-align: center;
-          line-height: 1.3;
+          line-height: var(--fr-lh-snug);
         }
 
         .fr-ot-step.done .fr-ot-step-label {
           color: var(--fr-text-2);
-          font-weight: 600;
+          font-weight: var(--fr-fw-medium);
         }
 
         .fr-ot-items-box {
@@ -436,11 +442,11 @@ export default function OrderTracker() {
 
         .fr-ot-items-heading {
           font-family: var(--fr-font-sans);
-          font-weight: 700;
-          font-size: 0.82rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-caption);
           color: var(--fr-text-2);
           margin: 0 0 var(--fr-s3);
-          letter-spacing: 0.3px;
+          line-height: var(--fr-lh-normal);
         }
 
         .fr-ot-item-row {
@@ -448,7 +454,9 @@ export default function OrderTracker() {
           justify-content: space-between;
           gap: var(--fr-s3);
           font-family: var(--fr-font-sans);
-          font-size: 0.88rem;
+          font-size: var(--fr-fs-body);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-text);
           margin-bottom: var(--fr-s2);
         }
@@ -457,8 +465,10 @@ export default function OrderTracker() {
           display: flex;
           justify-content: space-between;
           font-family: var(--fr-font-sans);
-          font-size: 0.95rem;
-          font-weight: 700;
+          font-size: var(--fr-fs-body);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-normal);
+          font-variant-numeric: tabular-nums;
           color: var(--fr-text);
           border-top: 1px solid var(--fr-line);
           padding-top: var(--fr-s3);
@@ -473,8 +483,9 @@ export default function OrderTracker() {
           color: var(--fr-on-brand);
           border-radius: var(--fr-r-control);
           font-family: var(--fr-font-sans);
-          font-weight: 700;
-          font-size: 0.95rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-control);
+          line-height: var(--fr-lh-control);
           text-align: center;
           text-decoration: none;
           box-sizing: border-box;
@@ -482,11 +493,6 @@ export default function OrderTracker() {
         }
 
         .fr-ot-help-link:hover { background: var(--fr-brand-press); }
-
-        @media (max-width: 480px) {
-          .fr-ot-bar-text { font-size: 0.8rem; }
-          .fr-ot-step-label { font-size: 0.55rem; }
-        }
       `}</style>
     </>
   );

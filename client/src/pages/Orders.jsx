@@ -350,7 +350,10 @@ export default function Orders() {
 
         .fr-ord-title {
           font-family: var(--fr-font-display);
-          font-size: 2.25rem;
+          font-size: var(--fr-fs-headline);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-tight);
+          letter-spacing: var(--fr-track-headline);
           color: var(--fr-text);
           margin: 0 0 var(--fr-s2);
         }
@@ -358,7 +361,9 @@ export default function Orders() {
         .fr-ord-subtitle {
           font-family: var(--fr-font-sans);
           color: var(--fr-text-2);
-          font-size: 1.05rem;
+          font-size: var(--fr-fs-body);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
           margin: 0;
         }
 
@@ -367,10 +372,10 @@ export default function Orders() {
 
         .fr-ord-section-title {
           font-family: var(--fr-font-sans);
-          font-size: 0.95rem;
-          font-weight: 700;
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
           color: var(--fr-text-2);
-          letter-spacing: 0.3px;
+          line-height: var(--fr-lh-snug);
           margin: 0 0 var(--fr-s4);
         }
 
@@ -397,9 +402,9 @@ export default function Orders() {
           background: var(--fr-brand);
           color: var(--fr-on-brand);
           font-family: var(--fr-font-sans);
-          font-size: 0.72rem;
-          font-weight: 700;
-          letter-spacing: 0.4px;
+          font-size: var(--fr-fs-label);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-snug);
           text-transform: uppercase;
           padding: var(--fr-s2) var(--fr-s5);
         }
@@ -417,8 +422,9 @@ export default function Orders() {
 
         .fr-ord-id {
           font-family: var(--fr-font-sans);
-          font-weight: 700;
-          font-size: 0.95rem;
+          font-weight: var(--fr-fw-bold);
+          font-size: var(--fr-fs-body);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-text);
         }
 
@@ -428,7 +434,9 @@ export default function Orders() {
           align-items: center;
           gap: var(--fr-s2);
           font-family: var(--fr-font-sans);
-          font-size: 0.85rem;
+          font-size: var(--fr-fs-caption);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-text-2);
         }
 
@@ -446,9 +454,9 @@ export default function Orders() {
           padding: var(--fr-s1) var(--fr-s3);
           border-radius: var(--fr-r-pill);
           font-family: var(--fr-font-sans);
-          font-size: 0.72rem;
-          font-weight: 700;
-          letter-spacing: 0.3px;
+          font-size: var(--fr-fs-caption);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-snug);
           white-space: nowrap;
         }
 
@@ -459,8 +467,10 @@ export default function Orders() {
 
         .fr-ord-total {
           font-family: var(--fr-font-display);
-          font-weight: 700;
-          font-size: 1.2rem;
+          font-weight: var(--fr-fw-bold);
+          font-size: var(--fr-fs-lead);
+          line-height: var(--fr-lh-snug);
+          font-variant-numeric: tabular-nums;
           color: var(--fr-text);
         }
 
@@ -479,14 +489,17 @@ export default function Orders() {
 
         .fr-ord-timeline-label {
           font-family: var(--fr-font-sans);
-          font-weight: 700;
-          font-size: 0.9rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-caption);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-brand);
         }
 
         .fr-ord-timeline-step {
           font-family: var(--fr-font-sans);
-          font-size: 0.78rem;
+          font-size: var(--fr-fs-label);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-snug);
           color: var(--fr-text-2);
         }
 
@@ -525,7 +538,9 @@ export default function Orders() {
 
         .fr-ord-item-qty {
           font-family: var(--fr-font-sans);
-          font-weight: 700;
+          font-weight: var(--fr-fw-bold);
+          font-size: var(--fr-fs-body);
+          font-variant-numeric: tabular-nums;
           color: var(--fr-brand);
           min-width: 32px;
         }
@@ -534,13 +549,17 @@ export default function Orders() {
 
         .fr-ord-item-name {
           font-family: var(--fr-font-sans);
-          font-weight: 600;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-body);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-text);
         }
 
         .fr-ord-item-variant {
           font-family: var(--fr-font-sans);
-          font-size: 0.83rem;
+          font-size: var(--fr-fs-caption);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-text-2);
         }
 
@@ -549,14 +568,18 @@ export default function Orders() {
           flex-wrap: wrap;
           gap: var(--fr-s3);
           font-family: var(--fr-font-sans);
-          font-size: 0.8rem;
+          font-size: var(--fr-fs-caption);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-warm);
           margin-top: 2px;
         }
 
         .fr-ord-item-price {
           font-family: var(--fr-font-sans);
-          font-weight: 600;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-body);
+          font-variant-numeric: tabular-nums;
           color: var(--fr-text);
         }
 
@@ -566,12 +589,14 @@ export default function Orders() {
           gap: var(--fr-s4);
           padding-top: var(--fr-s3);
           font-family: var(--fr-font-sans);
-          font-size: 0.85rem;
+          font-size: var(--fr-fs-body);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
         }
 
         .fr-ord-detail-key { color: var(--fr-text-2); flex-shrink: 0; }
         .fr-ord-detail-val { color: var(--fr-text); text-align: right; }
-        .fr-ord-discount { color: var(--fr-success); font-weight: 600; }
+        .fr-ord-discount { color: var(--fr-success); font-weight: var(--fr-fw-medium); }
 
         .fr-ord-note {
           margin-top: var(--fr-s4);
@@ -579,7 +604,9 @@ export default function Orders() {
           background: var(--fr-warm-tint);
           border-radius: var(--fr-r-card);
           font-family: var(--fr-font-sans);
-          font-size: 0.85rem;
+          font-size: var(--fr-fs-caption);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-text);
         }
 
@@ -602,8 +629,9 @@ export default function Orders() {
           padding: var(--fr-s2) var(--fr-s4);
           border-radius: var(--fr-r-control);
           font-family: var(--fr-font-sans);
-          font-weight: 600;
-          font-size: 0.9rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-control);
+          line-height: var(--fr-lh-control);
           cursor: pointer;
           transition: background var(--fr-dur-quick) var(--fr-ease-standard), border-color var(--fr-dur-quick) var(--fr-ease-standard);
         }
@@ -614,15 +642,17 @@ export default function Orders() {
 
         .fr-ord-reordered-text {
           font-family: var(--fr-font-sans);
-          font-size: 0.88rem;
+          font-size: var(--fr-fs-caption);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-success);
-          font-weight: 600;
+          font-weight: var(--fr-fw-regular);
         }
 
         .fr-ord-cart-link {
           font-family: var(--fr-font-sans);
-          font-size: 0.9rem;
-          font-weight: 700;
+          font-size: var(--fr-fs-control);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-control);
           color: var(--fr-brand);
           text-decoration: underline;
           text-underline-offset: 3px;
@@ -630,8 +660,9 @@ export default function Orders() {
 
         .fr-ord-help {
           font-family: var(--fr-font-sans);
-          font-size: 0.88rem;
-          font-weight: 500;
+          font-size: var(--fr-fs-caption);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-text-2);
           text-decoration: none;
         }
@@ -650,7 +681,9 @@ export default function Orders() {
 
         .fr-ord-state-title {
           font-family: var(--fr-font-display);
-          font-size: 1.5rem;
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
           color: var(--fr-text);
           margin: 0 0 var(--fr-s2);
         }
@@ -670,8 +703,9 @@ export default function Orders() {
           border: none;
           border-radius: var(--fr-r-control);
           font-family: var(--fr-font-sans);
-          font-weight: 700;
-          font-size: 0.95rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-control);
+          line-height: var(--fr-lh-control);
           text-decoration: none;
           cursor: pointer;
           transition: background var(--fr-dur-quick) var(--fr-ease-standard);
@@ -716,7 +750,7 @@ export default function Orders() {
         @media (max-width: 560px) {
           .fr-ord-card-head { flex-direction: column; }
           .fr-ord-head-right { flex-direction: row; align-items: center; width: 100%; justify-content: space-between; }
-          .fr-ord-title { font-size: 1.9rem; }
+
         }
       `}</style>
     </div>

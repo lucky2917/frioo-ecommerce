@@ -294,8 +294,9 @@ export default function Profile() {
 
         .fr-pf-avatar-initials {
           font-family: var(--fr-font-display);
-          font-size: 1.6rem;
-          font-weight: 700;
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
           color: var(--fr-brand);
         }
 
@@ -303,14 +304,19 @@ export default function Profile() {
 
         .fr-pf-hello {
           font-family: var(--fr-font-display);
-          font-size: 1.9rem;
+          font-size: var(--fr-fs-headline);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-tight);
+          letter-spacing: var(--fr-track-headline);
           color: var(--fr-text);
           margin: 0 0 2px;
         }
 
         .fr-pf-email {
           font-family: var(--fr-font-sans);
-          font-size: 0.95rem;
+          font-size: var(--fr-fs-body);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-text-2);
           margin: 0;
           overflow-wrap: anywhere;
@@ -335,8 +341,9 @@ export default function Profile() {
 
         .fr-pf-card-title {
           font-family: var(--fr-font-sans);
-          font-size: 1rem;
-          font-weight: 700;
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
           color: var(--fr-text);
           margin: 0;
         }
@@ -348,8 +355,9 @@ export default function Profile() {
           padding: var(--fr-s2) var(--fr-s4);
           border-radius: var(--fr-r-control);
           font-family: var(--fr-font-sans);
-          font-weight: 600;
-          font-size: 0.88rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-control);
+          line-height: var(--fr-lh-control);
           cursor: pointer;
           transition: background var(--fr-dur-quick) var(--fr-ease-standard), border-color var(--fr-dur-quick) var(--fr-ease-standard);
         }
@@ -370,14 +378,18 @@ export default function Profile() {
 
         .fr-pf-row dt {
           font-family: var(--fr-font-sans);
-          font-size: 0.85rem;
+          font-size: var(--fr-fs-caption);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-text-2);
           flex-shrink: 0;
         }
 
         .fr-pf-row dd {
           font-family: var(--fr-font-sans);
-          font-size: 0.95rem;
+          font-size: var(--fr-fs-body);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-text);
           margin: 0;
           text-align: right;
@@ -389,9 +401,9 @@ export default function Profile() {
         .fr-pf-readonly {
           display: inline-block;
           margin-left: var(--fr-s2);
-          font-size: 0.68rem;
-          font-weight: 700;
-          letter-spacing: 0.3px;
+          font-size: var(--fr-fs-label);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-snug);
           text-transform: uppercase;
           color: var(--fr-text-3);
           border: 1px solid var(--fr-line);
@@ -406,14 +418,17 @@ export default function Profile() {
 
         .fr-pf-field label {
           font-family: var(--fr-font-sans);
-          font-size: 0.85rem;
-          font-weight: 600;
+          font-size: var(--fr-fs-caption);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-normal);
           color: var(--fr-text-2);
         }
 
         .fr-pf-input {
           font-family: var(--fr-font-sans);
-          font-size: 1rem;
+          font-size: var(--fr-fs-control);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-control);
           color: var(--fr-text);
           background: var(--fr-surface);
           border: 1px solid var(--fr-line-strong);
@@ -430,7 +445,7 @@ export default function Profile() {
           box-shadow: 0 0 0 3px var(--fr-brand-tint);
         }
 
-        .fr-pf-textarea { resize: vertical; min-height: 2.75rem; line-height: 1.4; overflow: hidden; }
+        .fr-pf-textarea { resize: vertical; min-height: 2.75rem; line-height: var(--fr-lh-normal); overflow: hidden; }
 
         .fr-pf-actions { display: flex; align-items: center; gap: var(--fr-s3); margin-top: var(--fr-s2); }
 
@@ -445,8 +460,9 @@ export default function Profile() {
           padding: var(--fr-s3) var(--fr-s6);
           border-radius: var(--fr-r-control);
           font-family: var(--fr-font-sans);
-          font-weight: 700;
-          font-size: 0.95rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-control);
+          line-height: var(--fr-lh-control);
           cursor: pointer;
           transition: background var(--fr-dur-quick) var(--fr-ease-standard);
         }
@@ -459,8 +475,9 @@ export default function Profile() {
           border: none;
           color: var(--fr-text-2);
           font-family: var(--fr-font-sans);
-          font-weight: 600;
-          font-size: 0.95rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-control);
+          line-height: var(--fr-lh-control);
           cursor: pointer;
           padding: var(--fr-s3);
         }
@@ -499,8 +516,9 @@ export default function Profile() {
           border: none;
           border-bottom: 1px solid var(--fr-line);
           font-family: var(--fr-font-sans);
-          font-size: 0.95rem;
-          font-weight: 600;
+          font-size: var(--fr-fs-control);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-control);
           color: var(--fr-text);
           text-decoration: none;
           cursor: pointer;
@@ -535,7 +553,9 @@ export default function Profile() {
 
         .fr-pf-state-title {
           font-family: var(--fr-font-display);
-          font-size: 1.5rem;
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
           color: var(--fr-text);
           margin: 0 0 var(--fr-s2);
         }
@@ -588,7 +608,7 @@ export default function Profile() {
         @keyframes fr-pf-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
         @media (max-width: 560px) {
-          .fr-pf-hello { font-size: 1.6rem; }
+
           .fr-pf-row { flex-direction: column; gap: var(--fr-s1); }
           .fr-pf-row dd { text-align: left; }
         }
