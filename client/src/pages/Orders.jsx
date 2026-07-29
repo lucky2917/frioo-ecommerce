@@ -374,6 +374,7 @@ export default function Orders() {
           font-family: var(--fr-font-sans);
           font-size: var(--fr-fs-title);
           font-weight: var(--fr-fw-bold);
+          letter-spacing: var(--fr-track-headline);
           color: var(--fr-text-2);
           line-height: var(--fr-lh-snug);
           margin: 0 0 var(--fr-s4);
@@ -683,6 +684,7 @@ export default function Orders() {
           font-family: var(--fr-font-display);
           font-size: var(--fr-fs-title);
           font-weight: var(--fr-fw-bold);
+          letter-spacing: var(--fr-track-headline);
           line-height: var(--fr-lh-snug);
           color: var(--fr-text);
           margin: 0 0 var(--fr-s2);

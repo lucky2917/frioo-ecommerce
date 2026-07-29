@@ -53,15 +53,15 @@ export default function CouponPopup() {
         .fr-welcome-close:hover { background: var(--fr-surface-2); color: var(--fr-text); }
         .fr-welcome-close:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
         .fr-welcome-mark { width: 56px; height: 56px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--fr-r-pill); background: var(--fr-brand-tint); color: var(--fr-brand); margin-bottom: var(--fr-s3); }
-        .fr-welcome-title { font-family: var(--fr-font-display); font-size: 1.6rem; font-weight: 700; color: var(--fr-text); margin: 0 0 var(--fr-s2); }
-        .fr-welcome-text { color: var(--fr-text-2); font-size: 0.95rem; line-height: 1.55; margin: 0 0 var(--fr-s5); }
-        .fr-welcome-text strong { color: var(--fr-text); font-weight: 600; }
+        .fr-welcome-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: 0 0 var(--fr-s2); }
+        .fr-welcome-text { color: var(--fr-text-2); font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); margin: 0 0 var(--fr-s5); }
+        .fr-welcome-text strong { color: var(--fr-text); font-weight: var(--fr-fw-medium); }
         .fr-welcome-facts { background: var(--fr-surface-2); border-radius: var(--fr-r-card); padding: var(--fr-s4); margin-bottom: var(--fr-s5); text-align: left; display: flex; flex-direction: column; gap: var(--fr-s4); }
         .fr-welcome-fact { display: flex; align-items: flex-start; gap: var(--fr-s3); }
         .fr-welcome-icon { color: var(--fr-brand); flex-shrink: 0; margin-top: 2px; }
-        .fr-welcome-fact strong { font-size: 0.9rem; color: var(--fr-text); font-weight: 600; }
-        .fr-welcome-fact p { margin: 2px 0 0; font-size: 0.82rem; color: var(--fr-text-3); }
-        .fr-welcome-btn { width: 100%; height: 48px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .fr-welcome-fact strong { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-normal); color: var(--fr-text); }
+        .fr-welcome-fact p { margin: 2px 0 0; font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-3); }
+        .fr-welcome-btn { width: 100%; height: 48px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
         .fr-welcome-btn:hover { background: var(--fr-brand-press); }
         .fr-welcome-btn:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
         @media (prefers-reduced-motion: no-preference) { .fr-welcome { animation: fr-welcome-pop var(--fr-dur-expressive) var(--fr-ease-settle); } }

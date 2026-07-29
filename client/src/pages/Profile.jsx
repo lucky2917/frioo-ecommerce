@@ -343,6 +343,7 @@ export default function Profile() {
           font-family: var(--fr-font-sans);
           font-size: var(--fr-fs-title);
           font-weight: var(--fr-fw-bold);
+          letter-spacing: var(--fr-track-headline);
           line-height: var(--fr-lh-snug);
           color: var(--fr-text);
           margin: 0;
@@ -555,6 +556,7 @@ export default function Profile() {
           font-family: var(--fr-font-display);
           font-size: var(--fr-fs-title);
           font-weight: var(--fr-fw-bold);
+          letter-spacing: var(--fr-track-headline);
           line-height: var(--fr-lh-snug);
           color: var(--fr-text);
           margin: 0 0 var(--fr-s2);

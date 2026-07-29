@@ -249,7 +249,7 @@ export default function Home() {
         .home-cat-media img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--fr-dur-base) var(--fr-ease-standard); }
         .home-cat:hover .home-cat-media img { transform: scale(1.03); }
         .home-cat-body { padding: var(--fr-s4); display: flex; flex-direction: column; gap: var(--fr-s2); }
-        .home-cat-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0; }
+        .home-cat-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); letter-spacing: var(--fr-track-headline); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0; }
         .home-cat-desc { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0; }
         .home-cat-link { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); color: var(--fr-brand); margin-top: var(--fr-s1); }
 

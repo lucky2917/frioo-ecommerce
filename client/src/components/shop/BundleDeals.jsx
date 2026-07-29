@@ -61,7 +61,7 @@ export default function BundleDeals({ products, onAddBundle }) {
         .fr-bundle-thumbs { display: flex; gap: 2px; background: var(--fr-surface-2); }
         .fr-bundle-thumb { flex: 1; min-width: 0; aspect-ratio: 1; object-fit: cover; }
         .fr-bundle-body { display: flex; flex-direction: column; gap: var(--fr-s2); padding: var(--fr-s4); flex: 1; }
-        .fr-bundle-name { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0; }
+        .fr-bundle-name { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); letter-spacing: var(--fr-track-headline); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0; }
         .fr-bundle-desc { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0; }
         .fr-bundle-tags { display: flex; flex-wrap: wrap; gap: var(--fr-s2); margin-top: var(--fr-s1); }
         .fr-bundle-tag { font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); color: var(--fr-brand); background: var(--fr-brand-tint); padding: 3px 9px; border-radius: var(--fr-r-pill); }
