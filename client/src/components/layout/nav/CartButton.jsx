@@ -14,8 +14,8 @@ export default function CartButton({ count }) {
         .fr-cart:hover { background: var(--fr-surface-2); }
         .fr-cart:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
         .fr-cart-icon { position: relative; display: inline-flex; }
-        .fr-cart-count { position: absolute; top: -6px; right: -8px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--fr-r-pill); background: var(--fr-brand); color: var(--fr-on-brand); font-size: 0.68rem; font-weight: 700; display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
-        .fr-cart-label { font-family: var(--fr-font-sans); font-size: 0.88rem; font-weight: 600; }
+        .fr-cart-count { position: absolute; top: -6px; right: -8px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--fr-r-pill); background: var(--fr-brand); color: var(--fr-on-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; }
+        .fr-cart-label { font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); }
         @media (max-width: 900px) { .fr-cart-label { display: none; } }
       `}</style>
     </Link>

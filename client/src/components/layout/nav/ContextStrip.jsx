@@ -22,17 +22,17 @@ export default function ContextStrip({ activeOrder, onTrack }) {
         </div>
       )}
       <style>{`
-        .fr-context-strip { height: 28px; display: flex; align-items: center; justify-content: center; padding: 0 var(--fr-s4); background: var(--fr-surface-2); border-bottom: 1px solid var(--fr-line); font-family: var(--fr-font-sans); font-size: 0.76rem; }
+        .fr-context-strip { height: 28px; display: flex; align-items: center; justify-content: center; padding: 0 var(--fr-s4); background: var(--fr-surface-2); border-bottom: 1px solid var(--fr-line); font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); }
         .fr-service { display: flex; align-items: center; gap: var(--fr-s2); color: var(--fr-text-2); }
-        .fr-service strong { color: var(--fr-text-2); font-weight: 600; }
+        .fr-service strong { color: var(--fr-text-2); font-weight: var(--fr-fw-medium); }
         .fr-service svg { color: var(--fr-brand); flex-shrink: 0; }
         .fr-tracker { display: inline-flex; align-items: center; gap: var(--fr-s2); color: var(--fr-text-2); background: none; border: none; cursor: pointer; padding: var(--fr-s1) var(--fr-s2); }
         .fr-tracker:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
         .fr-tracker-dot { width: 7px; height: 7px; border-radius: var(--fr-r-pill); background: var(--fr-info); flex-shrink: 0; }
         @media (prefers-reduced-motion: no-preference) { .fr-tracker-dot { animation: fr-pulse 2s var(--fr-ease-standard) infinite; } }
         @keyframes fr-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-        .fr-tracker-text strong { color: var(--fr-text); font-weight: 600; text-transform: capitalize; }
-        .fr-tracker-cta { color: var(--fr-brand); font-weight: 600; white-space: nowrap; }
+        .fr-tracker-text strong { color: var(--fr-text); font-weight: var(--fr-fw-medium); text-transform: capitalize; }
+        .fr-tracker-cta { color: var(--fr-brand); font-weight: var(--fr-fw-medium); white-space: nowrap; }
       `}</style>
     </div>
   );

@@ -23,7 +23,7 @@ export default function SearchBar({ value, onChange, onSubmit, onFocus, onBlur, 
         .fr-search-form { display: flex; align-items: center; gap: var(--fr-s2); height: 44px; padding: 0 var(--fr-s4); background: var(--fr-surface-2); border: 1px solid var(--fr-line); border-radius: var(--fr-r-pill); transition: border-color var(--fr-dur-quick) var(--fr-ease-standard), box-shadow var(--fr-dur-quick) var(--fr-ease-standard), background var(--fr-dur-quick) var(--fr-ease-standard); }
         .fr-search-form:focus-within { border-color: var(--fr-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fr-brand) 16%, transparent); background: var(--fr-surface); }
         .fr-search-icon { color: var(--fr-text-3); flex-shrink: 0; }
-        .fr-search-input { flex: 1; min-width: 0; border: none; background: none; outline: none; font-family: var(--fr-font-sans); font-size: 0.9rem; color: var(--fr-text); }
+        .fr-search-input { flex: 1; min-width: 0; border: none; background: none; outline: none; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-control); color: var(--fr-text); }
         .fr-search-input::placeholder { color: var(--fr-text-3); }
         @media (prefers-reduced-motion: reduce) { .fr-search-form { transition: none; } }
       `}</style>
