@@ -279,7 +279,7 @@ export default function Navbar() {
         .fr-logo { font-family: var(--fr-font-display); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; color: var(--fr-text); margin: 0; }
         .fr-logo span { color: var(--fr-brand); }
 
-        .fr-bar-center { flex: 1; display: flex; justify-content: center; }
+        .fr-bar-center { flex: 1; min-width: 0; display: flex; justify-content: center; }
         .fr-bar-right { display: flex; align-items: center; gap: var(--fr-s3); flex-shrink: 0; }
         .fr-search-slot { width: 320px; }
 
