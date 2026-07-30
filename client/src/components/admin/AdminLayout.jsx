@@ -183,10 +183,11 @@ export default function AdminLayout() {
 
                 .brand-text {
                     font-family: var(--fr-font-display);
-                    font-size: 1.6rem;
-                    font-weight: 700;
+                    font-size: var(--fr-fs-title);
+                    font-weight: var(--fr-fw-bold);
+                    line-height: var(--fr-lh-snug);
                     color: var(--fr-on-brand);
-                    letter-spacing: 0.5px;
+                    letter-spacing: var(--fr-track-headline);
                     white-space: nowrap;
                     transition: opacity var(--fr-dur-quick) var(--fr-ease-standard);
                 }
@@ -220,10 +221,12 @@ export default function AdminLayout() {
                 .nav-group { display: flex; flex-direction: column; gap: 2px; }
 
                 .nav-group-label {
-                    font-size: 0.65rem;
-                    font-weight: 700;
+                    font-family: var(--fr-font-sans);
+                    font-size: var(--fr-fs-eyebrow);
+                    font-weight: var(--fr-fw-medium);
+                    line-height: var(--fr-lh-snug);
                     text-transform: uppercase;
-                    letter-spacing: 0.1em;
+                    letter-spacing: var(--fr-track-eyebrow);
                     color: var(--adm-sidebar-muted);
                     padding: 0 var(--fr-s3);
                     margin-bottom: var(--fr-s2);
@@ -241,8 +244,10 @@ export default function AdminLayout() {
                     color: var(--adm-sidebar-text);
                     text-decoration: none;
                     border-radius: var(--fr-r-card);
-                    font-size: 0.9rem;
-                    font-weight: 500;
+                    font-family: var(--fr-font-sans);
+                    font-size: var(--fr-fs-control);
+                    font-weight: var(--fr-fw-regular);
+                    line-height: var(--fr-lh-control);
                     transition: background var(--fr-dur-quick) var(--fr-ease-standard), color var(--fr-dur-quick) var(--fr-ease-standard);
                     border: none;
                     background: transparent;
@@ -266,7 +271,7 @@ export default function AdminLayout() {
                 .nav-link.active {
                     background: var(--fr-brand);
                     color: var(--fr-on-brand);
-                    font-weight: 600;
+                    font-weight: var(--fr-fw-medium);
                 }
 
                 .nav-icon {
@@ -316,8 +321,10 @@ export default function AdminLayout() {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-weight: 700;
-                    font-size: 0.8rem;
+                    font-family: var(--fr-font-sans);
+                    font-weight: var(--fr-fw-bold);
+                    font-size: var(--fr-fs-caption);
+                    line-height: var(--fr-lh-snug);
                     flex-shrink: 0;
                 }
 
@@ -325,8 +332,10 @@ export default function AdminLayout() {
                 .sidebar.collapsed .admin-info { opacity: 0; width: 0; }
 
                 .admin-name {
-                    font-size: 0.85rem;
-                    font-weight: 600;
+                    font-family: var(--fr-font-sans);
+                    font-size: var(--fr-fs-caption);
+                    font-weight: var(--fr-fw-medium);
+                    line-height: var(--fr-lh-normal);
                     color: #E7ECE8;
                     white-space: nowrap;
                     overflow: hidden;
@@ -334,7 +343,10 @@ export default function AdminLayout() {
                 }
 
                 .admin-role {
-                    font-size: 0.7rem;
+                    font-family: var(--fr-font-sans);
+                    font-size: var(--fr-fs-label);
+                    font-weight: var(--fr-fw-regular);
+                    line-height: var(--fr-lh-snug);
                     color: var(--adm-sidebar-muted);
                     white-space: nowrap;
                 }
@@ -420,9 +432,10 @@ export default function AdminLayout() {
 
                     .mobile-brand {
                         font-family: var(--fr-font-display);
-                        font-size: 1.35rem;
-                        font-weight: 700;
-                        letter-spacing: 0.5px;
+                        font-size: var(--fr-fs-title);
+                        font-weight: var(--fr-fw-bold);
+                        line-height: var(--fr-lh-snug);
+                        letter-spacing: var(--fr-track-headline);
                     }
 
                     .menu-toggle {
