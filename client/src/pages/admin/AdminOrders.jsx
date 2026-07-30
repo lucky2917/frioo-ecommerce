@@ -372,10 +372,10 @@ export default function AdminOrders() {
 
             <style>{`
                 .ao-tabs { display: flex; gap: var(--fr-s1); margin-bottom: var(--fr-s5); border-bottom: 1px solid var(--adm-border); }
-                .ao-tab { background: none; border: none; padding: var(--fr-s3) var(--fr-s4); font-family: var(--fr-font-sans); font-size: 0.9rem; font-weight: 600; color: var(--adm-text-2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; display: flex; align-items: center; gap: var(--fr-s2); transition: color var(--fr-dur-quick) var(--fr-ease-standard); }
+                .ao-tab { background: none; border: none; padding: var(--fr-s3) var(--fr-s4); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); color: var(--adm-text-2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; display: flex; align-items: center; gap: var(--fr-s2); transition: color var(--fr-dur-quick) var(--fr-ease-standard); }
                 .ao-tab:hover { color: var(--fr-brand); }
                 .ao-tab.active { color: var(--fr-brand); border-bottom-color: var(--fr-brand); }
-                .ao-tab-count { background: var(--adm-surface-2); color: var(--adm-text-2); padding: 1px var(--fr-s2); border-radius: var(--fr-r-pill); font-size: 0.72rem; font-weight: 700; }
+                .ao-tab-count { background: var(--adm-surface-2); color: var(--adm-text-2); padding: 1px var(--fr-s2); border-radius: var(--fr-r-pill); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); }
                 .ao-tab.active .ao-tab-count { background: var(--fr-brand-tint); color: var(--fr-brand); }
 
                 .ao-filters { display: flex; gap: var(--fr-s3); flex-wrap: wrap; align-items: center; margin-bottom: var(--fr-s5); }
@@ -387,53 +387,53 @@ export default function AdminOrders() {
                 .ao-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--fr-s4); padding: var(--fr-s4); }
                 .ao-head-left { display: flex; flex-direction: column; gap: var(--fr-s3); min-width: 0; }
                 .ao-id-row { display: flex; align-items: center; gap: var(--fr-s2); flex-wrap: wrap; }
-                .ao-id { font-family: var(--fr-font-mono); font-size: 0.8rem; font-weight: 700; color: var(--adm-text); }
+                .ao-id { font-family: var(--fr-font-mono); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-bold); color: var(--adm-text);  font-variant-numeric: tabular-nums; }
 
-                .ao-type { display: inline-flex; align-items: center; gap: var(--fr-s1); font-size: 0.72rem; font-weight: 700; color: var(--adm-text-2); background: var(--adm-surface-2); padding: var(--fr-s1) var(--fr-s2); border-radius: var(--fr-r-pill); }
+                .ao-type { display: inline-flex; align-items: center; gap: var(--fr-s1); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); color: var(--adm-text-2); background: var(--adm-surface-2); padding: var(--fr-s1) var(--fr-s2); border-radius: var(--fr-r-pill); }
 
                 .ao-customer-row { display: flex; align-items: center; gap: var(--fr-s3); }
-                .ao-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--fr-brand-tint); color: var(--fr-brand); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
-                .ao-customer-name { font-size: 0.9rem; font-weight: 600; color: var(--adm-text); }
-                .ao-meta { display: flex; align-items: center; gap: var(--fr-s2); font-size: 0.78rem; color: var(--adm-text-3); }
-                .ao-items-pill { background: var(--adm-surface-2); padding: 0 var(--fr-s2); border-radius: var(--fr-r-pill); color: var(--adm-text-2); font-weight: 600; }
+                .ao-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--fr-brand-tint); color: var(--fr-brand); display: flex; align-items: center; justify-content: center; font-weight: var(--fr-fw-bold); font-size: var(--fr-fs-caption); flex-shrink: 0; }
+                .ao-customer-name { font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); color: var(--adm-text); }
+                .ao-meta { display: flex; align-items: center; gap: var(--fr-s2); font-size: var(--fr-fs-label); color: var(--adm-text-3); }
+                .ao-items-pill { background: var(--adm-surface-2); padding: 0 var(--fr-s2); border-radius: var(--fr-r-pill); color: var(--adm-text-2); font-weight: var(--fr-fw-medium); }
 
                 .ao-head-right { display: flex; flex-direction: column; align-items: flex-end; gap: var(--fr-s2); flex-shrink: 0; }
-                .ao-total { font-size: 1.15rem; font-weight: 700; color: var(--adm-text); }
+                .ao-total { font-size: var(--fr-fs-lead); font-weight: var(--fr-fw-bold); color: var(--adm-text);  font-variant-numeric: tabular-nums; }
                 .ao-chevron { transition: transform var(--fr-dur-quick) var(--fr-ease-standard); }
                 .ao-chevron.up { transform: rotate(180deg); }
 
                 .ao-details { border-top: 1px solid var(--adm-border); padding: var(--fr-s4); display: flex; flex-direction: column; gap: var(--fr-s4); background: var(--adm-canvas); }
                 .ao-section { display: flex; flex-direction: column; gap: var(--fr-s2); }
-                .ao-section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--adm-text-3); }
-                .ao-detail-row { display: flex; justify-content: space-between; gap: var(--fr-s4); font-size: 0.85rem; }
+                .ao-section-title { font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); text-transform: uppercase; letter-spacing: var(--fr-track-eyebrow); color: var(--adm-text-3); }
+                .ao-detail-row { display: flex; justify-content: space-between; gap: var(--fr-s4); font-size: var(--fr-fs-caption); }
                 .ao-detail-label { color: var(--adm-text-2); flex-shrink: 0; }
                 .ao-detail-value { color: var(--adm-text); text-align: right; }
                 .ao-address { max-width: 60%; }
-                .ao-detail-link { color: var(--fr-brand); text-decoration: none; font-weight: 600; }
+                .ao-detail-link { color: var(--fr-brand); text-decoration: none; font-weight: var(--fr-fw-medium); }
                 .ao-detail-link:hover { text-decoration: underline; }
                 .ao-directions { align-self: flex-start; margin-top: var(--fr-s2); }
 
                 .ao-item { padding: var(--fr-s3) 0; border-bottom: 1px solid var(--adm-border); }
                 .ao-item:last-child { border-bottom: none; }
                 .ao-item-main { display: flex; align-items: flex-start; gap: var(--fr-s3); }
-                .ao-item-qty { font-weight: 700; color: var(--fr-brand); min-width: 28px; }
+                .ao-item-qty { font-weight: var(--fr-fw-bold); color: var(--fr-brand); min-width: 28px;  font-variant-numeric: tabular-nums; }
                 .ao-item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
                 .ao-item-title-row { display: flex; align-items: center; gap: var(--fr-s2); }
-                .ao-item-title { font-weight: 600; color: var(--adm-text); font-size: 0.9rem; }
-                .ao-ai-label { font-size: 0.62rem; font-weight: 700; color: var(--fr-info); background: #E3EDF3; padding: 0 var(--fr-s1); border-radius: var(--fr-r-control); }
-                .ao-item-variant { font-size: 0.8rem; color: var(--adm-text-2); }
-                .ao-item-price { font-weight: 600; color: var(--adm-text); font-size: 0.9rem; }
+                .ao-item-title { font-weight: var(--fr-fw-medium); color: var(--adm-text); font-size: var(--fr-fs-caption); }
+                .ao-ai-label { font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); color: var(--fr-info); background: #E3EDF3; padding: 0 var(--fr-s1); border-radius: var(--fr-r-control); }
+                .ao-item-variant { font-size: var(--fr-fs-label); color: var(--adm-text-2); }
+                .ao-item-price { font-weight: var(--fr-fw-medium); color: var(--adm-text); font-size: var(--fr-fs-caption);  font-variant-numeric: tabular-nums; }
                 .ao-item-custom { margin-top: var(--fr-s2); margin-left: 28px; display: flex; flex-direction: column; gap: 2px; }
-                .ao-custom-row { display: flex; gap: var(--fr-s2); font-size: 0.78rem; color: var(--fr-warm); }
-                .ao-custom-label { font-weight: 700; }
+                .ao-custom-row { display: flex; gap: var(--fr-s2); font-size: var(--fr-fs-label); color: var(--fr-warm); }
+                .ao-custom-label { font-weight: var(--fr-fw-medium); }
 
                 .ao-price { display: flex; flex-direction: column; gap: var(--fr-s2); }
-                .ao-price-line { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--adm-text); }
+                .ao-price-line { display: flex; justify-content: space-between; font-size: var(--fr-fs-caption); color: var(--adm-text);  font-variant-numeric: tabular-nums; }
                 .ao-discount { color: var(--fr-success); }
-                .ao-coupon { background: var(--fr-brand-tint); color: var(--fr-brand); padding: 0 var(--fr-s2); border-radius: var(--fr-r-control); font-size: 0.72rem; font-weight: 700; }
-                .ao-price-total { font-weight: 700; border-top: 1px solid var(--adm-border); padding-top: var(--fr-s2); }
+                .ao-coupon { background: var(--fr-brand-tint); color: var(--fr-brand); padding: 0 var(--fr-s2); border-radius: var(--fr-r-control); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); }
+                .ao-price-total { font-weight: var(--fr-fw-bold); border-top: 1px solid var(--adm-border); padding-top: var(--fr-s2);  font-variant-numeric: tabular-nums; }
 
-                .ao-notes { display: flex; flex-direction: column; gap: var(--fr-s1); background: var(--fr-warm-tint); padding: var(--fr-s3); border-radius: var(--fr-r-card); font-size: 0.85rem; color: var(--adm-text); }
+                .ao-notes { display: flex; flex-direction: column; gap: var(--fr-s1); background: var(--fr-warm-tint); padding: var(--fr-s3); border-radius: var(--fr-r-card); font-size: var(--fr-fs-caption); color: var(--adm-text); }
 
                 @media (prefers-reduced-motion: reduce) {
                     .ao-tab, .ao-chevron { transition: none; }
