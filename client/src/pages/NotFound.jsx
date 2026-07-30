@@ -50,16 +50,20 @@ export default function NotFound() {
         }
         .nf-emoji { font-size: 5rem; margin-bottom: 20px; }
         .nf-title {
-          font-family: 'Playfair Display', serif;
-          font-size: 2.5rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-headline);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-tight);
+          letter-spacing: var(--fr-track-headline);
           color: #3E2723;
           margin-bottom: 15px;
         }
         .nf-text {
-          font-family: 'Manrope', sans-serif;
-          font-size: 1.1rem;
+          font-family: var(--fr-font-sans);
+          font-size: var(--fr-fs-lead);
+          font-weight: var(--fr-fw-regular);
           color: #666;
-          line-height: 1.6;
+          line-height: var(--fr-lh-normal);
           margin-bottom: 40px;
         }
         .nf-btn {
@@ -68,7 +72,10 @@ export default function NotFound() {
           color: white;
           padding: 14px 35px;
           border-radius: 30px;
-          font-weight: 700;
+          font-family: var(--fr-font-sans);
+          font-size: var(--fr-fs-control);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-control);
           text-decoration: none;
           transition: all 0.2s;
           box-shadow: 0 4px 15px rgba(197, 160, 101, 0.3);

@@ -161,7 +161,7 @@ export default function Onboarding() {
 
       <style>{`
         .onboarding-page {
-          font-family: 'Manrope', sans-serif;
+          font-family: var(--fr-font-sans);
           min-height: 100vh;
           background: #FAFAFA;
         }
@@ -173,7 +173,7 @@ export default function Onboarding() {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          font-family: 'Manrope', sans-serif;
+          font-family: var(--fr-font-sans);
           color: #666;
         }
 
@@ -188,15 +188,20 @@ export default function Onboarding() {
         }
 
         .onboarding-title {
-          font-family: 'Playfair Display', serif;
-          font-size: 2rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-headline);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-tight);
+          letter-spacing: var(--fr-track-headline);
           color: #111;
           margin: 0 0 10px;
         }
 
         .onboarding-sub {
           color: #888;
-          font-size: 1rem;
+          font-size: var(--fr-fs-lead);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
           margin: 0 0 35px;
         }
 
@@ -208,11 +213,13 @@ export default function Onboarding() {
         }
 
         .onboarding-label {
-          font-weight: 700;
-          font-size: 0.8rem;
+          font-family: var(--fr-font-sans);
+          font-size: var(--fr-fs-eyebrow);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-snug);
           color: #555;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: var(--fr-track-eyebrow);
           margin-top: 12px;
         }
 
@@ -220,8 +227,10 @@ export default function Onboarding() {
           padding: 12px 14px;
           border-radius: 8px;
           border: 1px solid #ddd;
-          font-size: 0.95rem;
-          font-family: 'Manrope', sans-serif;
+          font-size: var(--fr-fs-control);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-control);
+          font-family: var(--fr-font-sans);
           background: #fafafa;
           transition: border-color 0.2s, box-shadow 0.2s;
           outline: none;
@@ -253,8 +262,10 @@ export default function Onboarding() {
           color: #1565c0;
           border-radius: 8px;
           cursor: pointer;
-          font-weight: 600;
-          font-size: 0.85rem;
+          font-family: var(--fr-font-sans);
+          font-size: var(--fr-fs-control);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-control);
           padding: 0 16px;
           height: 46px;
           white-space: nowrap;
@@ -273,11 +284,11 @@ export default function Onboarding() {
           color: white;
           border: none;
           border-radius: 8px;
-          font-size: 1rem;
-          font-weight: 600;
+          font-size: var(--fr-fs-control);
+          font-weight: var(--fr-fw-medium);
+          line-height: var(--fr-lh-control);
           cursor: pointer;
-          font-family: 'Manrope', sans-serif;
-          letter-spacing: 0.3px;
+          font-family: var(--fr-font-sans);
           transition: background 0.2s;
         }
 
@@ -289,10 +300,6 @@ export default function Onboarding() {
           .onboarding-container {
             margin: 80px 16px 60px;
             padding: 30px 20px;
-          }
-
-          .onboarding-title {
-            font-size: 1.6rem;
           }
         }
       `}</style>

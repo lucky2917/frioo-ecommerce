@@ -58,34 +58,45 @@ export default function Terms() {
           border-radius: 16px;
           box-shadow: 0 2px 16px rgba(0,0,0,0.08);
         }
-        h1 {
-          font-family: 'Playfair Display', serif;
-          font-size: 2.5rem;
+        .legal-container h1 {
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-headline);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-tight);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 12px 0;
         }
-        .updated {
+        .legal-container .updated {
           color: #999;
-          font-size: 0.9rem;
+          font-family: var(--fr-font-sans);
+          font-size: var(--fr-fs-caption);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-normal);
           margin: 0 0 32px 0;
         }
-        section {
+        .legal-container section {
           margin-bottom: 32px;
         }
-        h2 {
-          font-size: 1.5rem;
+        .legal-container h2 {
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 16px 0;
         }
-        p {
-          font-size: 1rem;
-          line-height: 1.8;
+        .legal-container p {
+          font-family: var(--fr-font-sans);
+          font-size: var(--fr-fs-body);
+          font-weight: var(--fr-fw-regular);
+          line-height: var(--fr-lh-relaxed);
           color: #555;
         }
         @media (max-width: 768px) {
           .legal-page { padding: 100px 16px 40px; }
           .legal-container { padding: 24px; }
-          h1 { font-size: 2rem; }
         }
       `}</style>
     </div>
