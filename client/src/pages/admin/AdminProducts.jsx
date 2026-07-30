@@ -521,7 +521,7 @@ export default function AdminProducts() {
                 .ap-tag-discount { right: var(--fr-s2); background: var(--fr-warm); color: #fff; }
                 .ap-body { padding: var(--fr-s3) var(--fr-s4); flex: 1; }
                 .ap-cat { font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); text-transform: uppercase; letter-spacing: var(--fr-track-eyebrow); color: var(--adm-text-3); margin-bottom: var(--fr-s1); }
-                .ap-name { font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); color: var(--adm-text); margin: 0 0 var(--fr-s2); }
+                .ap-name { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-normal); letter-spacing: var(--fr-track-headline); color: var(--adm-text); margin: 0 0 var(--fr-s2); }
                 .ap-meta { display: flex; align-items: center; gap: var(--fr-s2); margin-bottom: var(--fr-s2); }
                 .ap-unit { font-size: var(--fr-fs-label); color: var(--adm-text-2); }
                 .ap-stock { font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); padding: 1px var(--fr-s2); border-radius: var(--fr-r-pill); font-variant-numeric: tabular-nums; }
