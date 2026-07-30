@@ -233,30 +233,30 @@ export default function AdminDashboard() {
             <style>{`
                 .db-charts { display: grid; grid-template-columns: 1.4fr 1fr; gap: var(--fr-s4); margin-bottom: var(--fr-s4); }
                 .db-chart-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--fr-s5); }
-                .db-chart-title { font-size: 0.95rem; font-weight: 700; color: var(--adm-text); }
-                .db-chart-total { font-size: 0.8rem; color: var(--adm-text-2); font-weight: 500; }
+                .db-chart-title { font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); color: var(--adm-text); }
+                .db-chart-total { font-size: var(--fr-fs-label); color: var(--adm-text-2); font-weight: var(--fr-fw-regular); font-variant-numeric: tabular-nums; }
 
                 .db-bars { display: flex; align-items: flex-end; gap: var(--fr-s3); height: 160px; }
                 .db-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
-                .db-bar-amount { font-size: 0.65rem; color: var(--adm-text-2); margin-bottom: var(--fr-s1); height: 16px; line-height: 16px; font-weight: 600; white-space: nowrap; }
+                .db-bar-amount { font-size: var(--fr-fs-label); color: var(--adm-text-2); margin-bottom: var(--fr-s1); height: 16px; line-height: 16px; font-weight: var(--fr-fw-medium); white-space: nowrap; font-variant-numeric: tabular-nums; }
                 .db-bar-track { flex: 1; width: 100%; background: var(--adm-surface-2); border-radius: var(--fr-r-control); display: flex; align-items: flex-end; overflow: hidden; }
                 .db-bar-fill { width: 100%; background: var(--fr-brand); border-radius: var(--fr-r-control) var(--fr-r-control) 0 0; transition: height var(--fr-dur-expressive) var(--fr-ease-settle); min-height: 2px; }
-                .db-bar-day { font-size: 0.7rem; color: var(--adm-text-3); margin-top: var(--fr-s1); font-weight: 500; }
+                .db-bar-day { font-size: var(--fr-fs-label); color: var(--adm-text-3); margin-top: var(--fr-s1); font-weight: var(--fr-fw-regular); }
 
                 .db-status-list { display: flex; flex-direction: column; gap: var(--fr-s3); }
                 .db-status-row { display: flex; flex-direction: column; gap: var(--fr-s1); }
                 .db-status-meta { display: flex; align-items: center; gap: var(--fr-s2); }
                 .db-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-                .db-status-name { font-size: 0.8rem; color: var(--adm-text); font-weight: 500; flex: 1; }
-                .db-status-count { font-size: 0.8rem; font-weight: 700; color: var(--adm-text); }
+                .db-status-name { font-size: var(--fr-fs-caption); color: var(--adm-text); font-weight: var(--fr-fw-regular); flex: 1; }
+                .db-status-count { font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-bold); color: var(--adm-text); font-variant-numeric: tabular-nums; }
                 .db-status-track { height: 6px; background: var(--adm-surface-2); border-radius: var(--fr-r-pill); overflow: hidden; }
                 .db-status-fill { height: 100%; border-radius: var(--fr-r-pill); transition: width var(--fr-dur-expressive) var(--fr-ease-settle); min-width: 4px; }
 
                 .db-bottom { display: grid; grid-template-columns: 1.6fr 1fr; gap: var(--fr-s4); }
                 .db-section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--fr-s4); }
-                .db-see-all { font-size: 0.85rem; color: var(--fr-brand); text-decoration: none; font-weight: 600; }
+                .db-see-all { font-size: var(--fr-fs-caption); color: var(--fr-brand); text-decoration: none; font-weight: var(--fr-fw-medium); }
                 .db-see-all:hover { color: var(--fr-brand-press); }
-                .db-name-cell { font-weight: 600; color: var(--adm-text); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+                .db-name-cell { font-weight: var(--fr-fw-medium); color: var(--adm-text); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
                 .db-quick { align-self: start; }
                 .db-qa-list { display: flex; flex-direction: column; gap: var(--fr-s1); }
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
                 .db-qa-item:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
                 .db-qa-icon { width: 38px; height: 38px; border-radius: var(--fr-r-card); background: var(--fr-brand-tint); color: var(--fr-brand); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
                 .db-qa-icon svg { width: 20px; height: 20px; }
-                .db-qa-label { font-size: 0.9rem; font-weight: 600; color: var(--adm-text); flex: 1; }
+                .db-qa-label { font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); color: var(--adm-text); flex: 1; }
                 .db-qa-arrow { width: 16px; height: 16px; color: var(--adm-text-3); flex-shrink: 0; }
 
                 @media (prefers-reduced-motion: reduce) {

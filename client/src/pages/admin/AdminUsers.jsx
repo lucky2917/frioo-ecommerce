@@ -261,20 +261,20 @@ export default function AdminUsers() {
             <style>{`
                 .au-toolbar { display: flex; gap: var(--fr-s3); flex-wrap: wrap; align-items: center; margin-bottom: var(--fr-s4); }
                 .au-select { width: auto; min-width: 150px; }
-                .au-count { font-size: 0.83rem; color: var(--adm-text-3); font-weight: 600; margin-left: auto; }
+                .au-count { font-size: var(--fr-fs-caption); color: var(--adm-text-3); font-weight: var(--fr-fw-medium); margin-left: auto; }
 
                 .au-user { display: flex; align-items: center; gap: var(--fr-s3); }
-                .au-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: var(--fr-brand-tint); color: var(--fr-brand); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+                .au-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: var(--fr-brand-tint); color: var(--fr-brand); display: flex; align-items: center; justify-content: center; font-weight: var(--fr-fw-bold); font-size: var(--fr-fs-caption); flex-shrink: 0; }
                 .au-avatar img { width: 100%; height: 100%; object-fit: cover; }
-                .au-name { font-weight: 600; color: var(--adm-text); }
-                .au-email { font-size: 0.8rem; color: var(--adm-text-3); }
+                .au-name { font-weight: var(--fr-fw-medium); font-size: var(--fr-fs-caption); color: var(--adm-text); }
+                .au-email { font-size: var(--fr-fs-label); color: var(--adm-text-3); }
                 .au-date { color: var(--adm-text-2); white-space: nowrap; }
                 .au-chip-customer { background: var(--adm-surface-2); color: var(--adm-text-2); text-transform: capitalize; }
                 .adm-chip--brand { text-transform: capitalize; }
                 .au-actions { display: flex; gap: var(--fr-s2); align-items: center; }
 
                 .au-pagination { display: flex; align-items: center; justify-content: center; gap: var(--fr-s4); margin-top: var(--fr-s5); }
-                .au-page-info { font-size: 0.85rem; color: var(--adm-text-2); font-weight: 600; }
+                .au-page-info { font-size: var(--fr-fs-caption); color: var(--adm-text-2); font-weight: var(--fr-fw-medium); font-variant-numeric: tabular-nums; }
 
                 .au-form { display: flex; flex-direction: column; gap: var(--fr-s4); }
                 .au-form-actions { display: flex; justify-content: flex-end; gap: var(--fr-s3); margin-top: var(--fr-s2); padding-top: var(--fr-s4); border-top: 1px solid var(--adm-border); }

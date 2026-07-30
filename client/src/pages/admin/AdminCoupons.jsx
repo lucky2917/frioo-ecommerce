@@ -308,22 +308,22 @@ export default function AdminCoupons() {
 
             <style>{`
                 .ac-toolbar { display: flex; gap: var(--fr-s3); align-items: center; margin-bottom: var(--fr-s5); }
-                .ac-count { font-size: 0.83rem; color: var(--adm-text-3); font-weight: 600; margin-left: auto; }
+                .ac-count { font-size: var(--fr-fs-caption); color: var(--adm-text-3); font-weight: var(--fr-fw-medium); margin-left: auto; }
 
                 .ac-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--fr-s4); }
                 .ac-card { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--fr-r-card); padding: var(--fr-s5); display: flex; flex-direction: column; }
                 .ac-dim { opacity: 0.72; }
                 .ac-head { display: flex; justify-content: space-between; align-items: center; gap: var(--fr-s3); margin-bottom: var(--fr-s3); }
-                .ac-code { font-family: var(--fr-font-mono); font-size: 1.05rem; font-weight: 700; color: var(--adm-text); letter-spacing: 0.5px; }
+                .ac-code { font-family: var(--fr-font-mono); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-bold); color: var(--adm-text); letter-spacing: var(--fr-track-eyebrow); }
                 .ac-chip-inactive { background: var(--adm-surface-2); color: var(--adm-text-2); }
-                .ac-desc { font-size: 0.85rem; color: var(--adm-text-2); margin: 0 0 var(--fr-s3); }
-                .ac-value { font-size: 1.5rem; font-weight: 700; color: var(--fr-brand); }
-                .ac-value-meta { font-size: 0.75rem; color: var(--adm-text-3); margin-bottom: var(--fr-s3); }
+                .ac-desc { font-size: var(--fr-fs-caption); color: var(--adm-text-2); margin: 0 0 var(--fr-s3); }
+                .ac-value { font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); color: var(--fr-brand); font-variant-numeric: tabular-nums; }
+                .ac-value-meta { font-size: var(--fr-fs-label); color: var(--adm-text-3); margin-bottom: var(--fr-s3); }
                 .ac-chips { display: flex; flex-wrap: wrap; gap: var(--fr-s2); margin-bottom: var(--fr-s2); }
-                .ac-info-chip { font-size: 0.72rem; font-weight: 600; color: var(--adm-text-2); background: var(--adm-surface-2); padding: 2px var(--fr-s2); border-radius: var(--fr-r-pill); }
+                .ac-info-chip { font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); color: var(--adm-text-2); background: var(--adm-surface-2); padding: 2px var(--fr-s2); border-radius: var(--fr-r-pill); }
                 .ac-chip-exhausted { background: var(--fr-warm-tint); color: var(--fr-danger); }
-                .ac-expiry { font-size: 0.78rem; color: var(--adm-text-3); margin-bottom: var(--fr-s3); }
-                .ac-expiry-past { color: var(--fr-danger); font-weight: 600; }
+                .ac-expiry { font-size: var(--fr-fs-label); color: var(--adm-text-3); margin-bottom: var(--fr-s3); }
+                .ac-expiry-past { color: var(--fr-danger); font-weight: var(--fr-fw-medium); }
                 .ac-actions { display: flex; gap: var(--fr-s2); align-items: center; margin-top: auto; padding-top: var(--fr-s3); }
                 .ac-actions .adm-btn { flex: 1; }
 

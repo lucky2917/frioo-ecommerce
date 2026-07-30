@@ -21,7 +21,7 @@ export default function AdminRoute({ children }) {
             font-family: var(--fr-font-sans);
             color: var(--adm-text-2);
           }
-          .adm-route-loading p { margin: 0; font-size: 0.9rem; font-weight: 600; }
+          .adm-route-loading p { margin: 0; font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); }
           .adm-route-spinner {
             width: 36px;
             height: 36px;
