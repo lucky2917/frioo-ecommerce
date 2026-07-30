@@ -35,7 +35,7 @@ export const showToast = (message, type = 'info', duration = 3000) => {
     toast.innerHTML = `
     <div style="display: flex; align-items: center; gap: 12px;">
       <span style="font-size: 1.2rem;">${icons[type]}</span>
-      <span class="toast-message" style="font-size: 0.9rem; font-weight: 500;"></span>
+      <span class="toast-message" style="font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal);"></span>
     </div>
   `;
 

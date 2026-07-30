@@ -151,12 +151,14 @@ html {
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--bg-body);
-  color: var(--text-primary);
-  font-family: 'Manrope', sans-serif;
+  background-color: var(--fr-canvas);
+  color: var(--fr-text);
+  font-family: var(--fr-font-sans);
+  font-size: var(--fr-fs-body);
+  font-weight: var(--fr-fw-regular);
+  line-height: var(--fr-lh-normal);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-  line-height: 1.5;
 }
 
 h1,
@@ -165,18 +167,10 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  color: var(--text-primary);
   margin-top: 0;
 }
 
 button {
-  font-family: 'Manrope', sans-serif;
-  letter-spacing: 0.02em;
-  font-weight: 600;
   cursor: pointer;
 }
 
@@ -341,14 +335,6 @@ a:hover {
 }
 
 @media (max-width: 600px) {
-  body {
-    font-size: 14px;
-  }
-
-  h1 {
-    font-size: 2.2rem !important;
-  }
-
   .container-fluid {
     padding: 0 10px 100px;
   }
@@ -436,17 +422,20 @@ a:hover {
 
 .toast-title {
   display: block;
-  font-size: 0.85rem;
+  font-family: var(--fr-font-sans);
+  font-size: var(--fr-fs-caption);
+  font-weight: var(--fr-fw-bold);
+  line-height: var(--fr-lh-normal);
   color: var(--fr-text);
   margin-bottom: 2px;
-  font-family: var(--fr-font-sans);
-  font-weight: 700;
 }
 
 .toast-msg {
-  font-size: 0.8rem;
-  color: var(--fr-text-2);
   font-family: var(--fr-font-sans);
+  font-size: var(--fr-fs-caption);
+  font-weight: var(--fr-fw-regular);
+  line-height: var(--fr-lh-normal);
+  color: var(--fr-text-2);
 }
 
 @keyframes slideInRight {
