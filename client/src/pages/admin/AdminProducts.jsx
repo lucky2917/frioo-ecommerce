@@ -507,29 +507,29 @@ export default function AdminProducts() {
             <style>{`
                 .ap-toolbar { display: flex; justify-content: space-between; gap: var(--fr-s4); flex-wrap: wrap; align-items: center; margin-bottom: var(--fr-s5); }
                 .ap-tabs { display: flex; gap: var(--fr-s1); flex-wrap: wrap; }
-                .ap-tab { background: var(--adm-surface); border: 1px solid var(--adm-border); padding: var(--fr-s2) var(--fr-s3); border-radius: var(--fr-r-pill); font-family: var(--fr-font-sans); font-size: 0.83rem; font-weight: 600; color: var(--adm-text-2); cursor: pointer; display: inline-flex; align-items: center; gap: var(--fr-s2); transition: background var(--fr-dur-quick) var(--fr-ease-standard), color var(--fr-dur-quick) var(--fr-ease-standard), border-color var(--fr-dur-quick) var(--fr-ease-standard); }
+                .ap-tab { background: var(--adm-surface); border: 1px solid var(--adm-border); padding: var(--fr-s2) var(--fr-s3); border-radius: var(--fr-r-pill); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); color: var(--adm-text-2); cursor: pointer; display: inline-flex; align-items: center; gap: var(--fr-s2); transition: background var(--fr-dur-quick) var(--fr-ease-standard), color var(--fr-dur-quick) var(--fr-ease-standard), border-color var(--fr-dur-quick) var(--fr-ease-standard); }
                 .ap-tab:hover { border-color: var(--adm-border-strong); }
                 .ap-tab.active { background: var(--fr-brand); border-color: var(--fr-brand); color: var(--fr-on-brand); }
-                .ap-tab-count { font-size: 0.72rem; font-weight: 700; opacity: 0.85; }
+                .ap-tab-count { font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); opacity: 0.85; }
 
                 .ap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--fr-s4); }
                 .ap-card { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--fr-r-card); overflow: hidden; display: flex; flex-direction: column; }
                 .ap-img { position: relative; aspect-ratio: 4 / 3; background: var(--adm-surface-2); }
                 .ap-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-                .ap-tag { position: absolute; top: var(--fr-s2); font-size: 0.68rem; font-weight: 700; padding: 2px var(--fr-s2); border-radius: var(--fr-r-pill); }
+                .ap-tag { position: absolute; top: var(--fr-s2); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); padding: 2px var(--fr-s2); border-radius: var(--fr-r-pill); }
                 .ap-tag-featured { left: var(--fr-s2); background: var(--fr-brand); color: var(--fr-on-brand); }
                 .ap-tag-discount { right: var(--fr-s2); background: var(--fr-warm); color: #fff; }
                 .ap-body { padding: var(--fr-s3) var(--fr-s4); flex: 1; }
-                .ap-cat { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--adm-text-3); margin-bottom: var(--fr-s1); }
-                .ap-name { font-size: 0.95rem; font-weight: 600; color: var(--adm-text); margin: 0 0 var(--fr-s2); }
+                .ap-cat { font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); text-transform: uppercase; letter-spacing: var(--fr-track-eyebrow); color: var(--adm-text-3); margin-bottom: var(--fr-s1); }
+                .ap-name { font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); color: var(--adm-text); margin: 0 0 var(--fr-s2); }
                 .ap-meta { display: flex; align-items: center; gap: var(--fr-s2); margin-bottom: var(--fr-s2); }
-                .ap-unit { font-size: 0.78rem; color: var(--adm-text-2); }
-                .ap-stock { font-size: 0.68rem; font-weight: 700; padding: 1px var(--fr-s2); border-radius: var(--fr-r-pill); }
+                .ap-unit { font-size: var(--fr-fs-label); color: var(--adm-text-2); }
+                .ap-stock { font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); padding: 1px var(--fr-s2); border-radius: var(--fr-r-pill); font-variant-numeric: tabular-nums; }
                 .ap-stock--ok { background: var(--fr-brand-tint); color: var(--fr-success); }
                 .ap-stock--out { background: var(--fr-warm-tint); color: var(--fr-danger); }
                 .ap-price-row { display: flex; align-items: baseline; gap: var(--fr-s2); }
-                .ap-price { font-size: 1.05rem; font-weight: 700; color: var(--adm-text); }
-                .ap-price-orig { font-size: 0.8rem; color: var(--adm-text-3); text-decoration: line-through; }
+                .ap-price { font-size: var(--fr-fs-lead); font-weight: var(--fr-fw-bold); color: var(--adm-text); font-variant-numeric: tabular-nums; }
+                .ap-price-orig { font-size: var(--fr-fs-caption); color: var(--adm-text-3); text-decoration: line-through; font-variant-numeric: tabular-nums; }
                 .ap-actions { display: flex; gap: var(--fr-s2); padding: var(--fr-s3) var(--fr-s4); border-top: 1px solid var(--adm-border); align-items: center; }
                 .ap-actions .adm-btn { flex: 1; }
 
@@ -538,7 +538,7 @@ export default function AdminProducts() {
                 .ap-full { grid-column: 1 / -1; }
 
                 .ap-toggle, .ap-upload-tabs { display: flex; gap: var(--fr-s2); }
-                .ap-toggle-btn, .ap-upload-tab { flex: 1; padding: var(--fr-s2) var(--fr-s3); border: 1px solid var(--adm-border-strong); background: var(--adm-surface); border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: 0.85rem; font-weight: 600; color: var(--adm-text-2); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard), border-color var(--fr-dur-quick) var(--fr-ease-standard); }
+                .ap-toggle-btn, .ap-upload-tab { flex: 1; padding: var(--fr-s2) var(--fr-s3); border: 1px solid var(--adm-border-strong); background: var(--adm-surface); border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); color: var(--adm-text-2); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard), border-color var(--fr-dur-quick) var(--fr-ease-standard); }
                 .ap-toggle-btn.active { background: var(--fr-brand); border-color: var(--fr-brand); color: var(--fr-on-brand); }
                 .ap-toggle-btn.ap-toggle-off { background: var(--fr-danger); border-color: var(--fr-danger); }
                 .ap-upload-tab.active { border-color: var(--fr-brand); color: var(--fr-brand); }
@@ -546,17 +546,17 @@ export default function AdminProducts() {
                 .ap-dropzone { margin-top: var(--fr-s2); border: 1.5px dashed var(--adm-border-strong); border-radius: var(--fr-r-card); background: var(--adm-surface-2); transition: border-color var(--fr-dur-quick) var(--fr-ease-standard), background var(--fr-dur-quick) var(--fr-ease-standard); }
                 .ap-dropzone.dragging { border-color: var(--fr-brand); background: var(--fr-brand-tint); }
                 .ap-upload-label { display: flex; flex-direction: column; align-items: center; gap: var(--fr-s2); padding: var(--fr-s6); cursor: pointer; color: var(--adm-text-2); text-align: center; }
-                .ap-upload-title { font-size: 0.88rem; font-weight: 600; color: var(--adm-text); margin: 0; }
-                .ap-upload-sub { font-size: 0.75rem; color: var(--adm-text-3); margin: 0; }
+                .ap-upload-title { font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); color: var(--adm-text); margin: 0; }
+                .ap-upload-sub { font-size: var(--fr-fs-label); color: var(--adm-text-3); margin: 0; }
 
                 .ap-preview { position: relative; margin-top: var(--fr-s3); width: 120px; height: 120px; border-radius: var(--fr-r-card); overflow: hidden; border: 1px solid var(--adm-border); }
                 .ap-preview img { width: 100%; height: 100%; object-fit: cover; }
                 .ap-preview-remove { position: absolute; top: var(--fr-s1); right: var(--fr-s1); width: 24px; height: 24px; border: none; border-radius: 50%; background: rgba(22,33,27,0.7); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
                 .ap-nutrition { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--fr-s3); }
-                .ap-nutrition-label { font-size: 0.75rem; color: var(--adm-text-2); }
+                .ap-nutrition-label { font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); color: var(--adm-text-2); }
 
-                .ap-checkbox { display: flex; align-items: center; gap: var(--fr-s2); font-size: 0.9rem; color: var(--adm-text); cursor: pointer; }
+                .ap-checkbox { display: flex; align-items: center; gap: var(--fr-s2); font-size: var(--fr-fs-caption); color: var(--adm-text); cursor: pointer; }
                 .ap-checkbox input { width: 16px; height: 16px; accent-color: var(--fr-brand); }
 
                 .ap-form-actions { display: flex; justify-content: flex-end; gap: var(--fr-s3); margin-top: var(--fr-s5); padding-top: var(--fr-s4); border-top: 1px solid var(--adm-border); }
