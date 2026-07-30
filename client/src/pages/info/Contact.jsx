@@ -202,16 +202,19 @@ export default function Contact() {
         }
 
         .contact-header h1 {
-          font-family: 'Playfair Display', serif;
-          font-size: 3rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-headline);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-tight);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 12px 0;
         }
 
         .subtitle {
-          font-size: 1.25rem;
+          font-size: var(--fr-fs-lead);
           color: #D4AF7A;
-          font-weight: 500;
+          font-weight: var(--fr-fw-regular);
         }
 
         .contact-content {
@@ -229,8 +232,11 @@ export default function Contact() {
         }
 
         .contact-info h2 {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.75rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 32px 0;
         }
@@ -251,17 +257,20 @@ export default function Contact() {
         }
 
         .info-item h3 {
-          font-size: 1.05rem;
-          font-weight: 600;
+          font-size: var(--fr-fs-lead);
+          font-family: var(--fr-font-sans);
+          line-height: var(--fr-lh-snug);
+          letter-spacing: var(--fr-track-headline);
+          font-weight: var(--fr-fw-medium);
           color: #2d2d2d;
           margin: 0 0 8px 0;
         }
 
         .info-item p {
-          font-size: 0.95rem;
+          font-size: var(--fr-fs-body);
           color: #666;
           margin: 0;
-          line-height: 1.6;
+          line-height: var(--fr-lh-normal);
         }
 
         .contact-form-wrapper {
@@ -272,8 +281,11 @@ export default function Contact() {
         }
 
         .contact-form-wrapper h2 {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.75rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 24px 0;
         }
@@ -285,7 +297,9 @@ export default function Contact() {
           border-radius: 8px;
           margin-bottom: 24px;
           text-align: center;
-          font-weight: 500;
+          font-weight: var(--fr-fw-regular);
+          font-size: var(--fr-fs-body);
+          line-height: var(--fr-lh-normal);
         }
 
         .contact-form {
@@ -307,8 +321,8 @@ export default function Contact() {
         }
 
         .form-field label {
-          font-size: 0.9rem;
-          font-weight: 600;
+          font-size: var(--fr-fs-caption);
+          font-weight: var(--fr-fw-medium);
           color: #2d2d2d;
         }
 
@@ -317,8 +331,9 @@ export default function Contact() {
           padding: 12px 16px;
           border: 2px solid #e5e5e5;
           border-radius: 8px;
-          font-size: 0.95rem;
-          font-family: inherit;
+          font-size: var(--fr-fs-control);
+          line-height: var(--fr-lh-normal);
+          font-family: var(--fr-font-sans);
           transition: all 0.3s;
           outline: none;
         }
@@ -340,8 +355,9 @@ export default function Contact() {
           padding: 16px 32px;
           border: none;
           border-radius: 8px;
-          font-weight: 600;
-          font-size: 1.05rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-control);
+          line-height: var(--fr-lh-control);
           cursor: pointer;
           transition: all 0.3s;
           margin-top: 8px;
@@ -366,7 +382,6 @@ export default function Contact() {
           }
 
           .contact-header h1 {
-            font-size: 2.25rem;
           }
 
           .contact-info,

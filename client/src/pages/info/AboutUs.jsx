@@ -95,16 +95,19 @@ export default function AboutUs() {
         }
 
         .info-header h1 {
-          font-family: 'Playfair Display', serif;
-          font-size: 3rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-headline);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-tight);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 12px 0;
         }
 
         .subtitle {
-          font-size: 1.25rem;
+          font-size: var(--fr-fs-lead);
           color: #D4AF7A;
-          font-weight: 500;
+          font-weight: var(--fr-fw-regular);
         }
 
         .info-content {
@@ -123,15 +126,18 @@ export default function AboutUs() {
         }
 
         .info-section h2 {
-          font-family: 'Playfair Display', serif;
-          font-size: 2rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 20px 0;
         }
 
         .info-section p {
-          font-size: 1.05rem;
-          line-height: 1.8;
+          font-size: var(--fr-fs-body);
+          line-height: var(--fr-lh-relaxed);
           color: #555;
           margin: 0 0 16px 0;
         }
@@ -151,13 +157,17 @@ export default function AboutUs() {
         }
 
         .offering-card h3 {
-          font-size: 1.25rem;
+          font-size: var(--fr-fs-lead);
+          font-family: var(--fr-font-display);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 12px 0;
         }
 
         .offering-card p {
-          font-size: 0.95rem;
+          font-size: var(--fr-fs-body);
           color: #666;
           margin: 0;
         }
@@ -169,8 +179,8 @@ export default function AboutUs() {
         }
 
         .values-list li {
-          font-size: 1.05rem;
-          line-height: 1.8;
+          font-size: var(--fr-fs-body);
+          line-height: var(--fr-lh-relaxed);
           color: #555;
           margin-bottom: 16px;
           padding-left: 32px;
@@ -182,8 +192,8 @@ export default function AboutUs() {
           position: absolute;
           left: 0;
           color: #D4AF7A;
-          font-weight: bold;
-          font-size: 1.25rem;
+          font-weight: var(--fr-fw-bold);
+          font-size: var(--fr-fs-title);
         }
 
         .cta-section {
@@ -194,8 +204,11 @@ export default function AboutUs() {
         }
 
         .cta-section h2 {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.75rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 24px 0;
         }
@@ -206,8 +219,9 @@ export default function AboutUs() {
           color: white;
           padding: 16px 40px;
           border-radius: 8px;
-          font-weight: 600;
-          font-size: 1.05rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-control);
+          line-height: var(--fr-lh-control);
           text-decoration: none;
           transition: all 0.3s;
         }
@@ -224,7 +238,6 @@ export default function AboutUs() {
           }
 
           .info-header h1 {
-            font-size: 2.25rem;
           }
 
           .info-content {
@@ -236,7 +249,6 @@ export default function AboutUs() {
           }
 
           .info-section h2 {
-            font-size: 1.5rem;
           }
         }
       `}</style>

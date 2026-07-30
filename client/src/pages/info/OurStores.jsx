@@ -163,17 +163,19 @@ export default function OurStores() {
         }
 
         .stores-hero h1 {
-          font-family: 'Playfair Display', serif;
-          font-size: 3.5rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-headline);
+          line-height: var(--fr-lh-tight);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 16px 0;
-          font-weight: 700;
+          font-weight: var(--fr-fw-bold);
         }
 
         .subtitle {
-          font-size: 1.35rem;
+          font-size: var(--fr-fs-lead);
           color: #D4AF7A;
-          font-weight: 500;
+          font-weight: var(--fr-fw-regular);
           margin: 0;
         }
 
@@ -256,20 +258,22 @@ export default function OurStores() {
           color: white;
           padding: 10px 20px;
           border-radius: 50px;
-          font-size: 0.85rem;
-          font-weight: 600;
+          font-size: var(--fr-fs-label);
+          font-weight: var(--fr-fw-medium);
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: var(--fr-track-eyebrow);
           width: fit-content;
           box-shadow: 0 4px 16px rgba(212, 175, 122, 0.3);
         }
 
         .store-name {
-          font-family: 'Playfair Display', serif;
-          font-size: 2.5rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-title);
+          line-height: var(--fr-lh-snug);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0;
-          font-weight: 700;
+          font-weight: var(--fr-fw-bold);
         }
 
         .store-details {
@@ -301,24 +305,26 @@ export default function OurStores() {
         }
 
         .detail-content h3 {
-          font-size: 0.9rem;
-          font-weight: 700;
+          font-size: var(--fr-fs-eyebrow);
+          font-family: var(--fr-font-sans);
+          line-height: var(--fr-lh-snug);
+          font-weight: var(--fr-fw-medium);
           color: #999;
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: var(--fr-track-eyebrow);
           margin: 0 0 8px 0;
         }
 
         .detail-content p {
-          font-size: 1.05rem;
+          font-size: var(--fr-fs-body);
           color: #2d2d2d;
           margin: 0;
-          line-height: 1.6;
+          line-height: var(--fr-lh-normal);
         }
 
         .detail-content p.days {
           color: #666;
-          font-size: 0.95rem;
+          font-size: var(--fr-fs-caption);
           margin-top: 4px;
         }
 
@@ -347,8 +353,9 @@ export default function OurStores() {
           gap: 10px;
           padding: 16px 24px;
           border-radius: 12px;
-          font-weight: 600;
-          font-size: 1rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-control);
+          line-height: var(--fr-lh-control);
           text-decoration: none;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           border: 2px solid transparent;
@@ -397,8 +404,9 @@ export default function OurStores() {
           background: white;
           padding: 12px 24px;
           border-radius: 50px;
-          font-weight: 600;
-          font-size: 0.9rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-control);
+          line-height: var(--fr-lh-control);
           color: #2d2d2d;
           text-decoration: none;
           box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
@@ -450,18 +458,21 @@ export default function OurStores() {
         }
 
         .expansion-notice h2 {
-          font-family: 'Playfair Display', serif;
-          font-size: 2.5rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
+          letter-spacing: var(--fr-track-headline);
           margin: 0 0 16px 0;
           color: white;
         }
 
         .expansion-notice p {
-          font-size: 1.15rem;
+          font-size: var(--fr-fs-lead);
           color: rgba(255, 255, 255, 0.8);
           max-width: 600px;
           margin: 0 auto;
-          line-height: 1.7;
+          line-height: var(--fr-lh-relaxed);
         }
 
         @media (max-width: 1024px) {
@@ -485,11 +496,9 @@ export default function OurStores() {
           }
 
           .stores-hero h1 {
-            font-size: 2.5rem;
           }
 
           .subtitle {
-            font-size: 1.1rem;
           }
 
           .main-store-card {
@@ -497,7 +506,6 @@ export default function OurStores() {
           }
 
           .store-name {
-            font-size: 2rem;
           }
 
           .action-buttons {
@@ -509,7 +517,6 @@ export default function OurStores() {
           }
 
           .expansion-notice h2 {
-            font-size: 2rem;
           }
         }
       `}</style>

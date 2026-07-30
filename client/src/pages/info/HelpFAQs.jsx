@@ -177,16 +177,19 @@ export default function HelpFAQs() {
         }
 
         .faq-header h1 {
-          font-family: 'Playfair Display', serif;
-          font-size: 3rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-headline);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-tight);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 12px 0;
         }
 
         .subtitle {
-          font-size: 1.25rem;
+          font-size: var(--fr-fs-lead);
           color: #D4AF7A;
-          font-weight: 500;
+          font-weight: var(--fr-fw-regular);
         }
 
         .faq-content {
@@ -206,8 +209,11 @@ export default function HelpFAQs() {
         }
 
         .category-title {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.75rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 24px 0;
           padding-bottom: 12px;
@@ -241,8 +247,10 @@ export default function HelpFAQs() {
           border: none;
           text-align: left;
           cursor: pointer;
-          font-size: 1.05rem;
-          font-weight: 600;
+          font-size: var(--fr-fs-control);
+          font-family: var(--fr-font-sans);
+          line-height: var(--fr-lh-control);
+          font-weight: var(--fr-fw-medium);
           color: #2d2d2d;
           transition: all 0.3s;
         }
@@ -278,8 +286,8 @@ export default function HelpFAQs() {
         .faq-answer p {
           padding: 0 24px 20px 24px;
           margin: 0;
-          font-size: 0.95rem;
-          line-height: 1.7;
+          font-size: var(--fr-fs-body);
+          line-height: var(--fr-lh-relaxed);
           color: #666;
         }
 
@@ -292,14 +300,18 @@ export default function HelpFAQs() {
         }
 
         .contact-cta h2 {
-          font-family: 'Playfair Display', serif;
-          font-size: 2rem;
+          font-family: var(--fr-font-display);
+          font-size: var(--fr-fs-title);
+          font-weight: var(--fr-fw-bold);
+          line-height: var(--fr-lh-snug);
+          letter-spacing: var(--fr-track-headline);
           color: #2d2d2d;
           margin: 0 0 12px 0;
         }
 
         .contact-cta p {
-          font-size: 1.05rem;
+          font-size: var(--fr-fs-body);
+          line-height: var(--fr-lh-normal);
           color: #666;
           margin: 0 0 24px 0;
         }
@@ -310,8 +322,9 @@ export default function HelpFAQs() {
           color: white;
           padding: 16px 40px;
           border-radius: 8px;
-          font-weight: 600;
-          font-size: 1.05rem;
+          font-weight: var(--fr-fw-medium);
+          font-size: var(--fr-fs-control);
+          line-height: var(--fr-lh-control);
           text-decoration: none;
           transition: all 0.3s;
         }
@@ -328,7 +341,6 @@ export default function HelpFAQs() {
           }
 
           .faq-header h1 {
-            font-size: 2.25rem;
           }
 
           .faq-content {
@@ -336,7 +348,6 @@ export default function HelpFAQs() {
           }
 
           .faq-question {
-            font-size: 0.95rem;
             padding: 16px 20px;
           }
         }
