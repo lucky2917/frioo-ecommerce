@@ -25,7 +25,7 @@ export default function MobileDrawer({ open, onClose }) {
 
   return (
     <>
-      <div className={`fr-drawer ${open ? 'fr-drawer-open' : ''}`} ref={dialogRef} role="dialog" aria-modal="true" aria-label="Menu" aria-hidden={!open}>
+      <div className={`fr-drawer ${open ? 'fr-drawer-open' : ''}`} ref={dialogRef} role="dialog" aria-modal="true" aria-label="Menu" aria-hidden={!open} inert={!open ? '' : undefined}>
         <div className="fr-drawer-head">
           <span className="fr-drawer-title">Menu</span>
           <button className="fr-drawer-close" ref={closeRef} onClick={onClose} aria-label="Close menu">

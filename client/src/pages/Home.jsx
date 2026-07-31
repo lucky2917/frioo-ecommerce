@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import Footer from '../components/layout/Footer';
 import SEO from '../components/SEO';
 import FetchError from '../components/FetchError';
 import ProductCard from '../components/shop/ProductCard';
@@ -205,8 +204,6 @@ export default function Home() {
         </section>
       )}
 
-      <Footer />
-
       <style>{`
         .home-page { background: var(--fr-canvas); }
 
@@ -222,7 +219,7 @@ export default function Home() {
         .home-hero-cta:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 
         .home-section { padding: var(--fr-s9) 0; }
-        .home-container { max-width: 1200px; margin: 0 auto; padding: 0 var(--fr-s7); }
+        .home-container { max-width: var(--fr-container); margin: 0 auto; padding: 0 var(--fr-s7); }
         .home-head { margin-bottom: var(--fr-s6); }
         .home-head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--fr-s4); }
         .home-eyebrow { font-family: var(--fr-font-mono); font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-eyebrow); text-transform: uppercase; color: var(--fr-brand); margin: 0 0 var(--fr-s2); }

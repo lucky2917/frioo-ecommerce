@@ -273,7 +273,7 @@ export default function Navbar() {
       <style>{`
         .fr-header { position: fixed; top: 0; left: 0; right: 0; z-index: var(--fr-z-nav); background: var(--fr-surface); border-bottom: 1px solid var(--fr-line); }
 
-        .fr-bar-inner { display: flex; align-items: center; gap: var(--fr-s5); height: 60px; max-width: 1400px; margin: 0 auto; padding: 0 var(--fr-s7); }
+        .fr-bar-inner { display: flex; align-items: center; gap: var(--fr-s5); height: 60px; max-width: var(--fr-container); margin: 0 auto; padding: 0 var(--fr-s7); }
 
         .fr-hamburger, .fr-icon-btn { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text); cursor: pointer; border-radius: var(--fr-r-pill); flex-shrink: 0; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
         .fr-hamburger { display: none; }

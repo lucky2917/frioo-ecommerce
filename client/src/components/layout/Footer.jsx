@@ -82,7 +82,7 @@ export default function Footer() {
 
       <style>{`
         .fr-footer { background: var(--fr-surface-2); border-top: 1px solid var(--fr-line); margin-top: auto; font-family: var(--fr-font-sans); }
-        .fr-footer-main { max-width: 1400px; margin: 0 auto; padding: var(--fr-s10) var(--fr-s7) var(--fr-s8); display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: var(--fr-s8); }
+        .fr-footer-main { max-width: var(--fr-container); margin: 0 auto; padding: var(--fr-s10) var(--fr-s7) var(--fr-s8); display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: var(--fr-s8); }
         .fr-footer-col { display: flex; flex-direction: column; }
         .fr-footer-logo { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: 0 0 var(--fr-s3); }
         .fr-footer-logo span { color: var(--fr-brand); }
@@ -110,7 +110,7 @@ export default function Footer() {
         .fr-footer-contact { display: flex; flex-direction: column; gap: var(--fr-s2); }
         .fr-contact-item { display: flex; align-items: center; gap: var(--fr-s2); color: var(--fr-text-2); font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); margin: 0; }
         .fr-contact-item svg { color: var(--fr-brand); flex-shrink: 0; }
-        .fr-footer-bottom { max-width: 1400px; margin: 0 auto; padding: var(--fr-s5) var(--fr-s7); border-top: 1px solid var(--fr-line); display: flex; align-items: center; justify-content: space-between; gap: var(--fr-s4); flex-wrap: wrap; }
+        .fr-footer-bottom { max-width: var(--fr-container); margin: 0 auto; padding: var(--fr-s5) var(--fr-s7); border-top: 1px solid var(--fr-line); display: flex; align-items: center; justify-content: space-between; gap: var(--fr-s4); flex-wrap: wrap; }
         .fr-footer-copyright { color: var(--fr-text-3); font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); margin: 0; }
         .fr-footer-legal { display: flex; align-items: center; gap: var(--fr-s5); }
         .fr-footer-legal a { color: var(--fr-text-3); text-decoration: none; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-control); transition: color var(--fr-dur-quick) var(--fr-ease-standard); }

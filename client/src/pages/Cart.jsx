@@ -572,7 +572,7 @@ const cartBaseStyles = `
   .cart-page { background: var(--fr-canvas); min-height: 100vh; padding-top: var(--navbar-height-mobile); }
   @media (min-width: 901px) { .cart-page { padding-top: var(--navbar-height-desktop); } }
   .cart-loading { text-align: center; padding: var(--fr-s10); color: var(--fr-text-2); font-family: var(--fr-font-sans); }
-  .cart-container { max-width: 1160px; margin: 0 auto; padding: var(--fr-s7) var(--fr-s7) var(--fr-s10); }
+  .cart-container { max-width: var(--fr-container); margin: 0 auto; padding: var(--fr-s7) var(--fr-s7) var(--fr-s10); }
 
   .cart-head { margin-bottom: var(--fr-s6); }
   .cart-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-headline); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-tight); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: 0 0 var(--fr-s1); }

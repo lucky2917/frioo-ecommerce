@@ -286,7 +286,7 @@ export default function Shop() {
       <style>{`
         .shop-page { background: var(--fr-canvas); min-height: 100vh; padding-top: var(--navbar-height-mobile); }
         @media (min-width: 901px) { .shop-page { padding-top: var(--navbar-height-desktop); } }
-        .shop-main { max-width: 1280px; margin: 0 auto; padding: var(--fr-s7) var(--fr-s7) var(--fr-s9); }
+        .shop-main { max-width: var(--fr-container); margin: 0 auto; padding: var(--fr-s7) var(--fr-s7) var(--fr-s9); }
         .shop-head { margin-bottom: var(--fr-s6); }
         .shop-eyebrow { font-family: var(--fr-font-mono); font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-eyebrow); text-transform: uppercase; color: var(--fr-brand); margin: 0 0 var(--fr-s2); }
         .shop-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-headline); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-tight); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: 0 0 var(--fr-s2); }

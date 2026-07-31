@@ -73,6 +73,7 @@
   --fr-track-eyebrow: 0.14em;
 
   --fr-measure: 68ch;
+  --fr-container: 1280px;
 
   --fr-s1: 4px;
   --fr-s2: 8px;
@@ -199,6 +200,22 @@ button[aria-disabled="true"],
 a {
   text-decoration: none;
   color: inherit;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.fr-shell {
+  flex: 1;
 }
 
 @media (prefers-reduced-motion: no-preference) {
