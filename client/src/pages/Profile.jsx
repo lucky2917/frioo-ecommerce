@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useCommitFeedback } from '../hooks/useCommitFeedback';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { notify } from '../lib/feedbackStore';
@@ -44,6 +45,8 @@ export default function Profile() {
 
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const { committed, commit } = useCommitFeedback();
 
   const [form, setForm] = useState({
     full_name: profile?.full_name || '',
@@ -83,6 +86,7 @@ export default function Profile() {
     }
 
     setLoading(true);
+    setSaveError(null);
     try {
       const updates = {
         id: user.id,
@@ -93,10 +97,10 @@ export default function Profile() {
       };
       const { error } = await supabase.from('profiles').upsert(updates);
       if (error) throw error;
-      notify.success('Profile updated');
+      commit();
       setEditing(false);
     } catch (error) {
-      notify.error('Error updating profile');
+      setSaveError('We could not save your changes. Check your connection and try again.');
       logger.error(error);
     } finally {
       setLoading(false);
@@ -200,10 +204,15 @@ export default function Profile() {
                 />
               </div>
 
+              {saveError && <p className="fr-pf-save-error" role="alert">{saveError}</p>}
+
               <div className="fr-pf-actions">
-                <button onClick={handleUpdate} disabled={loading} aria-busy={loading} className="fr-pf-primary">
+                <button onClick={handleUpdate} disabled={loading} aria-busy={loading} className={`fr-pf-primary${committed ? ' fr-pf-primary-done' : ''}`}>
                   {loading && <span className="fr-pf-spin" aria-hidden="true" />}
-                  {loading ? 'Saving' : 'Save changes'}
+                  {committed && !loading && (
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+                  )}
+                  {loading ? 'Saving' : committed ? 'Saved' : 'Save changes'}
                 </button>
                 <button onClick={handleCancel} disabled={loading} className="fr-pf-secondary">Cancel</button>
               </div>
@@ -466,7 +475,10 @@ export default function Profile() {
           transition: background var(--fr-dur-quick) var(--fr-ease-standard);
         }
 
+        .fr-pf-primary { display: inline-flex; align-items: center; justify-content: center; gap: var(--fr-s2); }
         .fr-pf-primary:hover { background: var(--fr-brand-press); }
+        .fr-pf-primary-done { background: var(--fr-success); }
+        .fr-pf-save-error { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-danger); margin: 0 0 var(--fr-s3); }
         .fr-pf-primary:disabled { opacity: 0.7; cursor: default; }
 
         .fr-pf-secondary {

@@ -262,7 +262,7 @@ export default function Orders() {
         <div className="fr-ord-state">
           <StateIcon />
           <h2 className="fr-ord-state-title">We couldn't load your orders</h2>
-          <p className="fr-ord-state-text">Something went wrong on our side. Please try again.</p>
+          <p className="fr-ord-state-text">Check your connection and try again.</p>
           <button className="fr-ord-state-btn" onClick={() => setReloadKey(k => k + 1)}>Retry</button>
         </div>
       );
@@ -273,7 +273,7 @@ export default function Orders() {
         <div className="fr-ord-state">
           <StateIcon />
           <h2 className="fr-ord-state-title">No orders yet</h2>
-          <p className="fr-ord-state-text">When you place your first order, it will show up here.</p>
+          <p className="fr-ord-state-text">Your orders and live tracking will show up here.</p>
           <Link to="/shop" className="fr-ord-state-btn">Browse the shop</Link>
         </div>
       );

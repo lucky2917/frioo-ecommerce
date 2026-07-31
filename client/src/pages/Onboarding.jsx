@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
+import Field from '../components/form/Field';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { logger } from '../utils/logger';
-import { notify } from '../lib/feedbackStore';
 import { validatePhoneNumber, validateAddress, validateName, formatPhoneNumber } from '../utils/validation';
 
 export default function Onboarding() {
@@ -16,6 +16,7 @@ export default function Onboarding() {
     address: ''
   });
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const [lastUser, setLastUser] = useState(null);
   if (user !== lastUser) {
@@ -49,7 +50,7 @@ export default function Onboarding() {
 
   const getLocation = () => {
     if (!navigator.geolocation) {
-      notify.error('Geolocation is not supported by your browser');
+      setErrors(prev => ({ ...prev, address: 'This browser cannot detect your location. Please type the address instead.' }));
       return;
     }
 
@@ -63,11 +64,11 @@ export default function Onboarding() {
         setFormData(prev => ({ ...prev, address: data.display_name }));
       } catch (error) {
         logger.error('Error fetching address', error);
-        notify.warning('Could not fetch address automatically. Please type it manually.');
+        setErrors(prev => ({ ...prev, address: 'We could not find your address automatically. Please type it instead.' }));
       }
       setLoadingLocation(false);
     }, () => {
-      notify.error('Permission denied. Please enable location services.');
+      setErrors(prev => ({ ...prev, address: 'Location access is off. Turn it on in your browser settings, or type the address.' }));
       setLoadingLocation(false);
     });
   };
@@ -76,20 +77,13 @@ export default function Onboarding() {
     e.preventDefault();
     if (!user) return;
 
-    if (!validateName(formData.full_name)) {
-      notify.error('Please enter a valid name (at least 2 letters)');
-      return;
-    }
+    const nextErrors = {};
+    if (!validateName(formData.full_name)) nextErrors.full_name = 'Enter your name using at least 2 letters.';
+    if (!validatePhoneNumber(formData.phone_number)) nextErrors.phone_number = 'Enter a 10 digit Indian mobile number starting with 6, 7, 8 or 9.';
+    if (!validateAddress(formData.address)) nextErrors.address = 'Enter a delivery address of at least 10 characters so we can find you.';
 
-    if (!validatePhoneNumber(formData.phone_number)) {
-      notify.error('Please enter a valid Indian phone number (10 digits starting with 6-9)');
-      return;
-    }
-
-    if (!validateAddress(formData.address)) {
-      notify.error('Please enter a valid address (at least 10 characters)');
-      return;
-    }
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
 
     const formattedPhone = formatPhoneNumber(formData.phone_number);
 
@@ -106,7 +100,7 @@ export default function Onboarding() {
 
     if (error) {
       logger.error('Profile creation error:', error);
-      notify.error('Error saving profile: ' + error.message);
+      setErrors({ form: 'We could not save your details. Check your connection and try again.' });
     } else {
       await fetchProfile(user.id);
       navigate('/shop');
@@ -121,37 +115,58 @@ export default function Onboarding() {
           <p className="onboarding-sub">We need a few more details to deliver your freshness.</p>
 
           <form onSubmit={handleSubmit} className="onboarding-form">
-            <label className="onboarding-label">Full Name</label>
-            <input
-              className="onboarding-input"
-              value={formData.full_name}
-              onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-              required
-            />
+            <Field label="Full name" error={errors.full_name} required>
+              {({ id, describedBy, invalid }) => (
+                <input
+                  id={id}
+                  className="onboarding-input"
+                  autoComplete="name"
+                  aria-describedby={describedBy}
+                  aria-invalid={invalid}
+                  value={formData.full_name}
+                  onChange={e => setFormData({ ...formData, full_name: e.target.value })}
+                />
+              )}
+            </Field>
 
-            <label className="onboarding-label">Phone Number</label>
-            <input
-              className="onboarding-input"
-              type="tel"
-              placeholder="+91 98765 43210"
-              value={formData.phone_number}
-              onChange={e => setFormData({ ...formData, phone_number: e.target.value })}
-              required
-            />
+            <Field label="Phone number" hint="10 digits, starting with 6, 7, 8 or 9" error={errors.phone_number} required>
+              {({ id, describedBy, invalid }) => (
+                <input
+                  id={id}
+                  className="onboarding-input"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  maxLength={14}
+                  placeholder="98765 43210"
+                  aria-describedby={describedBy}
+                  aria-invalid={invalid}
+                  value={formData.phone_number}
+                  onChange={e => setFormData({ ...formData, phone_number: e.target.value })}
+                />
+              )}
+            </Field>
 
-            <label className="onboarding-label">Delivery Address</label>
-            <div className="address-row">
-              <textarea
-                className="onboarding-input address-textarea"
-                value={formData.address}
-                onChange={e => setFormData({ ...formData, address: e.target.value })}
-                required
-              />
-              <button type="button" onClick={getLocation} className="detect-btn">
-                {loadingLocation ? '...' : 'Detect'}
-              </button>
-            </div>
+            <Field label="Delivery address" hint="House or flat, street and area" error={errors.address} required>
+              {({ id, describedBy, invalid }) => (
+                <div className="address-row">
+                  <textarea
+                    id={id}
+                    className="onboarding-input address-textarea"
+                    autoComplete="street-address"
+                    aria-describedby={describedBy}
+                    aria-invalid={invalid}
+                    value={formData.address}
+                    onChange={e => setFormData({ ...formData, address: e.target.value })}
+                  />
+                  <button type="button" onClick={getLocation} className="detect-btn" aria-busy={loadingLocation}>
+                    {loadingLocation ? 'Finding…' : 'Detect'}
+                  </button>
+                </div>
+              )}
+            </Field>
 
+            {errors.form && <p className="onboarding-form-error" role="alert">{errors.form}</p>}
             <button type="submit" className="onboarding-submit">Save &amp; Continue</button>
           </form>
         </div>
@@ -275,6 +290,7 @@ export default function Onboarding() {
           background: #dbeeff;
         }
 
+        .onboarding-form-error { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-danger); margin: 0 0 12px; }
         .onboarding-submit {
           margin-top: 20px;
           padding: 15px;

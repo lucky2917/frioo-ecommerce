@@ -52,6 +52,8 @@ export default function Cart() {
   const finalTotal = Math.max(0, subTotal - discountAmount);
 
   const [couponInput, setCouponInput] = useState('');
+  const [couponError, setCouponError] = useState(null);
+  const [checkoutError, setCheckoutError] = useState(null);
   const [orderType, setOrderType] = useState('delivery');
   const [showCouponModal, setShowCouponModal] = useState(false);
 
@@ -133,11 +135,13 @@ export default function Cart() {
   const amountToMin = Math.max(0, MIN_CART_VALUE - finalTotal);
   const isBelowMin = orderType === 'delivery' && finalTotal < MIN_CART_VALUE;
 
-  const handleApplyCoupon = () => {
+  const handleApplyCoupon = async () => {
     if (!couponInput.trim()) return;
     couponActionRef.current = 'apply';
-    verifyCoupon(couponInput, subTotal);
-    setCouponInput('');
+    setCouponError(null);
+    const result = await verifyCoupon(couponInput, subTotal);
+    if (result?.ok) setCouponInput('');
+    else setCouponError(result?.error ?? 'That code is not valid. Check it and try again.');
     setShowCouponModal(false);
   };
 
@@ -207,7 +211,7 @@ export default function Cart() {
 
       if (activeOrders && activeOrders.length > 0) {
         const activeOrder = activeOrders[0];
-        notify.warning(`You already have an active order (#${activeOrder.id}). Please wait for it to be delivered before placing a new order.`);
+        setCheckoutError(`Order #${activeOrder.id} is still on its way. You can order again once it arrives.`);
         setIsPlacingOrder(false);
         return;
       }
@@ -249,7 +253,7 @@ export default function Cart() {
 
       if (!response.ok) {
         if (result.error?.requiresAuth || response.status === 401) {
-          notify.error('Please login to place an order');
+          setCheckoutError('Sign in to place an order.');
           return;
         }
         const details = result.error?.details;
@@ -277,11 +281,12 @@ export default function Cart() {
 
   const handlePreCheckout = async () => {
     if (isChecking || isPlacingOrder) return;
+    setCheckoutError(null);
     modalTriggerRef.current = document.activeElement;
     if (cartItems.length === 0) return;
 
     if (!user || !user.id) {
-      notify.error('Please login to place an order');
+      setCheckoutError('Sign in to place an order.');
       return;
     }
     if (isBelowMin) return;
@@ -289,12 +294,12 @@ export default function Cart() {
     if (orderType === 'delivery') {
       const addr = profile?.address?.trim() || '';
       if (!addr) {
-        notify.error('No delivery address found. Please set one in your Profile.');
+        setCheckoutError('Add a delivery address in your profile before ordering.');
         navigate('/profile');
         return;
       }
       if (addr.length < 10) {
-        notify.error('Your delivery address is too short. Please update it in Profile.');
+        setCheckoutError('Your delivery address looks incomplete. Update it in your profile.');
         navigate('/profile');
         return;
       }
@@ -303,7 +308,7 @@ export default function Cart() {
     if (orderType === 'delivery' || orderType === 'takeaway') {
       setIsChecking(true);
       if (!navigator.geolocation) {
-        notify.error('Geolocation is not supported by your browser');
+        setCheckoutError('This browser cannot check your location. Choose pickup instead.');
         setIsChecking(false);
         return;
       }
@@ -317,7 +322,7 @@ export default function Cart() {
 
           if (orderType === 'delivery') {
             if (dist > MAX_DELIVERY_RANGE_KM) {
-              notify.error(`Sorry, we only deliver within ${MAX_DELIVERY_RANGE_KM}km. You are ${dist.toFixed(1)}km away.`);
+              setCheckoutError(`You are ${dist.toFixed(1)}km away and we deliver within ${MAX_DELIVERY_RANGE_KM}km. Choose pickup instead.`);
               return;
             }
             placeOrderInDB(dist, userLat, userLon);
@@ -331,7 +336,7 @@ export default function Cart() {
         },
         (error) => {
           logger.error('Location Error:', error);
-          notify.error('Unable to retrieve your location. Check permissions.');
+          setCheckoutError('We could not check your location. Allow location access, or choose pickup.');
           setIsChecking(false);
         }
       );
@@ -356,7 +361,7 @@ export default function Cart() {
         {cartItems.length === 0 ? (
           <div className="cart-empty">
             <p className="cart-empty-title">Your bag is empty</p>
-            <p className="cart-empty-sub">When you add something fresh, it'll show up here.</p>
+            <p className="cart-empty-sub">Browse the shop to add something fresh.</p>
             <Link to="/shop" className="cart-empty-btn" ref={emptyBtnRef}>Browse the shop</Link>
           </div>
         ) : (
@@ -439,10 +444,11 @@ export default function Cart() {
                 {!appliedCoupon ? (
                   <div className="cart-coupon">
                     <div className="cart-coupon-input">
-                      <input ref={couponInputRef} type="text" placeholder="Discount code" aria-label="Discount code" value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} />
+                      <input ref={couponInputRef} type="text" placeholder="Discount code" aria-label="Discount code" aria-invalid={Boolean(couponError)} value={couponInput} onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(null); }} />
                       <button onClick={handleApplyCoupon} aria-disabled={!couponInput.trim()} aria-describedby="cart-coupon-hint">Apply</button>
                     </div>
                     <p className="fr-sr-only" id="cart-coupon-hint">Enter a discount code to apply it.</p>
+                    {couponError && <p className="cart-coupon-error" role="alert">{couponError}</p>}
                     {availableCoupons && availableCoupons.length > 0 && (
                       <button onClick={openCouponModal} className="cart-offers-link">View available offers</button>
                     )}
@@ -451,6 +457,7 @@ export default function Cart() {
                   <button ref={removeCouponRef} onClick={handleRemoveCoupon} className="cart-offers-link">Remove coupon</button>
                 )}
 
+                {checkoutError && <p className="cart-checkout-error" role="alert">{checkoutError}</p>}
                 {isBelowMin && <p className="cart-nudge" id="cart-min-note">Add &#8377;{amountToMin.toFixed(0)} more to place a delivery order.</p>}
 
                 <button className="cart-place fr-only-desktop" onClick={handlePreCheckout} aria-disabled={placeOrderDisabled} aria-describedby={isBelowMin ? 'cart-min-note' : undefined}>
@@ -469,6 +476,7 @@ export default function Cart() {
       {cartItems.length > 0 && (
         <div className="cart-mobilebar fr-only-mobile">
           <div className="cart-mobilebar-info"><span>Total</span><strong>&#8377;{finalTotal.toFixed(0)}</strong></div>
+          {checkoutError && <p className="cart-mobilebar-note" role="alert">{checkoutError}</p>}
           {isBelowMin && <p className="cart-mobilebar-note" id="cart-min-note-mobile">Add &#8377;{amountToMin.toFixed(0)} more</p>}
           <button className="cart-mobilebar-btn" onClick={handlePreCheckout} aria-disabled={placeOrderDisabled} aria-describedby={isBelowMin ? 'cart-min-note-mobile' : undefined}>{submitting && <span className="cart-spin" aria-hidden="true" />}{placeOrderLabel}</button>
         </div>
@@ -502,7 +510,7 @@ export default function Cart() {
                       <div className="cart-offer-desc">{coupon.discount_type === 'percentage' ? `${coupon.value}% off` : `₹${coupon.value} off`}<span> · min ₹{coupon.min_order_value}</span></div>
                     </div>
                     {isEligible
-                      ? <button className="cart-offer-apply" onClick={() => { couponActionRef.current = 'apply'; verifyCoupon(coupon.code, subTotal); setShowCouponModal(false); }}>Apply</button>
+                      ? <button className="cart-offer-apply" onClick={async () => { couponActionRef.current = 'apply'; setCouponError(null); const result = await verifyCoupon(coupon.code, subTotal); if (!result?.ok) setCouponError(result?.error ?? 'That code is not valid.'); setShowCouponModal(false); }}>Apply</button>
                       : <span className="cart-offer-locked">Add &#8377;{needed.toFixed(0)}</span>}
                   </div>
                 );
@@ -642,6 +650,9 @@ const cartBaseStyles = `
   .cart-offers-link:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
   .cart-place[aria-disabled="true"], .cart-mobilebar-btn[aria-disabled="true"], .cart-coupon-input button[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
   .cart-mobilebar-note { font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-snug); color: var(--fr-warm); margin: 2px 0 0; }
+  .cart-checkout-error { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-danger); margin: 0 0 var(--fr-s3); }
+  .cart-coupon-error { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-danger); margin: var(--fr-s2) 0 0; }
+  .cart-coupon-input input[aria-invalid="true"] { border-color: var(--fr-danger); }
   .cart-nudge { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0 0 var(--fr-s3); }
   .cart-place { width: 100%; height: 52px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); cursor: pointer; font-variant-numeric: tabular-nums; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
   .cart-place:hover:not(:disabled) { background: var(--fr-brand-press); }

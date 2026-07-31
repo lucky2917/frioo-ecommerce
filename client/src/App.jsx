@@ -70,14 +70,16 @@ const AppInner = () => {
               <Route path="coupons" element={<AdminCoupons />} />
             </Route>
 
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/faq" element={<HelpFAQs />} />
-            <Route path="/stores" element={<OurStores />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/shipping" element={<ShippingPolicy />} />
-            <Route path="/returns" element={<Returns />} />
+            <Route element={<StorefrontLayout />}>
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/faq" element={<HelpFAQs />} />
+              <Route path="/stores" element={<OurStores />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/shipping" element={<ShippingPolicy />} />
+              <Route path="/returns" element={<Returns />} />
+            </Route>
 
             <Route path="*" element={<NotFound />} />
           </Routes>

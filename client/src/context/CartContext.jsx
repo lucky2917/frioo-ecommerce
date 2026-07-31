@@ -140,16 +140,14 @@ export const CartProvider = ({ children }) => {
             const result = await res.json();
 
             if (!res.ok) {
-                notify.error(result.error?.message || 'Invalid coupon');
-                return false;
+                return { ok: false, error: result.error?.message || 'That code is not valid. Check it and try again.' };
             }
 
             setAppliedCoupon(result.data?.coupon);
-            notify.success(`Coupon ${result.data?.coupon?.code} applied`);
-            return true;
+            return { ok: true, code: result.data?.coupon?.code };
         } catch (err) {
             logger.error('Coupon verification failed:', err);
-            return false;
+            return { ok: false, error: 'We could not check that code. Check your connection and try again.' };
         }
     };
 

@@ -165,8 +165,8 @@ export default function Home() {
         <section className="home-section">
           <div className="home-container">
             <div className="home-empty">
-              <p className="home-empty-title">Nothing to show just yet</p>
-              <p className="home-empty-sub">Our shelves are being restocked. Please check back shortly.</p>
+              <p className="home-empty-title">We couldn't load our products</p>
+              <p className="home-empty-sub">Check your connection and try again.</p>
               <Link to="/shop" className="home-hero-cta">Browse the shop</Link>
             </div>
           </div>

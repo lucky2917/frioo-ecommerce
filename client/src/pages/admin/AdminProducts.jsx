@@ -36,6 +36,7 @@ export default function AdminProducts() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
+    const [uploadError, setUploadError] = useState(null);
     const [activeTab, setActiveTab] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -211,12 +212,12 @@ export default function AdminProducts() {
         if (!file) return;
 
         if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-            notify.error('Invalid file type. Please upload JPG, PNG, or WebP images only.');
+            setUploadError('That file type will not upload. Use a JPG, PNG or WebP image.');
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            notify.error('File too large. Maximum size is 5MB.');
+            setUploadError('That image is over 5MB. Use a smaller file.');
             return;
         }
 
@@ -241,10 +242,10 @@ export default function AdminProducts() {
             if (!result.success) throw new Error(result.error || 'Upload failed');
 
             setFormData(prev => ({ ...prev, image_url: result.url, uploadProgress: null }));
-            notify.success('Image uploaded');
+            setUploadError(null); notify.success('Image uploaded');
         } catch (err) {
             logger.error('Upload error:', err);
-            notify.error(err.message || 'Failed to upload image');
+            setUploadError(err.message || 'The image did not upload. Try again.');
             setFormData(prev => ({ ...prev, uploadProgress: null }));
         }
     };
@@ -444,6 +445,7 @@ export default function AdminProducts() {
                                                 <p className="ap-upload-sub">PNG, JPG, WebP · Max 5MB</p>
                                             </>
                                         )}
+                                    {uploadError && <p className="ap-upload-error" role="alert">{uploadError}</p>}
                                     </label>
                                 </div>
                             )}
@@ -556,6 +558,7 @@ export default function AdminProducts() {
                 .ap-dropzone.dragging { border-color: var(--fr-brand); background: var(--fr-brand-tint); }
                 .ap-upload-label { display: flex; flex-direction: column; align-items: center; gap: var(--fr-s2); padding: var(--fr-s6); cursor: pointer; color: var(--adm-text-2); text-align: center; }
                 .ap-upload-title { font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); color: var(--adm-text); margin: 0; }
+                .ap-upload-error { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-danger); margin: var(--fr-s2) 0 0; }
                 .ap-upload-sub { font-size: var(--fr-fs-label); color: var(--adm-text-3); margin: 0; }
 
                 .ap-preview { position: relative; margin-top: var(--fr-s3); width: 120px; height: 120px; border-radius: var(--fr-r-card); overflow: hidden; border: 1px solid var(--adm-border); }
