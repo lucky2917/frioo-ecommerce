@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useCommitFeedback } from '../hooks/useCommitFeedback';
+import { getStockState, getUnitPrice } from '../utils/productFacts';
 import { useParams, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import FetchError from '../components/FetchError';
@@ -67,6 +68,7 @@ export default function ProductDetails() {
   }, [products, product]);
 
   const handleAddToCart = () => {
+    if (stockState?.available === false) return;
     if (!product) return;
 
     let finalPrice = product.price_cents / 100;
@@ -148,10 +150,10 @@ export default function ProductDetails() {
   );
 
   const images = product.images?.length > 0 ? product.images : [];
-  const basePrice = product.price_cents / 100;
   const oldPrice = product.discount > 0 ? Math.round(currentPrice / (1 - product.discount / 100)) : null;
   const unitSuffix = product.unit === 'kg' ? '/ kg' : product.unit === 'item' ? 'each' : product.unit ? `/ ${product.unit}` : '';
-  const per100g = product.unit === 'kg' ? Math.round(basePrice / 10) : null;
+  const unitPrice = getUnitPrice(product);
+  const stockState = getStockState(product);
 
   const nutrition = product.nutrition || {};
   const nutritionItems = [
@@ -251,7 +253,15 @@ export default function ProductDetails() {
                 {oldPrice && <span className="pd-old">&#8377;{oldPrice}</span>}
                 <span className="pd-unit">{selectedWeight ? `/ ${selectedWeight.label}` : unitSuffix}</span>
               </div>
-              {per100g && <div className="pd-measure">&#8377;{per100g} / 100g</div>}
+              {unitPrice && <div className="pd-measure">{unitPrice.label}</div>}
+              {stockState && (
+                <div className={`pd-stock pd-stock--${stockState.code}`}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    {stockState.available ? <path d="M20 6 9 17l-5-5" /> : <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>}
+                  </svg>
+                  {stockState.label}
+                </div>
+              )}
             </div>
 
             <p className="pd-delivery">
@@ -260,6 +270,12 @@ export default function ProductDetails() {
             </p>
 
             {product.description && <p className="pd-desc">{product.description}</p>}
+            {(product.perfect_for || nutritionItems.length > 0) && (
+              <div className="pd-support">
+                {product.perfect_for && (
+                  <div className="pd-support-block">
+                    <h2 className="pd-support-title">Good for</h2>
+                    <p className="pd-support-text">{product.perfect_for}</p>
 
             <div className="pd-options">
               {selectedWeight && (
@@ -302,7 +318,7 @@ export default function ProductDetails() {
                 <span aria-live="polite">{qty}</span>
                 <button onClick={() => setQty(q => q + 1)} aria-label="Increase quantity">+</button>
               </div>
-              <button className={`pd-add${committed ? ' pd-add-done' : ''}`} onClick={handleAddToCart}>
+              <button className={`pd-add${committed ? ' pd-add-done' : ''}`} onClick={handleAddToCart} aria-disabled={stockState?.available === false}>
                 {committed ? (
                   <>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
@@ -313,12 +329,6 @@ export default function ProductDetails() {
               <span className="fr-sr-only" aria-live="polite">{committed ? `${qty} ${product.title} added to cart.` : ''}</span>
             </div>
 
-            {(product.perfect_for || nutritionItems.length > 0) && (
-              <div className="pd-support">
-                {product.perfect_for && (
-                  <div className="pd-support-block">
-                    <h2 className="pd-support-title">Good for</h2>
-                    <p className="pd-support-text">{product.perfect_for}</p>
                   </div>
                 )}
                 {nutritionItems.length > 0 && (
@@ -390,6 +400,10 @@ export default function ProductDetails() {
         .pd-price { font-family: var(--fr-font-sans); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-text); font-variant-numeric: tabular-nums; }
         .pd-old { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-3); text-decoration: line-through; font-variant-numeric: tabular-nums; }
         .pd-unit { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); }
+        .pd-stock { display: inline-flex; align-items: center; gap: var(--fr-s2); font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-normal); margin-top: var(--fr-s2); }
+        .pd-stock--in { color: var(--fr-success); }
+        .pd-stock--out { color: var(--fr-text-3); }
+        .pd-add[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
         .pd-measure { font-family: var(--fr-font-mono); font-size: var(--fr-fs-measure); font-weight: var(--fr-fw-regular); color: var(--fr-text-2); font-variant-numeric: tabular-nums; }
         .pd-delivery { display: flex; align-items: center; gap: var(--fr-s2); font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0 0 var(--fr-s5); }
         .pd-delivery svg { color: var(--fr-brand); flex-shrink: 0; }

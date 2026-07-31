@@ -3,6 +3,7 @@ import { useDialog } from '../../hooks/useDialog';
 import { useCommitFeedback } from '../../hooks/useCommitFeedback';
 import { Link } from 'react-router-dom';
 import OptimizedImage from '../OptimizedImage';
+import { getStockState, getUnitPrice } from '../../utils/productFacts';
 
 
 
@@ -31,7 +32,8 @@ export default function ProductCard({ product, onAdd }) {
   const originalPrice = hasDiscount ? Math.round(basePrice / (1 - product.discount / 100)) : null;
 
   const unitSuffix = product.unit === 'kg' ? ' / kg' : product.unit === 'item' ? ' each' : product.unit ? ` / ${product.unit}` : '';
-  const per100g = product.unit === 'kg' ? Math.round(basePrice / 10) : null;
+  const unitPrice = getUnitPrice(product);
+  const stockState = getStockState(product);
 
   let finalPrice, variantLabel;
   if (isWeightBased) {
@@ -45,6 +47,7 @@ export default function ProductCard({ product, onAdd }) {
   const imageSrc = product.images?.[0];
 
   const handleActionClick = () => {
+    if (stockState?.available === false) return;
     if (hasOptions || isWeightBased) {
       setShowCustomize(true);
     } else {
@@ -81,8 +84,16 @@ export default function ProductCard({ product, onAdd }) {
             <span className="fr-pc-unit">{unitSuffix}</span>
             {hasDiscount && <span className="fr-pc-original">&#8377;{originalPrice}</span>}
           </div>
-          {per100g && <div className="fr-pc-measure">&#8377;{per100g} / 100g</div>}
-          <button className={`fr-pc-add${committed ? ' fr-pc-add-done' : ''}`} onClick={handleActionClick}>
+          {unitPrice && <div className="fr-pc-measure">{unitPrice.label}</div>}
+          {stockState && (
+            <div className={`fr-pc-stock fr-pc-stock--${stockState.code}`}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                {stockState.available ? <path d="M20 6 9 17l-5-5" /> : <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>}
+              </svg>
+              {stockState.label}
+            </div>
+          )}
+          <button className={`fr-pc-add${committed ? ' fr-pc-add-done' : ''}`} onClick={handleActionClick} aria-disabled={stockState?.available === false}>
             {committed ? (
               <>
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
@@ -112,7 +123,7 @@ export default function ProductCard({ product, onAdd }) {
                       <button key={opt.label} className={`fr-pc-chip${selectedWeight.label === opt.label ? ' fr-pc-chip-on' : ''}`} onClick={() => setSelectedWeight(opt)}>{opt.label}</button>
                     ))}
                   </div>
-                  <div className="fr-pc-measure">&#8377;{(basePrice / 10).toFixed(0)} / 100g</div>
+                  {unitPrice && <div className="fr-pc-measure">{unitPrice.label}</div>}
                 </div>
               )}
               {product.nutrition?.exclusions?.length > 0 && (
@@ -160,6 +171,10 @@ export default function ProductCard({ product, onAdd }) {
         .fr-pc-price-sale { color: var(--fr-warm); }
         .fr-pc-unit { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); color: var(--fr-text-2); }
         .fr-pc-original { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); color: var(--fr-text-3); text-decoration: line-through; font-variant-numeric: tabular-nums; }
+        .fr-pc-stock { display: inline-flex; align-items: center; gap: 4px; font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); }
+        .fr-pc-stock--in { color: var(--fr-success); }
+        .fr-pc-stock--out { color: var(--fr-text-3); }
+        .fr-pc-add[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
         .fr-pc-measure { font-family: var(--fr-font-mono); font-size: var(--fr-fs-measure); font-weight: var(--fr-fw-regular); color: var(--fr-text-2); font-variant-numeric: tabular-nums; }
         .fr-pc-add { margin-top: auto; height: 44px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
         .fr-pc-add { display: inline-flex; align-items: center; justify-content: center; gap: var(--fr-s2); }
