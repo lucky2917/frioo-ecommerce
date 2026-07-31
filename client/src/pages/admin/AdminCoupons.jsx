@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { showToast } from '../../utils/toast';
+import { notify } from '../../lib/feedbackStore';
 import { AdminPage, MetricCard, AdminModal, ConfirmDialog, SearchInput } from '../../components/admin/ui';
 
 const INITIAL_FORM = {
@@ -35,7 +35,7 @@ export default function AdminCoupons() {
             if (error) throw error;
             setCoupons(data || []);
         } catch (err) {
-            showToast('Error fetching coupons: ' + err.message, 'error');
+            notify.error('Error fetching coupons: ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -109,12 +109,12 @@ export default function AdminCoupons() {
                     : [saved, ...prev]
             );
 
-            showToast(`Coupon ${editingId ? 'updated' : 'created'} successfully!`, 'success');
+            notify.success(`Coupon ${editingId ? 'updated' : 'created'}`);
             setIsModalOpen(false);
             setForm(INITIAL_FORM);
             setEditingId(null);
         } catch (err) {
-            showToast(err.message || 'Operation failed', 'error');
+            notify.error(err.message || 'Operation failed');
         } finally {
             setSubmitting(false);
         }
@@ -126,10 +126,10 @@ export default function AdminCoupons() {
             const { error } = await supabase.from('coupons').delete().eq('id', deleteId);
             if (error) throw error;
             setCoupons(prev => prev.filter(c => c.id !== deleteId));
-            showToast('Coupon deleted successfully', 'success');
+            notify.success('Coupon deleted');
             setDeleteId(null);
         } catch (err) {
-            showToast('Error deleting coupon: ' + err.message, 'error');
+            notify.error('Error deleting coupon: ' + err.message);
         } finally {
             setDeleting(false);
         }
@@ -142,7 +142,7 @@ export default function AdminCoupons() {
             .eq('id', coupon.id);
 
         if (error) {
-            showToast('Failed to update coupon status', 'error');
+            notify.error('Failed to update coupon status');
         } else {
             setCoupons(prev => prev.map(c => c.id === coupon.id ? { ...c, is_active: !c.is_active } : c));
         }

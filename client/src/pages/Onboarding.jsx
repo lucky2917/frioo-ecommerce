@@ -4,7 +4,7 @@ import Navbar from '../components/layout/Navbar';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { logger } from '../utils/logger';
-import { showToast } from '../utils/toast';
+import { notify } from '../lib/feedbackStore';
 import { validatePhoneNumber, validateAddress, validateName, formatPhoneNumber } from '../utils/validation';
 
 export default function Onboarding() {
@@ -50,7 +50,7 @@ export default function Onboarding() {
 
   const getLocation = () => {
     if (!navigator.geolocation) {
-      showToast('Geolocation is not supported by your browser', 'error');
+      notify.error('Geolocation is not supported by your browser');
       return;
     }
 
@@ -64,11 +64,11 @@ export default function Onboarding() {
         setFormData(prev => ({ ...prev, address: data.display_name }));
       } catch (error) {
         logger.error('Error fetching address', error);
-        showToast('Could not fetch address automatically. Please type it manually.', 'warning');
+        notify.warning('Could not fetch address automatically. Please type it manually.');
       }
       setLoadingLocation(false);
     }, () => {
-      showToast('Permission denied. Please enable location services.', 'error');
+      notify.error('Permission denied. Please enable location services.');
       setLoadingLocation(false);
     });
   };
@@ -78,17 +78,17 @@ export default function Onboarding() {
     if (!user) return;
 
     if (!validateName(formData.full_name)) {
-      showToast('Please enter a valid name (at least 2 letters)', 'error');
+      notify.error('Please enter a valid name (at least 2 letters)');
       return;
     }
 
     if (!validatePhoneNumber(formData.phone_number)) {
-      showToast('Please enter a valid Indian phone number (10 digits starting with 6-9)', 'error');
+      notify.error('Please enter a valid Indian phone number (10 digits starting with 6-9)');
       return;
     }
 
     if (!validateAddress(formData.address)) {
-      showToast('Please enter a valid address (at least 10 characters)', 'error');
+      notify.error('Please enter a valid address (at least 10 characters)');
       return;
     }
 
@@ -107,7 +107,7 @@ export default function Onboarding() {
 
     if (error) {
       logger.error('Profile creation error:', error);
-      showToast('Error saving profile: ' + error.message, 'error');
+      notify.error('Error saving profile: ' + error.message);
     } else {
       await fetchProfile(user.id);
       navigate('/shop');

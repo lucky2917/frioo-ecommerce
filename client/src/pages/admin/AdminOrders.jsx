@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { logger } from '../../utils/logger';
-import { showToast } from '../../utils/toast';
+import { notify } from '../../lib/feedbackStore';
 import { formatOrderAmount, getStatusPresentation } from '../../utils/orderStatus';
 import { AdminPage, MetricCard, StatusChip, SearchInput } from '../../components/admin/ui';
 
@@ -59,7 +59,7 @@ export default function AdminOrders() {
             setOrders(data || []);
         } catch (err) {
             logger.error('Error fetching orders:', err.message);
-            showToast('Failed to fetch orders', 'error');
+            notify.error('Failed to fetch orders');
         } finally {
             setLoading(false);
         }
@@ -86,9 +86,9 @@ export default function AdminOrders() {
 
         if (error) {
             setOrders(previous);
-            showToast('Failed to update status', 'error');
+            notify.error('Failed to update status');
         } else {
-            showToast(`Order updated to ${newStatus}`, 'success');
+            notify.success(`Order updated to ${newStatus}`);
         }
     };
 
@@ -145,7 +145,7 @@ export default function AdminOrders() {
 
     const openDirections = (order) => {
         if (!order.address) {
-            showToast('No delivery address available', 'error');
+            notify.error('No delivery address available');
             return;
         }
         window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`, '_blank');

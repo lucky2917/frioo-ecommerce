@@ -7,7 +7,7 @@ import { useCart } from '../context/CartContext';
 import { supabase } from '../lib/supabaseClient';
 import { logger } from '../utils/logger';
 import { sanitizeText } from '../utils/sanitize';
-import { showToast } from '../utils/toast';
+import { notify } from '../lib/feedbackStore';
 import { API_BASE_URL } from '../config/constants';
 import {
   SHOP_LOCATION,
@@ -162,7 +162,7 @@ export default function Cart() {
       setEditProduct(data);
     } catch (err) {
       logger.error('Failed to fetch product for editing:', err);
-      showToast('Could not load customization options', 'error');
+      notify.error('Could not load customization options');
       setEditingItem(null);
     } finally {
       setEditLoading(false);
@@ -182,7 +182,7 @@ export default function Cart() {
 
     setEditingItem(null);
     setEditProduct(null);
-    showToast('Customizations updated');
+    notify.success('Customizations updated');
   };
 
   const toggleEditExclusion = (val) => {
@@ -209,10 +209,7 @@ export default function Cart() {
 
       if (activeOrders && activeOrders.length > 0) {
         const activeOrder = activeOrders[0];
-        showToast(
-          `You already have an active order (#${activeOrder.id}). Please wait for it to be delivered before placing a new order.`,
-          'error'
-        );
+        notify.warning(`You already have an active order (#${activeOrder.id}). Please wait for it to be delivered before placing a new order.`);
         setIsPlacingOrder(false);
         return;
       }
@@ -254,7 +251,7 @@ export default function Cart() {
 
       if (!response.ok) {
         if (result.error?.requiresAuth || response.status === 401) {
-          showToast('Please login to place an order', 'error');
+          notify.error('Please login to place an order');
           return;
         }
         const details = result.error?.details;
@@ -263,7 +260,7 @@ export default function Cart() {
         throw new Error(errorMessage);
       }
 
-      showToast("Order placed. Thank you, we're getting it ready.", 'success');
+      notify.success("Order placed. Thank you, we're getting it ready.");
       clearCart();
       navigate('/orders');
 
@@ -273,7 +270,7 @@ export default function Cart() {
         logger.error('Error response:', error.response);
       }
       const errorMessage = error.message || 'Failed to place order';
-      showToast(errorMessage, 'error');
+      notify.error(errorMessage);
       console.error('Full error details:', error);
     } finally {
       setIsPlacingOrder(false);
@@ -285,24 +282,24 @@ export default function Cart() {
     if (cartItems.length === 0) return;
 
     if (!user || !user.id) {
-      showToast('Please login to place an order', 'error');
+      notify.error('Please login to place an order');
       return;
     }
 
     if (isBelowMin) {
-      showToast(`Minimum delivery order is ₹${MIN_CART_VALUE}`, 'error');
+      notify.error(`Minimum delivery order is ₹${MIN_CART_VALUE}`);
       return;
     }
 
     if (orderType === 'delivery') {
       const addr = profile?.address?.trim() || '';
       if (!addr) {
-        showToast('No delivery address found. Please set one in your Profile.', 'error');
+        notify.error('No delivery address found. Please set one in your Profile.');
         navigate('/profile');
         return;
       }
       if (addr.length < 10) {
-        showToast('Your delivery address is too short. Please update it in Profile.', 'error');
+        notify.error('Your delivery address is too short. Please update it in Profile.');
         navigate('/profile');
         return;
       }
@@ -311,7 +308,7 @@ export default function Cart() {
     if (orderType === 'delivery' || orderType === 'takeaway') {
       setIsChecking(true);
       if (!navigator.geolocation) {
-        showToast('Geolocation is not supported by your browser', 'error');
+        notify.error('Geolocation is not supported by your browser');
         setIsChecking(false);
         return;
       }
@@ -325,7 +322,7 @@ export default function Cart() {
 
           if (orderType === 'delivery') {
             if (dist > MAX_DELIVERY_RANGE_KM) {
-              showToast(`Sorry, we only deliver within ${MAX_DELIVERY_RANGE_KM}km. You are ${dist.toFixed(1)}km away.`, 'error');
+              notify.error(`Sorry, we only deliver within ${MAX_DELIVERY_RANGE_KM}km. You are ${dist.toFixed(1)}km away.`);
               return;
             }
             placeOrderInDB(dist, userLat, userLon);
@@ -339,7 +336,7 @@ export default function Cart() {
         },
         (error) => {
           logger.error('Location Error:', error);
-          showToast('Unable to retrieve your location. Check permissions.', 'error');
+          notify.error('Unable to retrieve your location. Check permissions.');
           setIsChecking(false);
         }
       );

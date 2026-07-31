@@ -7,7 +7,7 @@ import ShopFilters from '../components/shop/ShopFilters';
 import BundleDeals from '../components/shop/BundleDeals';
 import FetchError from '../components/FetchError';
 import { useCart } from '../context/CartContext';
-import { showToast } from '../utils/toast';
+import { notify } from '../lib/feedbackStore';
 import SEO from '../components/SEO';
 import { useProducts } from '../hooks/useProducts';
 import { PRODUCT_CATEGORIES } from '../config/constants';
@@ -114,7 +114,7 @@ export default function Shop() {
 
   const handleAddBundle = (bundleProducts) => {
     bundleProducts.forEach(p => addToCart(p, 'Standard', p.price_cents / 100, {}));
-    showToast(`${bundleProducts.length} items added to cart`, 'success');
+    notify.success(`${bundleProducts.length} items added to cart`);
   };
 
   const shopStructuredData = useMemo(() => {

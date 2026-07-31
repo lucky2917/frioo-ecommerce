@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { showToast } from '../../utils/toast';
+import { notify } from '../../lib/feedbackStore';
 import { API_BASE_URL } from '../../config/constants';
 import { AdminPage, MetricCard, AdminTable, AdminModal, ConfirmDialog, SearchInput } from '../../components/admin/ui';
 
@@ -42,7 +42,7 @@ export default function AdminUsers() {
             setUsers(json.users || []);
             setPagination(json.pagination || null);
         } catch (err) {
-            showToast("Error fetching users: " + err.message, 'error');
+            notify.error("Error fetching users: " + err.message);
         } finally {
             setLoading(false);
         }
@@ -116,14 +116,14 @@ export default function AdminUsers() {
             const data = await res.json();
             if (data.success) {
                 setUsers(prev => prev.map(u => u.id === editingUser.id ? { ...u, ...formData } : u));
-                showToast("User updated successfully!", 'success');
+                notify.success("User updated");
                 setIsModalOpen(false);
                 setEditingUser(null);
             } else {
                 throw new Error(data.error);
             }
         } catch (err) {
-            showToast("Update failed: " + err.message, 'error');
+            notify.error("Update failed: " + err.message);
         }
     };
 
@@ -141,13 +141,13 @@ export default function AdminUsers() {
             const data = await res.json();
             if (data.success) {
                 setUsers(prev => prev.filter(u => u.id !== deleteId));
-                showToast("User deleted successfully", 'success');
+                notify.success("User deleted");
                 setDeleteId(null);
             } else {
                 throw new Error(data.error);
             }
         } catch (err) {
-            showToast("Error deleting user: " + err.message, 'error');
+            notify.error("Error deleting user: " + err.message);
         } finally {
             setDeleting(false);
         }

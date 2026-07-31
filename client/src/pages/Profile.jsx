@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import Navbar from '../components/layout/Navbar';
-import { showToast } from '../utils/toast';
+import { notify } from '../lib/feedbackStore';
 import { logger } from '../utils/logger';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -79,7 +79,7 @@ export default function Profile() {
 
   const handleUpdate = async () => {
     if (!user?.id) {
-      showToast('Please login to update profile', 'error');
+      notify.error('Please login to update profile');
       return;
     }
 
@@ -94,10 +94,10 @@ export default function Profile() {
       };
       const { error } = await supabase.from('profiles').upsert(updates);
       if (error) throw error;
-      showToast('Profile updated!', 'success');
+      notify.success('Profile updated');
       setEditing(false);
     } catch (error) {
-      showToast('Error updating profile', 'error');
+      notify.error('Error updating profile');
       logger.error(error);
     } finally {
       setLoading(false);

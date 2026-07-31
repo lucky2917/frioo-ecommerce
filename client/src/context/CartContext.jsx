@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { logger } from '../utils/logger';
 import { API_BASE_URL } from '../config/constants';
+import { notify } from '../lib/feedbackStore';
 
 const CartContext = createContext();
 
@@ -17,7 +18,6 @@ export const CartProvider = ({ children }) => {
         }
     });
 
-    const [notification, setNotification] = useState(null);
     const [appliedCoupon, setAppliedCoupon] = useState(null);
     const [availableCoupons, setAvailableCoupons] = useState([]);
 
@@ -41,11 +41,6 @@ export const CartProvider = ({ children }) => {
     useEffect(() => {
         localStorage.setItem('frioo_cart', JSON.stringify(cart));
     }, [cart]);
-
-    const showToast = (text) => {
-        setNotification(text);
-        setTimeout(() => setNotification(null), 3000);
-    };
 
     const makeCartKey = (productId, variant, preferences = {}) => {
         const sortedPrefs = {};
@@ -79,25 +74,19 @@ export const CartProvider = ({ children }) => {
             };
         });
 
-        const hasPrefs = Object.keys(preferences).length > 0 &&
-            (preferences.exclusions?.length > 0 || preferences.removedIngredients?.length > 0 || preferences.note);
-
-        showToast(`${product.title} ${hasPrefs ? '(Customized)' : ''} added`);
     };
 
     const removeFromCart = (cartKey) => {
         setCart(prev => {
             if (!prev[cartKey]) return prev;
 
+            if (prev[cartKey].qty <= 1) return prev;
+
             const newCart = { ...prev };
-            if (newCart[cartKey].qty > 1) {
-                newCart[cartKey] = {
-                    ...newCart[cartKey],
-                    qty: newCart[cartKey].qty - 1
-                };
-            } else {
-                delete newCart[cartKey];
-            }
+            newCart[cartKey] = {
+                ...newCart[cartKey],
+                qty: newCart[cartKey].qty - 1
+            };
             return newCart;
         });
     };
@@ -108,7 +97,6 @@ export const CartProvider = ({ children }) => {
             delete newCart[cartKey];
             return newCart;
         });
-        showToast('Item removed');
     };
 
     const updateCartItem = (cartKey, newPreferences, newPrice) => {
@@ -152,12 +140,12 @@ export const CartProvider = ({ children }) => {
             const result = await res.json();
 
             if (!res.ok) {
-                showToast(result.error?.message || 'Invalid coupon');
+                notify.error(result.error?.message || 'Invalid coupon');
                 return false;
             }
 
             setAppliedCoupon(result.data?.coupon);
-            showToast(`${result.data?.coupon?.code} applied`);
+            notify.success(`Coupon ${result.data?.coupon?.code} applied`);
             return true;
         } catch (err) {
             logger.error('Coupon verification failed:', err);
@@ -167,7 +155,7 @@ export const CartProvider = ({ children }) => {
 
     const removeCoupon = () => {
         setAppliedCoupon(null);
-        showToast('Coupon Removed');
+        notify.info('Coupon removed');
     };
 
     return (
@@ -180,8 +168,6 @@ export const CartProvider = ({ children }) => {
             deleteFromCart,
             updateCartItem,
             clearCart,
-            notification,
-            showToast,
             appliedCoupon,
             verifyCoupon,
             removeCoupon,

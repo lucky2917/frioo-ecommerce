@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
-import { showToast } from '../../utils/toast';
+import { notify } from '../../lib/feedbackStore';
 import { formatOrderAmount, getStatusPresentation } from '../../utils/orderStatus';
 import { AdminPage, MetricCard, AdminTable, StatusChip } from '../../components/admin/ui';
 
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
             setProducts(pRes.data || []);
             setUsers(uRes.data || []);
         } catch (err) {
-            showToast('Failed to load dashboard: ' + err.message, 'error');
+            notify.error('Failed to load dashboard: ' + err.message);
         } finally {
             setLoading(false);
         }

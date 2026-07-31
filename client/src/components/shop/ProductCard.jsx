@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useDialog } from '../../hooks/useDialog';
+import { useCommitFeedback } from '../../hooks/useCommitFeedback';
 import { Link } from 'react-router-dom';
 import OptimizedImage from '../OptimizedImage';
 
@@ -15,6 +16,7 @@ export default function ProductCard({ product, onAdd }) {
   const [showCustomize, setShowCustomize] = useState(false);
   const sheetRef = useRef(null);
   const sheetCloseRef = useRef(null);
+  const { committed, commit } = useCommitFeedback();
   const [selectedExclusions, setSelectedExclusions] = useState([]);
   const [removedIngredients, setRemovedIngredients] = useState([]);
   const [selectedWeight, setSelectedWeight] = useState(WEIGHT_OPTIONS[2]);
@@ -47,11 +49,13 @@ export default function ProductCard({ product, onAdd }) {
       setShowCustomize(true);
     } else {
       onAdd(product, variantLabel, finalPrice);
+      commit();
     }
   };
 
   const handleConfirm = () => {
     onAdd(product, variantLabel, finalPrice, { exclusions: selectedExclusions, removedIngredients });
+    commit();
     setShowCustomize(false);
     setSelectedExclusions([]);
     setRemovedIngredients([]);
@@ -76,9 +80,15 @@ export default function ProductCard({ product, onAdd }) {
             {hasDiscount && <span className="fr-pc-original">&#8377;{originalPrice}</span>}
           </div>
           {per100g && <div className="fr-pc-measure">&#8377;{per100g} / 100g</div>}
-          <button className="fr-pc-add" onClick={handleActionClick}>
-            {hasOptions || isWeightBased ? 'Choose options' : 'Add to cart'}
+          <button className={`fr-pc-add${committed ? ' fr-pc-add-done' : ''}`} onClick={handleActionClick}>
+            {committed ? (
+              <>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+                Added
+              </>
+            ) : (hasOptions || isWeightBased ? 'Choose options' : 'Add to cart')}
           </button>
+          <span className="fr-sr-only" aria-live="polite">{committed ? `${product.title} added to cart.` : ''}</span>
         </div>
       </article>
 
@@ -149,7 +159,9 @@ export default function ProductCard({ product, onAdd }) {
         .fr-pc-original { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); color: var(--fr-text-3); text-decoration: line-through; font-variant-numeric: tabular-nums; }
         .fr-pc-measure { font-family: var(--fr-font-mono); font-size: var(--fr-fs-measure); font-weight: var(--fr-fw-regular); color: var(--fr-text-2); font-variant-numeric: tabular-nums; }
         .fr-pc-add { margin-top: auto; height: 44px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .fr-pc-add { display: inline-flex; align-items: center; justify-content: center; gap: var(--fr-s2); }
         .fr-pc-add:hover { background: var(--fr-brand-press); }
+        .fr-pc-add-done { background: var(--fr-success); }
         .fr-pc-add:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 
         .fr-pc-scrim { position: fixed; inset: 0; z-index: var(--fr-z-modal); background: var(--fr-scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: var(--fr-s5); }

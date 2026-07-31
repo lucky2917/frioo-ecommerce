@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useCommitFeedback } from '../hooks/useCommitFeedback';
 import { useParams, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import Navbar from '../components/layout/Navbar';
 import FetchError from '../components/FetchError';
 import VideoModal from '../components/shop/VideoModal';
 import ProductCard from '../components/shop/ProductCard';
-import { showToast } from '../utils/toast';
 
 import { useCart } from '../context/CartContext';
 import { useProduct } from '../hooks/useProduct';
@@ -38,6 +38,7 @@ export default function ProductDetails() {
   const [showPrepVideo, setShowPrepVideo] = useState(false);
 
   const [qty, setQty] = useState(1);
+  const { committed, commit } = useCommitFeedback();
   const [selectedWeight, setSelectedWeight] = useState(null);
   const [selectedExclusions, setSelectedExclusions] = useState([]);
   const [removedIngredients, setRemovedIngredients] = useState([]);
@@ -86,7 +87,7 @@ export default function ProductDetails() {
       addToCart(product, variantLabel, finalPrice, customization);
     }
 
-    showToast(`Added ${qty} x ${product.title} to cart`, 'success');
+    commit();
   };
 
   const toggleExclusion = (item) => {
@@ -304,7 +305,15 @@ export default function ProductDetails() {
                 <span aria-live="polite">{qty}</span>
                 <button onClick={() => setQty(q => q + 1)} aria-label="Increase quantity">+</button>
               </div>
-              <button className="pd-add" onClick={handleAddToCart}>Add to cart &middot; &#8377;{(currentPrice * qty).toFixed(0)}</button>
+              <button className={`pd-add${committed ? ' pd-add-done' : ''}`} onClick={handleAddToCart}>
+                {committed ? (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+                    Added
+                  </>
+                ) : <>Add to cart &middot; &#8377;{(currentPrice * qty).toFixed(0)}</>}
+              </button>
+              <span className="fr-sr-only" aria-live="polite">{committed ? `${qty} ${product.title} added to cart.` : ''}</span>
             </div>
 
             {(product.perfect_for || nutritionItems.length > 0) && (
@@ -405,7 +414,9 @@ export default function ProductDetails() {
         .pd-qty button:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: -2px; }
         .pd-qty span { min-width: 44px; text-align: center; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); font-variant-numeric: tabular-nums; }
         .pd-add { flex: 1; height: 52px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); cursor: pointer; font-variant-numeric: tabular-nums; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .pd-add { display: inline-flex; align-items: center; justify-content: center; gap: var(--fr-s2); }
         .pd-add:hover { background: var(--fr-brand-press); }
+        .pd-add-done { background: var(--fr-success); }
         .pd-add:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 
         .pd-support { display: flex; flex-direction: column; gap: var(--fr-s5); border-top: 1px solid var(--fr-line); padding-top: var(--fr-s6); }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { showToast } from '../../utils/toast';
+import { notify } from '../../lib/feedbackStore';
 import { logger } from '../../utils/logger';
 import { API_BASE_URL, PRODUCT_CATEGORIES } from '../../config/constants';
 import { AdminPage, MetricCard, AdminModal, ConfirmDialog, SearchInput } from '../../components/admin/ui';
@@ -54,7 +54,7 @@ export default function AdminProducts() {
             setProducts(data || []);
         } catch (err) {
             logger.error(err);
-            showToast('Failed to fetch inventory', 'error');
+            notify.error('Failed to fetch inventory');
         } finally {
             setLoading(false);
         }
@@ -127,14 +127,14 @@ export default function AdminProducts() {
             const data = await res.json();
 
             if (data.success) {
-                showToast('Product deleted successfully', 'success');
+                notify.success('Product deleted');
                 setProducts(prev => prev.filter(p => p.id !== deleteId));
                 setDeleteId(null);
             } else {
                 throw new Error(data.error);
             }
         } catch (err) {
-            showToast(err.message || 'Delete failed', 'error');
+            notify.error(err.message || 'Delete failed');
         } finally {
             setDeleting(false);
         }
@@ -197,10 +197,10 @@ export default function AdminProducts() {
                     ? prev.map(p => p.id === savedProduct.id ? savedProduct : p)
                     : [savedProduct, ...prev]
             );
-            showToast(`Product ${formData.id ? 'updated' : 'created'} successfully!`, 'success');
+            notify.success(`Product ${formData.id ? 'updated' : 'created'}`);
             setIsModalOpen(false);
         } catch (err) {
-            showToast(err.message, 'error');
+            notify.error(err.message);
         } finally {
             setSubmitting(false);
         }
@@ -210,12 +210,12 @@ export default function AdminProducts() {
         if (!file) return;
 
         if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-            showToast('Invalid file type. Please upload JPG, PNG, or WebP images only.', 'error');
+            notify.error('Invalid file type. Please upload JPG, PNG, or WebP images only.');
             return;
         }
 
         if (file.size > 5 * 1024 * 1024) {
-            showToast('File too large. Maximum size is 5MB.', 'error');
+            notify.error('File too large. Maximum size is 5MB.');
             return;
         }
 
@@ -240,10 +240,10 @@ export default function AdminProducts() {
             if (!result.success) throw new Error(result.error || 'Upload failed');
 
             setFormData(prev => ({ ...prev, image_url: result.url, uploadProgress: null }));
-            showToast('Image uploaded successfully!', 'success');
+            notify.success('Image uploaded');
         } catch (err) {
             logger.error('Upload error:', err);
-            showToast(err.message || 'Failed to upload image', 'error');
+            notify.error(err.message || 'Failed to upload image');
             setFormData(prev => ({ ...prev, uploadProgress: null }));
         }
     };
