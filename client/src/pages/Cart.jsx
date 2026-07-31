@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useDialog } from '../hooks/useDialog';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import { useAuth } from '../context/AuthContext';
@@ -106,6 +107,14 @@ export default function Cart() {
       couponInputRef.current?.focus();
     }
   }, [appliedCoupon]);
+
+  const warningDialogRef = useRef(null);
+  const couponDialogRef = useRef(null);
+  const editDialogRef = useRef(null);
+
+  useDialog({ open: warningModal.show, onClose: () => setWarningModal({ show: false, distance: 0, lat: null, lng: null }), dialogRef: warningDialogRef });
+  useDialog({ open: showCouponModal, onClose: () => setShowCouponModal(false), dialogRef: couponDialogRef });
+  useDialog({ open: Boolean(editingItem), onClose: () => setEditingItem(null), dialogRef: editDialogRef });
 
   const focusAfterListChange = () => {
     pendingFocusRef.current = () => (continueRef.current || emptyBtnRef.current || summaryRef.current)?.focus();
@@ -473,8 +482,8 @@ export default function Cart() {
       )}
 
       {warningModal.show && (
-        <div className="cart-modal-scrim" onClick={() => setWarningModal({ show: false, distance: 0, lat: null, lng: null })}>
-          <div className="cart-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Confirm pickup">
+        <div className="cart-modal-scrim fr-dialog-scrim" onClick={() => setWarningModal({ show: false, distance: 0, lat: null, lng: null })}>
+          <div className="cart-modal fr-dialog-panel" ref={warningDialogRef} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Confirm pickup">
             <div className="cart-modal-head"><h3>Confirm pickup</h3><button autoFocus onClick={() => setWarningModal({ show: false, distance: 0, lat: null, lng: null })} className="cart-modal-close" aria-label="Close"><CloseIcon /></button></div>
             <div className="cart-modal-body"><p>You're <strong>{warningModal.distance.toFixed(1)} km</strong> away. Are you sure you'd like to pick up?</p></div>
             <div className="cart-modal-foot">
@@ -486,8 +495,8 @@ export default function Cart() {
       )}
 
       {showCouponModal && (
-        <div className="cart-modal-scrim" onClick={() => setShowCouponModal(false)}>
-          <div className="cart-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Available offers">
+        <div className="cart-modal-scrim fr-dialog-scrim" onClick={() => setShowCouponModal(false)}>
+          <div className="cart-modal fr-dialog-panel" ref={couponDialogRef} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Available offers">
             <div className="cart-modal-head"><h3>Available offers</h3><button autoFocus onClick={() => setShowCouponModal(false)} className="cart-modal-close" aria-label="Close"><CloseIcon /></button></div>
             <div className="cart-modal-body cart-offers">
               {availableCoupons.map(coupon => {
@@ -511,8 +520,8 @@ export default function Cart() {
       )}
 
       {editingItem && (
-        <div className="cart-modal-scrim" onClick={() => setEditingItem(null)}>
-          <div className="cart-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Edit ${editingItem.title}`}>
+        <div className="cart-modal-scrim fr-dialog-scrim" onClick={() => setEditingItem(null)}>
+          <div className="cart-modal fr-dialog-panel" ref={editDialogRef} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Edit ${editingItem.title}`}>
             <div className="cart-modal-head"><h3>Edit {editingItem.title}</h3><button autoFocus onClick={() => setEditingItem(null)} className="cart-modal-close" aria-label="Close"><CloseIcon /></button></div>
             <div className="cart-modal-body">
               {editLoading ? <p className="cart-modal-muted">Loading options&hellip;</p> : editProduct ? (
@@ -579,6 +588,7 @@ const cartBaseStyles = `
   .cart-review { display: flex; flex-direction: column; }
   .fr-ci { display: flex; gap: var(--fr-s4); padding: var(--fr-s5) 0; border-bottom: 1px solid var(--fr-line); }
   .fr-ci-media { flex-shrink: 0; width: 96px; height: 120px; border-radius: var(--fr-r-card); overflow: hidden; background: var(--fr-surface-2); }
+  .fr-ci-media:hover { opacity: 0.88; }
   .fr-ci-media img { width: 100%; height: 100%; object-fit: cover; }
   .fr-ci-media:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
   .fr-ci-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--fr-s2); }

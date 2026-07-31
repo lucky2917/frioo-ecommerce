@@ -658,6 +658,7 @@ export default function Orders() {
           text-decoration: underline;
           text-underline-offset: 3px;
         }
+          .fr-ord-cart-link:hover { color: var(--fr-brand-press); text-decoration: underline; text-underline-offset: 2px; }
 
         .fr-ord-help {
           font-family: var(--fr-font-sans);

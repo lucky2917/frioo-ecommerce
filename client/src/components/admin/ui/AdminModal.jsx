@@ -1,57 +1,20 @@
-import { useEffect, useId, useRef } from 'react';
+import { useId, useRef } from 'react';
+import { useDialog } from '../../../hooks/useDialog';
 import './styles';
-
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export default function AdminModal({ open, onClose, title, size = 'md', children, footer }) {
   const dialogRef = useRef(null);
   const closeRef = useRef(null);
-  const triggerRef = useRef(null);
   const titleId = useId();
 
-  useEffect(() => {
-    if (!open) return;
-
-    triggerRef.current = document.activeElement;
-    const dialog = dialogRef.current;
-    const getFocusable = () => Array.from(dialog?.querySelectorAll(FOCUSABLE) || []);
-
-    closeRef.current?.focus();
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        event.stopPropagation();
-        onClose();
-        return;
-      }
-      if (event.key !== 'Tab') return;
-      const focusable = getFocusable();
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      const trigger = triggerRef.current;
-      if (trigger && document.contains(trigger)) trigger.focus();
-    };
-  }, [open, onClose]);
+  useDialog({ open, onClose, dialogRef, initialFocusRef: closeRef });
 
   if (!open) return null;
 
   return (
-    <div className="adm-overlay" onClick={onClose}>
+    <div className="adm-overlay fr-dialog-scrim" onClick={onClose}>
       <div
-        className={`adm-dialog adm-dialog--${size}`}
+        className={`adm-dialog adm-dialog--${size} fr-dialog-panel`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

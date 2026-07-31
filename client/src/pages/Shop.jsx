@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
+import { useDialog } from '../hooks/useDialog';
 import { useSearchParams } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import ProductCard from '../components/shop/ProductCard';
@@ -37,6 +38,10 @@ export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [sortOption, setSortOption] = useState('recommended');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const sheetRef = useRef(null);
+  const sheetCloseRef = useRef(null);
+
+  useDialog({ open: showMobileFilters, onClose: () => setShowMobileFilters(false), dialogRef: sheetRef, initialFocusRef: sheetCloseRef });
   const [priceRange, setPriceRange] = useState([0, Infinity]);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
@@ -270,11 +275,11 @@ export default function Shop() {
       </main>
 
       {showMobileFilters && (
-        <div className="shop-sheet-scrim" onClick={() => setShowMobileFilters(false)}>
-          <div className="shop-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Filters">
+        <div className="shop-sheet-scrim fr-dialog-scrim" onClick={() => setShowMobileFilters(false)}>
+          <div className="shop-sheet fr-dialog-panel--sheet" ref={sheetRef} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Filters">
             <div className="shop-sheet-head">
               <span className="shop-sheet-title">Filters</span>
-              <button className="shop-sheet-close" onClick={() => setShowMobileFilters(false)} aria-label="Close">
+              <button className="shop-sheet-close" ref={sheetCloseRef} onClick={() => setShowMobileFilters(false)} aria-label="Close">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>

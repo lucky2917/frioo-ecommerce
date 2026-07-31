@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useDialog } from '../../hooks/useDialog';
 import { Link } from 'react-router-dom';
 import OptimizedImage from '../OptimizedImage';
 
@@ -12,9 +13,13 @@ const WEIGHT_OPTIONS = [
 
 export default function ProductCard({ product, onAdd }) {
   const [showCustomize, setShowCustomize] = useState(false);
+  const sheetRef = useRef(null);
+  const sheetCloseRef = useRef(null);
   const [selectedExclusions, setSelectedExclusions] = useState([]);
   const [removedIngredients, setRemovedIngredients] = useState([]);
   const [selectedWeight, setSelectedWeight] = useState(WEIGHT_OPTIONS[2]);
+
+  useDialog({ open: showCustomize, onClose: () => setShowCustomize(false), dialogRef: sheetRef, initialFocusRef: sheetCloseRef });
 
   const isWeightBased = product.category === 'Fresh Fruit' && product.unit === 'kg';
   const hasOptions = product.nutrition?.exclusions?.length > 0 || product.nutrition?.ingredients?.length > 0;
@@ -78,11 +83,11 @@ export default function ProductCard({ product, onAdd }) {
       </article>
 
       {showCustomize && (
-        <div className="fr-pc-scrim" onClick={() => setShowCustomize(false)}>
-          <div className="fr-pc-sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Customize ${product.title}`}>
+        <div className="fr-pc-scrim fr-dialog-scrim" onClick={() => setShowCustomize(false)}>
+          <div className="fr-pc-sheet fr-dialog-panel" ref={sheetRef} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={`Customize ${product.title}`}>
             <div className="fr-pc-sheet-head">
               <h4 className="fr-pc-sheet-title">{product.title}</h4>
-              <button className="fr-pc-sheet-close" onClick={() => setShowCustomize(false)} aria-label="Close">
+              <button className="fr-pc-sheet-close" ref={sheetCloseRef} onClick={() => setShowCustomize(false)} aria-label="Close">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
@@ -167,6 +172,10 @@ export default function ProductCard({ product, onAdd }) {
         .fr-pc-confirm:hover { background: var(--fr-brand-press); }
         .fr-pc-confirm:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 
+        @media (max-width: 768px) {
+          .fr-pc-scrim { align-items: flex-end; padding: 0; }
+          .fr-pc-sheet { max-width: none; border-radius: var(--fr-r-surface) var(--fr-r-surface) 0 0; padding-bottom: env(safe-area-inset-bottom); }
+        }
         @media (prefers-reduced-motion: reduce) { .fr-pc, .fr-pc-img, .fr-pc-add, .fr-pc-chip { transition: none; } }
       `}</style>
     </>

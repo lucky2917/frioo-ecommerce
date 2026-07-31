@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useDialog } from '../../hooks/useDialog';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -73,6 +74,10 @@ export default function Navbar() {
 
   const [activeOrder, setActiveOrder] = useState(null);
   const [showTrackerModal, setShowTrackerModal] = useState(false);
+  const trackerDialogRef = useRef(null);
+  const trackerCloseRef = useRef(null);
+
+  useDialog({ open: showTrackerModal, onClose: () => setShowTrackerModal(false), dialogRef: trackerDialogRef, initialFocusRef: trackerCloseRef });
 
   const [lastLocation, setLastLocation] = useState(location);
   if (location !== lastLocation) {
@@ -247,11 +252,11 @@ export default function Navbar() {
       <MobileDrawer open={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
       {showTrackerModal && activeOrder && (
-        <div className="fr-modal-scrim" onClick={() => setShowTrackerModal(false)}>
-          <div className="fr-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Order tracking">
+        <div className="fr-modal-scrim fr-dialog-scrim" onClick={() => setShowTrackerModal(false)}>
+          <div className="fr-modal fr-dialog-panel" ref={trackerDialogRef} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Order tracking">
             <div className="fr-modal-head">
               <h3 className="fr-modal-title">Order tracking</h3>
-              <button className="fr-modal-close" onClick={() => setShowTrackerModal(false)} aria-label="Close">
+              <button className="fr-modal-close" ref={trackerCloseRef} onClick={() => setShowTrackerModal(false)} aria-label="Close">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
@@ -276,6 +281,7 @@ export default function Navbar() {
         .fr-hamburger:focus-visible, .fr-icon-btn:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 
         .fr-logo-link { text-decoration: none; flex-shrink: 0; }
+        .fr-logo-link:hover .fr-logo { color: var(--fr-brand); }
         .fr-logo { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: 0; }
         .fr-logo span { color: var(--fr-brand); }
 

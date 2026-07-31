@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useDialog } from '../../../hooks/useDialog';
 import { Link } from 'react-router-dom';
 
 const CATEGORIES = [
@@ -17,12 +18,17 @@ const UTILITY = [
 ];
 
 export default function MobileDrawer({ open, onClose }) {
+  const dialogRef = useRef(null);
+  const closeRef = useRef(null);
+
+  useDialog({ open, onClose, dialogRef, initialFocusRef: closeRef });
+
   return (
     <>
-      <div className={`fr-drawer ${open ? 'fr-drawer-open' : ''}`} role="dialog" aria-modal="true" aria-label="Menu" aria-hidden={!open}>
+      <div className={`fr-drawer ${open ? 'fr-drawer-open' : ''}`} ref={dialogRef} role="dialog" aria-modal="true" aria-label="Menu" aria-hidden={!open}>
         <div className="fr-drawer-head">
           <span className="fr-drawer-title">Menu</span>
-          <button className="fr-drawer-close" onClick={onClose} aria-label="Close menu">
+          <button className="fr-drawer-close" ref={closeRef} onClick={onClose} aria-label="Close menu">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
           </button>
         </div>
@@ -34,7 +40,7 @@ export default function MobileDrawer({ open, onClose }) {
           {UTILITY.map((u) => <Link key={u.to} to={u.to} className="fr-drawer-link fr-drawer-link-sub" onClick={onClose}>{u.label}</Link>)}
         </nav>
       </div>
-      {open && <div className="fr-drawer-scrim" onClick={onClose} />}
+      {open && <div className="fr-drawer-scrim fr-dialog-scrim" onClick={onClose} />}
       <style>{`
         .fr-drawer { position: fixed; top: 0; left: 0; bottom: 0; width: 82%; max-width: 320px; z-index: var(--fr-z-sheet); display: flex; flex-direction: column; background: var(--fr-surface); box-shadow: var(--fr-elev-3); transform: translateX(-100%); transition: transform var(--fr-dur-expressive) var(--fr-ease-settle); padding: max(var(--fr-s5), env(safe-area-inset-top)) var(--fr-s5) var(--fr-s5) max(var(--fr-s5), env(safe-area-inset-left)); }
         .fr-drawer-open { transform: translateX(0); }

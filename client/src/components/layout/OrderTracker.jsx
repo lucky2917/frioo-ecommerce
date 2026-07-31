@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { useDialog } from '../../hooks/useDialog';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabaseClient';
 import { DELIVERY_STATUS_DURATION_MS } from '../../config/constants';
@@ -23,7 +24,6 @@ export default function OrderTracker() {
 
   const dialogRef = useRef(null);
   const closeButtonRef = useRef(null);
-  const triggerRef = useRef(null);
   const previousStatusRef = useRef(null);
 
   const resolveOrder = useCallback((order) => {
@@ -71,47 +71,7 @@ export default function OrderTracker() {
     return () => supabase.removeChannel(channel);
   }, [user, resolveOrder]);
 
-  useEffect(() => {
-    if (!showDetails) return;
-
-    triggerRef.current = document.activeElement;
-    const dialog = dialogRef.current;
-    const getFocusable = () =>
-      Array.from(
-        dialog?.querySelectorAll(
-          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        ) || []
-      );
-
-    closeButtonRef.current?.focus();
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        event.stopPropagation();
-        setShowDetails(false);
-        return;
-      }
-      if (event.key !== 'Tab') return;
-      const focusable = getFocusable();
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      const trigger = triggerRef.current;
-      if (trigger && document.contains(trigger)) trigger.focus();
-    };
-  }, [showDetails]);
+  useDialog({ open: showDetails, onClose: () => setShowDetails(false), dialogRef, initialFocusRef: closeButtonRef });
 
   if (!activeOrder) return null;
 

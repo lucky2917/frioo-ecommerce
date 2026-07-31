@@ -187,12 +187,17 @@ button[aria-disabled="true"],
 a {
   text-decoration: none;
   color: inherit;
-  transition: opacity 0.2s ease;
 }
 
-a:hover {
-  opacity: 0.7;
+@media (prefers-reduced-motion: no-preference) {
+  .fr-dialog-scrim { animation: fr-scrim-in var(--fr-dur-quick) var(--fr-ease-standard); }
+  .fr-dialog-panel { animation: fr-dialog-in var(--fr-dur-base) var(--fr-ease-settle); }
+  .fr-dialog-panel--sheet { animation: fr-sheet-in var(--fr-dur-base) var(--fr-ease-settle); }
 }
+
+@keyframes fr-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fr-dialog-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes fr-sheet-in { from { transform: translateY(100%); } to { transform: none; } }
 
 .container-fluid {
   width: 94%;

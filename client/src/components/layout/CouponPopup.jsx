@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useDialog } from '../../hooks/useDialog';
 
 export default function CouponPopup() {
   const [show, setShow] = useState(false);
+  const dialogRef = useRef(null);
+  const closeRef = useRef(null);
+
+  useDialog({ open: show, onClose: () => setShow(false), dialogRef, initialFocusRef: closeRef });
 
   useEffect(() => {
     const welcomeSeen = localStorage.getItem('frioo_welcome_seen');
@@ -14,9 +19,9 @@ export default function CouponPopup() {
   if (!show) return null;
 
   return (
-    <div className="fr-welcome-scrim" onClick={() => setShow(false)}>
-      <div className="fr-welcome" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Welcome to Frioo">
-        <button className="fr-welcome-close" onClick={() => setShow(false)} aria-label="Close">
+    <div className="fr-welcome-scrim fr-dialog-scrim" onClick={() => setShow(false)}>
+      <div className="fr-welcome fr-dialog-panel" ref={dialogRef} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Welcome to Frioo">
+        <button className="fr-welcome-close" ref={closeRef} onClick={() => setShow(false)} aria-label="Close">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
         </button>
         <span className="fr-welcome-mark">
@@ -63,9 +68,7 @@ export default function CouponPopup() {
         .fr-welcome-fact p { margin: 2px 0 0; font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-3); }
         .fr-welcome-btn { width: 100%; height: 48px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
         .fr-welcome-btn:hover { background: var(--fr-brand-press); }
-        .fr-welcome-btn:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
-        @media (prefers-reduced-motion: no-preference) { .fr-welcome { animation: fr-welcome-pop var(--fr-dur-expressive) var(--fr-ease-settle); } }
-        @keyframes fr-welcome-pop { from { transform: scale(0.96); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .fr-welcome-btn:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; } }
       `}</style>
     </div>
   );
