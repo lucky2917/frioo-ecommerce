@@ -278,6 +278,7 @@ export default function Cart() {
   };
 
   const handlePreCheckout = async () => {
+    if (isChecking || isPlacingOrder) return;
     modalTriggerRef.current = document.activeElement;
     if (cartItems.length === 0) return;
 
@@ -285,11 +286,7 @@ export default function Cart() {
       notify.error('Please login to place an order');
       return;
     }
-
-    if (isBelowMin) {
-      notify.error(`Minimum delivery order is ₹${MIN_CART_VALUE}`);
-      return;
-    }
+    if (isBelowMin) return;
 
     if (orderType === 'delivery') {
       const addr = profile?.address?.trim() || '';
@@ -446,8 +443,9 @@ export default function Cart() {
                   <div className="cart-coupon">
                     <div className="cart-coupon-input">
                       <input ref={couponInputRef} type="text" placeholder="Discount code" aria-label="Discount code" value={couponInput} onChange={(e) => setCouponInput(e.target.value.toUpperCase())} />
-                      <button onClick={handleApplyCoupon} disabled={!couponInput}>Apply</button>
+                      <button onClick={handleApplyCoupon} aria-disabled={!couponInput.trim()} aria-describedby="cart-coupon-hint">Apply</button>
                     </div>
+                    <p className="fr-sr-only" id="cart-coupon-hint">Enter a discount code to apply it.</p>
                     {availableCoupons && availableCoupons.length > 0 && (
                       <button onClick={openCouponModal} className="cart-offers-link">View available offers</button>
                     )}
@@ -456,9 +454,9 @@ export default function Cart() {
                   <button ref={removeCouponRef} onClick={handleRemoveCoupon} className="cart-offers-link">Remove coupon</button>
                 )}
 
-                {isBelowMin && <p className="cart-nudge">Add &#8377;{amountToMin.toFixed(0)} more to place a delivery order.</p>}
+                {isBelowMin && <p className="cart-nudge" id="cart-min-note">Add &#8377;{amountToMin.toFixed(0)} more to place a delivery order.</p>}
 
-                <button className="cart-place fr-only-desktop" onClick={handlePreCheckout} disabled={placeOrderDisabled}>
+                <button className="cart-place fr-only-desktop" onClick={handlePreCheckout} aria-disabled={placeOrderDisabled} aria-describedby={isBelowMin ? 'cart-min-note' : undefined}>
                   {submitting && <span className="cart-spin" aria-hidden="true" />}{placeOrderLabel}
                 </button>
 
@@ -474,7 +472,8 @@ export default function Cart() {
       {cartItems.length > 0 && (
         <div className="cart-mobilebar fr-only-mobile">
           <div className="cart-mobilebar-info"><span>Total</span><strong>&#8377;{finalTotal.toFixed(0)}</strong></div>
-          <button className="cart-mobilebar-btn" onClick={handlePreCheckout} disabled={placeOrderDisabled}>{submitting && <span className="cart-spin" aria-hidden="true" />}{placeOrderLabel}</button>
+          {isBelowMin && <p className="cart-mobilebar-note" id="cart-min-note-mobile">Add &#8377;{amountToMin.toFixed(0)} more</p>}
+          <button className="cart-mobilebar-btn" onClick={handlePreCheckout} aria-disabled={placeOrderDisabled} aria-describedby={isBelowMin ? 'cart-min-note-mobile' : undefined}>{submitting && <span className="cart-spin" aria-hidden="true" />}{placeOrderLabel}</button>
         </div>
       )}
 
@@ -644,6 +643,8 @@ const cartBaseStyles = `
   .cart-coupon-input button:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
   .cart-offers-link { display: inline-block; margin-top: var(--fr-s2); background: none; border: none; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); color: var(--fr-brand); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: var(--fr-s1) 0; }
   .cart-offers-link:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
+  .cart-place[aria-disabled="true"], .cart-mobilebar-btn[aria-disabled="true"], .cart-coupon-input button[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+  .cart-mobilebar-note { font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-snug); color: var(--fr-warm); margin: 2px 0 0; }
   .cart-nudge { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0 0 var(--fr-s3); }
   .cart-place { width: 100%; height: 52px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); cursor: pointer; font-variant-numeric: tabular-nums; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
   .cart-place:hover:not(:disabled) { background: var(--fr-brand-press); }

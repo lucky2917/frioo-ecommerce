@@ -1,16 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 export default function Footer() {
-  const [email, setEmail] = useState('');
 
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (email) {
-      alert('Thank you for subscribing!');
-      setEmail('');
-    }
-  };
 
   return (
     <footer className="fr-footer">
@@ -65,18 +57,7 @@ export default function Footer() {
         <div className="fr-footer-col fr-footer-newsletter">
           <h4 className="fr-footer-heading">Stay fresh</h4>
           <p className="fr-footer-desc">Occasional notes on what's in season. No spam.</p>
-          <form className="fr-newsletter-form" onSubmit={handleSubscribe}>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="fr-newsletter-input"
-              aria-label="Email address"
-              required
-            />
-            <button type="submit" className="fr-newsletter-btn">Subscribe</button>
-          </form>
+          <p className="fr-newsletter-note">Sign-ups aren&apos;t open yet. Call us on <a href="tel:+919347043329">+91 93470 43329</a> to hear what&apos;s in season.</p>
           <div className="fr-footer-contact">
             <p className="fr-contact-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
@@ -117,7 +98,9 @@ export default function Footer() {
         .fr-footer-links a { color: var(--fr-text-2); text-decoration: none; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-control); transition: color var(--fr-dur-quick) var(--fr-ease-standard); }
         .fr-footer-links a:hover { color: var(--fr-brand); }
         .fr-footer-links a:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
-        .fr-newsletter-form { display: flex; gap: var(--fr-s2); margin-bottom: var(--fr-s4); }
+        .fr-newsletter-note { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0 0 var(--fr-s4); }
+        .fr-newsletter-note a { color: var(--fr-brand); font-weight: var(--fr-fw-medium); }
+        .fr-newsletter-note a:hover { text-decoration: underline; text-underline-offset: 2px; }
         .fr-newsletter-input { flex: 1; min-width: 0; height: 44px; padding: 0 var(--fr-s3); background: var(--fr-surface); border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-control); color: var(--fr-text); outline: none; transition: border-color var(--fr-dur-quick) var(--fr-ease-standard), box-shadow var(--fr-dur-quick) var(--fr-ease-standard); }
         .fr-newsletter-input::placeholder { color: var(--fr-text-3); }
         .fr-newsletter-input:focus { border-color: var(--fr-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fr-brand) 16%, transparent); }

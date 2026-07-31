@@ -2,28 +2,9 @@ import React from 'react';
 import SEO from '../../components/SEO';
 
 export default function Contact() {
-  const [formData, setFormData] = React.useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: ''
-  });
 
-  const [submitted, setSubmitted] = React.useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-    }, 3000);
-  };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   return (
     <div className="contact-page">
@@ -108,78 +89,22 @@ export default function Contact() {
           </div>
 
           <div className="contact-form-wrapper">
-            <h2>Send us a Message</h2>
-            {submitted && (
-              <div className="success-message">
-                ✓ Thank you! We'll get back to you soon.
-              </div>
-            )}
-            <form onSubmit={handleSubmit} className="contact-form">
-              <div className="form-row">
-                <div className="form-field">
-                  <label>Name *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    placeholder="Your name"
-                  />
-                </div>
-                <div className="form-field">
-                  <label>Email *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    placeholder="your@email.com"
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-field">
-                  <label>Phone</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="+91 1234567890"
-                  />
-                </div>
-                <div className="form-field">
-                  <label>Subject *</label>
-                  <input
-                    type="text"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    required
-                    placeholder="How can we help?"
-                  />
-                </div>
-              </div>
-
-              <div className="form-field">
-                <label>Message *</label>
-                <textarea
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
-                  rows="6"
-                  placeholder="Tell us more..."
-                />
-              </div>
-
-              <button type="submit" className="submit-button">
-                Send Message
-              </button>
-            </form>
+            <h2>Talk to us</h2>
+            <p className="contact-unavailable-lead">
+              Online messages aren&apos;t running yet, so anything sent here would go nowhere.
+              Call or email instead and a person will pick it up.
+            </p>
+            <div className="contact-direct">
+              <a className="contact-direct-action" href="tel:+919347043329">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+                Call +91 93470 43329
+              </a>
+              <a className="contact-direct-action contact-direct-secondary" href="mailto:frioo.trust@gmail.com">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+                Email frioo.trust@gmail.com
+              </a>
+            </div>
+            <p className="contact-unavailable-note">We answer between 7:00 AM and 10:00 PM, every day.</p>
           </div>
         </div>
       </div>
@@ -290,6 +215,13 @@ export default function Contact() {
           margin: 0 0 24px 0;
         }
 
+        .contact-unavailable-lead { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0 0 24px; max-width: var(--fr-measure); }
+        .contact-direct { display: flex; flex-direction: column; gap: 12px; }
+        .contact-direct-action { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 20px; border-radius: 6px; background: var(--fr-brand); color: var(--fr-on-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); }
+        .contact-direct-action:hover { background: var(--fr-brand-press); }
+        .contact-direct-secondary { background: var(--fr-surface); color: var(--fr-text); border: 1px solid var(--fr-line-strong); }
+        .contact-direct-secondary:hover { background: var(--fr-surface-2); }
+        .contact-unavailable-note { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-3); margin: 16px 0 0; }
         .success-message {
           background: #4CAF50;
           color: white;

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
+import Disclosure from '../../components/Disclosure';
 import SEO from '../../components/SEO';
 
 export default function HelpFAQs() {
-    const [openFAQ, setOpenFAQ] = useState(null);
 
     const faqs = [
         {
@@ -79,10 +79,6 @@ export default function HelpFAQs() {
         }
     ];
 
-    const toggleFAQ = (index) => {
-        setOpenFAQ(openFAQ === index ? null : index);
-    };
-
     const faqSchema = {
         "@context": "https://schema.org",
         "@type": "FAQPage",
@@ -118,35 +114,9 @@ export default function HelpFAQs() {
                         <div key={catIndex} className="faq-category">
                             <h2 className="category-title">{category.category}</h2>
                             <div className="faq-list">
-                                {category.questions.map((faq, qIndex) => {
-                                    const faqIndex = `${catIndex}-${qIndex}`;
-                                    const isOpen = openFAQ === faqIndex;
-
-                                    return (
-                                        <div key={qIndex} className={`faq-item ${isOpen ? 'open' : ''}`}>
-                                            <button
-                                                className="faq-question"
-                                                onClick={() => toggleFAQ(faqIndex)}
-                                            >
-                                                <span>{faq.q}</span>
-                                                <svg
-                                                    width="20"
-                                                    height="20"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    className="chevron"
-                                                >
-                                                    <polyline points="6 9 12 15 18 9" />
-                                                </svg>
-                                            </button>
-                                            <div className="faq-answer">
-                                                <p>{faq.a}</p>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                {category.questions.map((faq, qIndex) => (
+                                    <Disclosure key={qIndex} summary={faq.q}>{faq.a}</Disclosure>
+                                ))}
                             </div>
                         </div>
                     ))}
