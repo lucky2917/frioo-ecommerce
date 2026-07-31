@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../lib/supabaseClient';
 import { logger } from '../utils/logger';
-import Navbar from '../components/layout/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
@@ -302,7 +301,6 @@ export default function Orders() {
   return (
     <div className="fr-ord-page">
       <SEO title="My Orders" description="Track your orders and reorder favourites." />
-      <Navbar />
 
       <div className="fr-ord-live" aria-live="polite">{announcement}</div>
 

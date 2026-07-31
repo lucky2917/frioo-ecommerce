@@ -2,7 +2,6 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
-import LoadingSpinner from './components/LoadingSpinner';
 
 import { CartProvider } from './context/CartContext';
 
@@ -33,6 +32,8 @@ const ShippingPolicy = lazy(() => import('./pages/info/ShippingPolicy'));
 const Returns = lazy(() => import('./pages/info/Returns'));
 
 import CouponPopup from './components/layout/CouponPopup';
+import StorefrontLayout from './components/layout/StorefrontLayout';
+import RouteFallback from './components/layout/RouteFallback';
 import FeedbackRegion from './components/feedback/FeedbackRegion';
 import OrderTracker from './components/layout/OrderTracker';
 
@@ -44,20 +45,17 @@ const AppInner = () => {
       <CouponPopup />
 
       <ErrorBoundary>
-        <Suspense fallback={
-          <div className="app-loading">
-            <LoadingSpinner />
-            <p style={{ color: '#666', fontFamily: 'var(--fr-font-sans)', fontSize: 'var(--fr-fs-body)', fontWeight: 'var(--fr-fw-regular)', lineHeight: 'var(--fr-lh-normal)' }}>Freshness loading...</p>
-          </div>
-        }>
+        <Suspense fallback={<RouteFallback />}>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/product/:id" element={<ProductDetails />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/orders" element={<Orders />} />
+            <Route element={<StorefrontLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/product/:id" element={<ProductDetails />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/orders" element={<Orders />} />
+            </Route>
 
             <Route path="/admin" element={
               <AdminRoute>

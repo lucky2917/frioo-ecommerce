@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { useDialog } from '../hooks/useDialog';
 import { useSearchParams } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
 import ProductCard from '../components/shop/ProductCard';
+import ProductCardSkeleton from '../components/shop/ProductCardSkeleton';
 import ShopFilters from '../components/shop/ShopFilters';
 import BundleDeals from '../components/shop/BundleDeals';
 import FetchError from '../components/FetchError';
@@ -22,14 +22,6 @@ const SORT_OPTIONS = [
   { value: 'alpha-asc', label: 'A → Z' },
 ];
 
-const ShopSkeleton = () => (
-  <div className="shop-skel" aria-hidden="true">
-    <div className="shop-skel-img" />
-    <div className="shop-skel-line" />
-    <div className="shop-skel-line shop-skel-short" />
-    <div className="shop-skel-btn" />
-  </div>
-);
 
 export default function Shop() {
   const { addToCart } = useCart();
@@ -193,7 +185,6 @@ export default function Shop() {
         keywords={activeSeo?.keywords || 'buy fruits online vizag, fresh juice shop vizag, fruit delivery visakhapatnam, order fruits online vizag, fresh salad vizag, fruit milkshake order vizag'}
         structuredData={shopStructuredData}
       />
-      <Navbar />
 
       <main className="shop-main">
         <header className="shop-head">
@@ -244,7 +235,7 @@ export default function Shop() {
             </div>
 
             {loading && products.length === 0 ? (
-              <div className="shop-grid">{Array.from({ length: 8 }).map((_, i) => <ShopSkeleton key={i} />)}</div>
+              <div className="shop-grid">{Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)}</div>
             ) : error ? (
               <FetchError message="We couldn't load the products. Please check your connection and try again." onRetry={fetchShopProducts} />
             ) : displayedProducts.length > 0 ? (
@@ -340,15 +331,7 @@ export default function Shop() {
         .shop-empty-sub { color: var(--fr-text-2); margin: 0 0 var(--fr-s3); }
         .shop-empty-actions { display: flex; gap: var(--fr-s3); }
         .shop-empty-btn { min-height: 44px; padding: 0 var(--fr-s5); background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); cursor: pointer; }
-        .shop-empty-btn:hover { background: var(--fr-brand-press); }
-
-        .shop-skel { display: flex; flex-direction: column; gap: var(--fr-s3); background: var(--fr-surface); border-radius: var(--fr-r-card); box-shadow: var(--fr-elev-1); overflow: hidden; padding-bottom: var(--fr-s4); }
-        .shop-skel-img { aspect-ratio: 4 / 5; background: var(--fr-surface-2); }
-        .shop-skel-line { height: 12px; border-radius: var(--fr-r-control); background: var(--fr-surface-2); margin: 0 var(--fr-s4); }
-        .shop-skel-short { width: 50%; }
-        .shop-skel-btn { height: 44px; border-radius: var(--fr-r-control); background: var(--fr-surface-2); margin: var(--fr-s2) var(--fr-s4) 0; }
-        @media (prefers-reduced-motion: no-preference) { .shop-skel-img, .shop-skel-line, .shop-skel-btn { animation: shop-shimmer 1.4s var(--fr-ease-standard) infinite; } }
-        @keyframes shop-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+        .shop-empty-btn:hover { background: var(--fr-brand-press); } }
 
         .shop-sheet-scrim { position: fixed; inset: 0; z-index: var(--fr-z-sheet); background: var(--fr-scrim); display: flex; align-items: flex-end; }
         .shop-sheet { width: 100%; max-height: 82vh; display: flex; flex-direction: column; background: var(--fr-surface); border-radius: var(--fr-r-surface) var(--fr-r-surface) 0 0; box-shadow: var(--fr-elev-3); padding-bottom: env(safe-area-inset-bottom); }

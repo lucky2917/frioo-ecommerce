@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabaseClient';
 import { logger } from '../../utils/logger';
 import { notify } from '../../lib/feedbackStore';
 import { formatOrderAmount, getStatusPresentation } from '../../utils/orderStatus';
-import { AdminPage, MetricCard, StatusChip, SearchInput } from '../../components/admin/ui';
+import { AdminPage, MetricCard, StatusChip, SearchInput, AdminErrorState } from '../../components/admin/ui';
 
 const STATUS_ORDER = ['pending', 'confirmed', 'preparing', 'ready', 'out-for-delivery', 'delivered', 'cancelled'];
 
@@ -34,6 +34,7 @@ const OrderTypeBadge = ({ type }) => {
 export default function AdminOrders() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [orderTypeFilter, setOrderTypeFilter] = useState('all');
@@ -59,7 +60,7 @@ export default function AdminOrders() {
             setOrders(data || []);
         } catch (err) {
             logger.error('Error fetching orders:', err.message);
-            notify.error('Failed to fetch orders');
+            setLoadError('We could not load orders. Check your connection and try again.');
         } finally {
             setLoading(false);
         }
@@ -160,6 +161,14 @@ export default function AdminOrders() {
             <MetricCard tone="brand" label="Total revenue" value={`₹${formatOrderAmount(metrics.totalRevenue)}`} />
         </>
     );
+
+    if (loadError) {
+        return (
+            <AdminPage title="Orders">
+                <AdminErrorState message={loadError} onRetry={() => { setLoadError(null); setLoading(true); fetchOrders(); }} />
+            </AdminPage>
+        );
+    }
 
     return (
         <AdminPage title="Orders" subtitle="Monitor and manage customer orders" metrics={loading ? undefined : metricCards}>

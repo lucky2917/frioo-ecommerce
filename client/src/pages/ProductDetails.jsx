@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useCommitFeedback } from '../hooks/useCommitFeedback';
 import { useParams, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
-import Navbar from '../components/layout/Navbar';
 import FetchError from '../components/FetchError';
 import VideoModal from '../components/shop/VideoModal';
 import ProductCard from '../components/shop/ProductCard';
@@ -111,7 +110,6 @@ export default function ProductDetails() {
 
   if (loading) return (
     <div className="pd-page">
-      <Navbar />
       <div className="pd-shell">
         <div className="pd-grid">
           <div className="pd-skel-media" />
@@ -131,7 +129,6 @@ export default function ProductDetails() {
 
   if (error) return (
     <div className="pd-page">
-      <Navbar />
       <div className="pd-message">
         <FetchError message="We couldn't load this product. Please check your connection and try again." onRetry={refetch} />
         <Link to="/shop" className="pd-back">Return to shop</Link>
@@ -142,7 +139,6 @@ export default function ProductDetails() {
 
   if (!product) return (
     <div className="pd-page">
-      <Navbar />
       <div className="pd-message">
         <h2 className="pd-notfound">Product not found</h2>
         <Link to="/shop" className="pd-back">Return to shop</Link>
@@ -205,7 +201,6 @@ export default function ProductDetails() {
           ]
         } : undefined}
       />
-      <Navbar />
 
       <main className="pd-shell">
         <nav className="pd-crumbs" aria-label="Breadcrumb">

@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabaseClient';
 import { notify } from '../../lib/feedbackStore';
 import { logger } from '../../utils/logger';
 import { API_BASE_URL, PRODUCT_CATEGORIES } from '../../config/constants';
-import { AdminPage, MetricCard, AdminModal, ConfirmDialog, SearchInput } from '../../components/admin/ui';
+import { AdminPage, MetricCard, AdminModal, ConfirmDialog, SearchInput, AdminErrorState } from '../../components/admin/ui';
 
 const DB_CATEGORIES = PRODUCT_CATEGORIES.filter(c => c.dbValue !== null).map(c => c.dbValue);
 const CATEGORIES = ['All', ...DB_CATEGORIES];
@@ -35,6 +35,7 @@ const NUTRITION_FIELDS = [
 export default function AdminProducts() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(null);
     const [activeTab, setActiveTab] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,7 +55,7 @@ export default function AdminProducts() {
             setProducts(data || []);
         } catch (err) {
             logger.error(err);
-            notify.error('Failed to fetch inventory');
+            setLoadError('We could not load inventory. Check your connection and try again.');
         } finally {
             setLoading(false);
         }
@@ -269,6 +270,14 @@ export default function AdminProducts() {
             Add product
         </button>
     );
+
+    if (loadError) {
+        return (
+            <AdminPage title="Products">
+                <AdminErrorState message={loadError} onRetry={() => { setLoadError(null); setLoading(true); fetchProducts(); }} />
+            </AdminPage>
+        );
+    }
 
     return (
         <AdminPage

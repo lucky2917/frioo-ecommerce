@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { logger } from '../utils/logger';
@@ -116,7 +115,6 @@ export default function Onboarding() {
 
   return (
     <div className="onboarding-page">
-      <Navbar />
       <div className="page-content">
         <div className="onboarding-container">
           <h2 className="onboarding-title">Complete Your Profile</h2>

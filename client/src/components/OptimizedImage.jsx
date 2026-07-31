@@ -5,7 +5,7 @@ const OptimizedImage = ({
     alt,
     style,
     className,
-    placeholderColor = '#f0f0f0'
+    placeholderColor = 'var(--fr-surface-2)'
 }) => {
     const [imageSrc, setImageSrc] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -58,8 +58,8 @@ const OptimizedImage = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: '#f5f5f5',
-                    color: '#999',
+                    background: 'var(--fr-surface-2)',
+                    color: 'var(--fr-text-3)',
                     fontFamily: 'var(--fr-font-sans)',
                     fontSize: 'var(--fr-fs-caption)',
                     lineHeight: 'var(--fr-lh-normal)'
@@ -79,8 +79,8 @@ const OptimizedImage = ({
             style={{
                 ...style,
                 background: placeholderColor,
-                transition: 'opacity 0.3s ease',
-                opacity: isLoading ? 0.5 : 1
+                transition: 'opacity var(--fr-dur-base) var(--fr-ease-standard)',
+                opacity: isLoading ? 0 : 1
             }}
             className={className}
             loading="lazy"

@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useDialog } from '../hooks/useDialog';
 import { Link, useNavigate } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../lib/supabaseClient';
@@ -126,7 +125,6 @@ export default function Cart() {
 
   if (authLoading) return (
     <div className="cart-page">
-      <Navbar />
       <div className="cart-loading">Loading your bag&hellip;</div>
       <style>{cartBaseStyles}</style>
     </div>
@@ -348,7 +346,6 @@ export default function Cart() {
   return (
     <div className="cart-page">
       <SEO title="Your Cart" description="Review your fresh picks and place your order." />
-      <Navbar />
 
       <main className="cart-container">
         <header className="cart-head">

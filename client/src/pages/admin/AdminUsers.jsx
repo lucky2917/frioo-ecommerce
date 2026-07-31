@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { notify } from '../../lib/feedbackStore';
 import { API_BASE_URL } from '../../config/constants';
-import { AdminPage, MetricCard, AdminTable, AdminModal, ConfirmDialog, SearchInput } from '../../components/admin/ui';
+import { AdminPage, MetricCard, AdminTable, AdminModal, ConfirmDialog, SearchInput, AdminErrorState } from '../../components/admin/ui';
 
 const COLUMNS = [
     { key: 'user', label: 'User' },
@@ -15,6 +15,7 @@ const COLUMNS = [
 export default function AdminUsers() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
     const [page, setPage] = useState(1);
@@ -41,8 +42,8 @@ export default function AdminUsers() {
             if (!res.ok) throw new Error(json.error || 'Failed to fetch users');
             setUsers(json.users || []);
             setPagination(json.pagination || null);
-        } catch (err) {
-            notify.error("Error fetching users: " + err.message);
+        } catch {
+            setLoadError("We could not load users. Check your connection and try again.");
         } finally {
             setLoading(false);
         }
@@ -161,6 +162,14 @@ export default function AdminUsers() {
             <MetricCard tone="info" label="Recent signups" value={metrics.recentSignups} sub="Last 7 days" />
         </>
     );
+
+    if (loadError) {
+        return (
+            <AdminPage title="Users">
+                <AdminErrorState message={loadError} onRetry={() => { setLoadError(null); setLoading(true); fetchUsers(); }} />
+            </AdminPage>
+        );
+    }
 
     return (
         <AdminPage title="Users" subtitle="Manage user accounts and permissions" metrics={loading ? undefined : metricCards}>

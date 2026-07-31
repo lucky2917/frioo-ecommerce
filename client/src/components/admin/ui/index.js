@@ -5,3 +5,4 @@ export { default as ConfirmDialog } from './ConfirmDialog';
 export { default as StatusChip } from './StatusChip';
 export { default as MetricCard } from './MetricCard';
 export { default as SearchInput } from './SearchInput';
+export { default as AdminErrorState } from './AdminErrorState';

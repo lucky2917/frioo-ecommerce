@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
-import { notify } from '../../lib/feedbackStore';
 import { formatOrderAmount, getStatusPresentation } from '../../utils/orderStatus';
-import { AdminPage, MetricCard, AdminTable, StatusChip } from '../../components/admin/ui';
+import { AdminPage, MetricCard, AdminTable, StatusChip, AdminErrorState } from '../../components/admin/ui';
 
 const TONE_VARS = {
     info: 'var(--fr-info)',
@@ -44,6 +43,7 @@ export default function AdminDashboard() {
     const [products, setProducts] = useState([]);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(null);
 
     const loadAll = useCallback(async () => {
         try {
@@ -58,8 +58,8 @@ export default function AdminDashboard() {
             setOrders(oRes.data || []);
             setProducts(pRes.data || []);
             setUsers(uRes.data || []);
-        } catch (err) {
-            notify.error('Failed to load dashboard: ' + err.message);
+        } catch {
+            setLoadError('We could not load the dashboard. Check your connection and try again.');
         } finally {
             setLoading(false);
         }
@@ -116,6 +116,14 @@ export default function AdminDashboard() {
     }, [orders, products, users]);
 
     const subtitle = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    if (loadError) {
+        return (
+            <AdminPage title="Dashboard">
+                <AdminErrorState message={loadError} onRetry={() => { setLoadError(null); setLoading(true); loadAll(); }} />
+            </AdminPage>
+        );
+    }
 
     if (loading) {
         return (

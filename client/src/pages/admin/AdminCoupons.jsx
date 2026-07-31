@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { notify } from '../../lib/feedbackStore';
-import { AdminPage, MetricCard, AdminModal, ConfirmDialog, SearchInput } from '../../components/admin/ui';
+import { AdminPage, MetricCard, AdminModal, ConfirmDialog, SearchInput, AdminErrorState } from '../../components/admin/ui';
 
 const INITIAL_FORM = {
     code: '',
@@ -16,6 +16,7 @@ const INITIAL_FORM = {
 export default function AdminCoupons() {
     const [coupons, setCoupons] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
@@ -34,8 +35,8 @@ export default function AdminCoupons() {
 
             if (error) throw error;
             setCoupons(data || []);
-        } catch (err) {
-            notify.error('Error fetching coupons: ' + err.message);
+        } catch {
+            setLoadError('We could not load coupons. Check your connection and try again.');
         } finally {
             setLoading(false);
         }
@@ -168,6 +169,14 @@ export default function AdminCoupons() {
             Create coupon
         </button>
     );
+
+    if (loadError) {
+        return (
+            <AdminPage title="Coupons">
+                <AdminErrorState message={loadError} onRetry={() => { setLoadError(null); setLoading(true); fetchCoupons(); }} />
+            </AdminPage>
+        );
+    }
 
     return (
         <AdminPage title="Coupons" subtitle="Create and manage discount coupons" actions={addButton} metrics={loading ? undefined : metricCards}>

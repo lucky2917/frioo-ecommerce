@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
-import Navbar from '../components/layout/Navbar';
 import { notify } from '../lib/feedbackStore';
 import { logger } from '../utils/logger';
 import { Link } from 'react-router-dom';
@@ -248,7 +247,6 @@ export default function Profile() {
   return (
     <div className="fr-pf-page">
       <SEO title="My Account" description="Manage your Frioo account details and delivery address." />
-      <Navbar />
 
       <div className="fr-pf-container">
         {renderBody()}

@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import SEO from '../components/SEO';
 import FetchError from '../components/FetchError';
 import ProductCard from '../components/shop/ProductCard';
+import ProductCardSkeleton from '../components/shop/ProductCardSkeleton';
 import { useProducts } from '../hooks/useProducts';
 import { useCart } from '../context/CartContext';
 import { PRODUCT_CATEGORIES } from '../config/constants';
@@ -37,15 +37,6 @@ const homeSchema = {
 };
 
 const PRODUCT_TABS = PRODUCT_CATEGORIES.filter(c => c.dbValue !== null).slice(0, 3);
-
-const SkeletonCard = () => (
-  <div className="home-skel" aria-hidden="true">
-    <div className="home-skel-img" />
-    <div className="home-skel-line" />
-    <div className="home-skel-line home-skel-short" />
-    <div className="home-skel-btn" />
-  </div>
-);
 
 export default function Home() {
   const { products, loading, error: productsError, refetch: loadProducts } = useProducts();
@@ -83,7 +74,6 @@ export default function Home() {
         keywords="fresh fruits vizag, best fruits in vizag, fruit delivery visakhapatnam, fresh juice vizag, buy fruits online vizag, best juice shop vizag, fruit milkshake vizag, healthy salad vizag"
         structuredData={homeSchema}
       />
-      <Navbar />
 
       <h1 className="seo-h1">Frioo — Best Fresh Fruits, Juices & Salads Delivery in Vizag, Visakhapatnam</h1>
 
@@ -123,7 +113,7 @@ export default function Home() {
       {isLoadingProducts && (
         <section className="home-section">
           <div className="home-container">
-            <div className="home-grid">{Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}</div>
+            <div className="home-grid">{Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)}</div>
           </div>
         </section>
       )}
@@ -276,15 +266,7 @@ export default function Home() {
 
         .home-empty { text-align: center; padding: var(--fr-s9) var(--fr-s5); display: flex; flex-direction: column; align-items: center; gap: var(--fr-s3); }
         .home-empty-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0; }
-        .home-empty-sub { color: var(--fr-text-2); margin: 0 0 var(--fr-s3); }
-
-        .home-skel { display: flex; flex-direction: column; gap: var(--fr-s3); background: var(--fr-surface); border-radius: var(--fr-r-card); box-shadow: var(--fr-elev-1); overflow: hidden; padding-bottom: var(--fr-s4); }
-        .home-skel-img { aspect-ratio: 4 / 5; background: var(--fr-surface-2); }
-        .home-skel-line { height: 12px; border-radius: var(--fr-r-control); background: var(--fr-surface-2); margin: 0 var(--fr-s4); }
-        .home-skel-short { width: 50%; }
-        .home-skel-btn { height: 44px; border-radius: var(--fr-r-control); background: var(--fr-surface-2); margin: var(--fr-s2) var(--fr-s4) 0; }
-        @media (prefers-reduced-motion: no-preference) { .home-skel-img, .home-skel-line, .home-skel-btn { animation: home-shimmer 1.4s var(--fr-ease-standard) infinite; } }
-        @keyframes home-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+        .home-empty-sub { color: var(--fr-text-2); margin: 0 0 var(--fr-s3); } }
 
         @media (max-width: 900px) {
           .home-hero { grid-template-columns: 1fr; min-height: 0; }
