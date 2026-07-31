@@ -147,7 +147,7 @@ export default function ProductDetails() {
     </div>
   );
 
-  const images = product.images?.length > 0 ? product.images : ['https://via.placeholder.com/600x750?text=Frioo'];
+  const images = product.images?.length > 0 ? product.images : [];
   const basePrice = product.price_cents / 100;
   const oldPrice = product.discount > 0 ? Math.round(currentPrice / (1 - product.discount / 100)) : null;
   const unitSuffix = product.unit === 'kg' ? '/ kg' : product.unit === 'item' ? 'each' : product.unit ? `/ ${product.unit}` : '';
@@ -211,7 +211,9 @@ export default function ProductDetails() {
           <div className="pd-gallery">
             <div className="pd-gallery-sticky">
               <div className="pd-frame">
-                <img src={images[selectedImage]} alt={product.title} className="pd-frame-img" />
+                {images[selectedImage]
+                  ? <img src={images[selectedImage]} alt={product.title} className="pd-frame-img" />
+                  : <span className="pd-noimg">No photo yet</span>}
                 {product.discount > 0 && <span className="pd-badge">Save {product.discount}%</span>}
               </div>
 
@@ -364,6 +366,7 @@ export default function ProductDetails() {
 
         .pd-gallery-sticky { position: sticky; top: calc(var(--navbar-height-desktop) + var(--fr-s5)); display: flex; flex-direction: column; gap: var(--fr-s4); }
         .pd-frame { position: relative; aspect-ratio: 4 / 5; background: var(--fr-surface-2); border-radius: var(--fr-r-surface); overflow: hidden; box-shadow: var(--fr-elev-1); }
+        .pd-noimg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); color: var(--fr-text-3); }
         .pd-frame-img { width: 100%; height: 100%; object-fit: cover; }
         .pd-badge { position: absolute; top: var(--fr-s4); right: var(--fr-s4); background: var(--fr-warm); color: var(--fr-on-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); text-transform: uppercase; padding: 5px 11px; border-radius: var(--fr-r-control); }
         .pd-thumbs { display: flex; gap: var(--fr-s3); flex-wrap: wrap; }

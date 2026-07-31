@@ -12,6 +12,7 @@ const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Orders = lazy(() => import('./pages/Orders'));
+const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
@@ -55,6 +56,7 @@ const AppInner = () => {
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/orders" element={<Orders />} />
+              <Route path="/order-confirmation" element={<OrderConfirmation />} />
             </Route>
 
             <Route path="/admin" element={

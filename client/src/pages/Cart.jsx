@@ -262,9 +262,10 @@ export default function Cart() {
         throw new Error(errorMessage);
       }
 
-      notify.success("Order placed. Thank you, we're getting it ready.");
+      const placedOrder = result.data?.order;
       clearCart();
-      navigate('/orders');
+      if (placedOrder) navigate('/order-confirmation', { replace: true, state: { order: placedOrder } });
+      else navigate('/orders', { replace: true });
 
     } catch (error) {
       logger.error('Order Placement Error:', error);

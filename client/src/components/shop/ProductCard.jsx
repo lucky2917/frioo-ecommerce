@@ -4,7 +4,7 @@ import { useCommitFeedback } from '../../hooks/useCommitFeedback';
 import { Link } from 'react-router-dom';
 import OptimizedImage from '../OptimizedImage';
 
-const FALLBACK_IMAGE = 'https://via.placeholder.com/400x500?text=Frioo+Fresh';
+
 
 const WEIGHT_OPTIONS = [
   { label: '250g', multiplier: 0.25 },
@@ -42,7 +42,7 @@ export default function ProductCard({ product, onAdd }) {
     variantLabel = product.unit ? product.unit.charAt(0).toUpperCase() + product.unit.slice(1) : 'Standard';
   }
 
-  const imageSrc = product.images?.[0] || FALLBACK_IMAGE;
+  const imageSrc = product.images?.[0];
 
   const handleActionClick = () => {
     if (hasOptions || isWeightBased) {
@@ -69,7 +69,9 @@ export default function ProductCard({ product, onAdd }) {
     <>
       <article className="fr-pc">
         <Link to={`/product/${product.id}`} className="fr-pc-media" aria-label={product.title}>
-          <OptimizedImage src={imageSrc} alt={product.title} className="fr-pc-img" />
+          {imageSrc
+            ? <OptimizedImage src={imageSrc} alt={product.title} className="fr-pc-img" />
+            : <span className="fr-pc-noimg">No photo yet</span>}
           {hasDiscount && <span className="fr-pc-badge">{product.discount}% off</span>}
         </Link>
         <div className="fr-pc-body">
@@ -144,6 +146,7 @@ export default function ProductCard({ product, onAdd }) {
       <style>{`
         .fr-pc { display: flex; flex-direction: column; background: var(--fr-surface); border-radius: var(--fr-r-card); box-shadow: var(--fr-elev-1); overflow: hidden; height: 100%; transition: box-shadow var(--fr-dur-base) var(--fr-ease-standard), transform var(--fr-dur-base) var(--fr-ease-standard); }
         .fr-pc:hover { box-shadow: var(--fr-elev-2); transform: translateY(-2px); }
+        .fr-pc-noimg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); color: var(--fr-text-3); }
         .fr-pc-media { position: relative; display: block; aspect-ratio: 4 / 5; background: var(--fr-surface-2); overflow: hidden; }
         .fr-pc-img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--fr-dur-base) var(--fr-ease-standard); }
         .fr-pc:hover .fr-pc-img { transform: scale(1.02); }

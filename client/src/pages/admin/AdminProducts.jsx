@@ -337,6 +337,11 @@ export default function AdminProducts() {
                                 <div className="ap-meta">
                                     <span className="ap-unit">{product.unit}</span>
                                     <span className={`ap-stock ${product.stock === 0 ? 'ap-stock--out' : 'ap-stock--ok'}`}>
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                            {product.stock === 0
+                                                ? <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>
+                                                : <path d="M20 6 9 17l-5-5" />}
+                                        </svg>
                                         {product.stock === 0 ? 'Not available' : 'Available'}
                                     </span>
                                 </div>
@@ -535,7 +540,7 @@ export default function AdminProducts() {
                 .ap-name { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-normal); letter-spacing: var(--fr-track-headline); color: var(--adm-text); margin: 0 0 var(--fr-s2); }
                 .ap-meta { display: flex; align-items: center; gap: var(--fr-s2); margin-bottom: var(--fr-s2); }
                 .ap-unit { font-size: var(--fr-fs-label); color: var(--adm-text-2); }
-                .ap-stock { font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); padding: 1px var(--fr-s2); border-radius: var(--fr-r-pill); font-variant-numeric: tabular-nums; }
+                .ap-stock { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); padding: 1px var(--fr-s2); border-radius: var(--fr-r-pill); font-variant-numeric: tabular-nums; }
                 .ap-stock--ok { background: var(--fr-brand-tint); color: var(--fr-success); }
                 .ap-stock--out { background: var(--fr-warm-tint); color: var(--fr-danger); }
                 .ap-price-row { display: flex; align-items: baseline; gap: var(--fr-s2); }
