@@ -312,7 +312,8 @@ export default function Shop() {
         .shop-back { background: none; border: none; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); color: var(--fr-brand); cursor: pointer; padding: var(--fr-s2) 0; }
         .shop-chips { display: flex; align-items: center; gap: var(--fr-s2); flex-wrap: wrap; }
         .shop-chip { display: inline-flex; align-items: center; gap: var(--fr-s2); font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); color: var(--fr-brand); background: var(--fr-brand-tint); border-radius: var(--fr-r-pill); padding: 5px 6px 5px var(--fr-s3); }
-        .shop-chip button { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: none; background: none; color: var(--fr-brand); cursor: pointer; font-size: var(--fr-fs-control); border-radius: var(--fr-r-pill); }
+        .shop-chip button { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: none; background: none; color: var(--fr-brand); cursor: pointer; font-size: var(--fr-fs-control); border-radius: var(--fr-r-pill); }
+        .shop-chip button::after { content: ""; position: absolute; top: 50%; left: 50%; width: 44px; height: 44px; transform: translate(-50%, -50%); }
         .shop-chip button:hover { background: color-mix(in srgb, var(--fr-brand) 16%, transparent); }
         .shop-clear-all { background: none; border: none; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); color: var(--fr-text-2); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
         .shop-clear-all:hover { color: var(--fr-brand); }
@@ -348,7 +349,7 @@ export default function Shop() {
         .shop-sheet { width: 100%; max-height: 82vh; display: flex; flex-direction: column; background: var(--fr-surface); border-radius: var(--fr-r-surface) var(--fr-r-surface) 0 0; box-shadow: var(--fr-elev-3); padding-bottom: env(safe-area-inset-bottom); }
         .shop-sheet-head { display: flex; align-items: center; justify-content: space-between; padding: var(--fr-s4) var(--fr-s5); border-bottom: 1px solid var(--fr-line); }
         .shop-sheet-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-text); }
-        .shop-sheet-close { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }
+        .shop-sheet-close { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }
         .shop-sheet-close:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
         .shop-sheet-body { padding: var(--fr-s5); overflow-y: auto; }
         .shop-sheet-foot { display: flex; gap: var(--fr-s3); padding: var(--fr-s4) var(--fr-s5); border-top: 1px solid var(--fr-line); }

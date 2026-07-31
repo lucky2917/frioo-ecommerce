@@ -49,7 +49,7 @@ export default function CouponPopup() {
       <style>{`
         .fr-welcome-scrim { position: fixed; inset: 0; z-index: var(--fr-z-modal); background: var(--fr-scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: var(--fr-s5); }
         .fr-welcome { position: relative; width: 100%; max-width: 400px; background: var(--fr-surface); border-radius: var(--fr-r-surface); box-shadow: var(--fr-elev-3); padding: var(--fr-s8) var(--fr-s7); text-align: center; font-family: var(--fr-font-sans); }
-        .fr-welcome-close { position: absolute; top: var(--fr-s3); right: var(--fr-s3); width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-3); cursor: pointer; border-radius: var(--fr-r-control); }
+        .fr-welcome-close { position: absolute; top: var(--fr-s3); right: var(--fr-s3); width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-3); cursor: pointer; border-radius: var(--fr-r-control); }
         .fr-welcome-close:hover { background: var(--fr-surface-2); color: var(--fr-text); }
         .fr-welcome-close:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
         .fr-welcome-mark { width: 56px; height: 56px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--fr-r-pill); background: var(--fr-brand-tint); color: var(--fr-brand); margin-bottom: var(--fr-s3); }

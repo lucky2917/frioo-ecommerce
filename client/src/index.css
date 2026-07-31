@@ -162,6 +162,28 @@ button {
   cursor: pointer;
 }
 
+:focus-visible {
+  outline: 2px solid var(--fr-brand);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  button:not(:disabled):not([aria-disabled="true"]):active,
+  [role="button"]:not([aria-disabled="true"]):active,
+  a[class*="btn"]:active,
+  a[class*="button"]:active,
+  a[class*="cta"]:active,
+  a[class*="-link"]:active {
+    transform: scale(0.98);
+  }
+}
+
+button:disabled,
+button[aria-disabled="true"],
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
 a {
   text-decoration: none;
   color: inherit;
@@ -287,9 +309,6 @@ a:hover {
     padding: 0 10px 100px;
   }
 
-  button {
-    min-height: 36px;
-  }
 }
 
 ::-webkit-scrollbar {

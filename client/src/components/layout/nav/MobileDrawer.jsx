@@ -40,7 +40,7 @@ export default function MobileDrawer({ open, onClose }) {
         .fr-drawer-open { transform: translateX(0); }
         .fr-drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--fr-s5); }
         .fr-drawer-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-headline); color: var(--fr-text); }
-        .fr-drawer-close { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }
+        .fr-drawer-close { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }
         .fr-drawer-close:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
         .fr-drawer-nav { display: flex; flex-direction: column; }
         .fr-drawer-link { font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); color: var(--fr-text); text-decoration: none; padding: var(--fr-s3) 0; border-bottom: 1px solid var(--fr-line); transition: color var(--fr-dur-quick) var(--fr-ease-standard); }

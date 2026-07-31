@@ -287,7 +287,7 @@ export default function Navbar() {
         .fr-mobile { display: none; }
 
         .fr-mobile-search { display: none; align-items: center; gap: var(--fr-s2); height: 44px; margin: 0 var(--fr-s4) var(--fr-s2); padding: 0 var(--fr-s4); background: var(--fr-surface-2); border: 1px solid var(--fr-line); border-radius: var(--fr-r-pill); overflow: hidden; }
-        .fr-mobile-search:focus-within { border-color: var(--fr-brand); background: var(--fr-surface); }
+        .fr-mobile-search:focus-within { border-color: var(--fr-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fr-brand) 16%, transparent); background: var(--fr-surface); }
         .fr-mobile-search svg { color: var(--fr-text-3); flex-shrink: 0; }
         .fr-mobile-search-input { flex: 1; min-width: 0; border: none; background: none; outline: none; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-control); color: var(--fr-text); }
         .fr-mobile-search-input::placeholder { color: var(--fr-text-3); }
@@ -297,7 +297,7 @@ export default function Navbar() {
         .fr-modal { width: 100%; max-width: 460px; background: var(--fr-surface); border-radius: var(--fr-r-surface); box-shadow: var(--fr-elev-3); overflow: hidden; }
         .fr-modal-head { display: flex; align-items: center; justify-content: space-between; padding: var(--fr-s5); border-bottom: 1px solid var(--fr-line); }
         .fr-modal-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: 0; }
-        .fr-modal-close { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }
+        .fr-modal-close { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }
         .fr-modal-close:hover { background: var(--fr-surface-2); }
         .fr-modal-close:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
         .fr-modal-body { padding: var(--fr-s5); display: flex; flex-direction: column; gap: var(--fr-s3); }

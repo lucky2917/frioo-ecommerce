@@ -660,7 +660,7 @@ const cartBaseStyles = `
   .cart-modal { width: 100%; max-width: 440px; max-height: 82vh; display: flex; flex-direction: column; background: var(--fr-surface); border-radius: var(--fr-r-surface); box-shadow: var(--fr-elev-3); overflow: hidden; }
   .cart-modal-head { display: flex; align-items: center; justify-content: space-between; padding: var(--fr-s4) var(--fr-s5); border-bottom: 1px solid var(--fr-line); }
   .cart-modal-head h3 { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0; }
-  .cart-modal-close { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }
+  .cart-modal-close { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }
   .cart-modal-close:hover { background: var(--fr-surface-2); }
   .cart-modal-close:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
   .cart-modal-body { padding: var(--fr-s5); overflow-y: auto; }
