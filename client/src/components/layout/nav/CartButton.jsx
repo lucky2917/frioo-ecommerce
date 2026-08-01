@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { prefetchHandlers } from '../../../hooks/usePrefetchRoute';
+import { loadCart } from '../../../lib/routeLoaders';
 
 export default function CartButton({ count }) {
   const [beat, setBeat] = useState(false);
@@ -17,7 +19,7 @@ export default function CartButton({ count }) {
   }, [beat]);
 
   return (
-    <Link to="/cart" className="fr-cart" aria-label={count > 0 ? `Cart, ${count} items` : 'Cart'}>
+    <Link to="/cart" className="fr-cart" {...prefetchHandlers(loadCart)} aria-label={count > 0 ? `Cart, ${count} items` : 'Cart'}>
       <span className="fr-cart-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
         {count > 0 && <span className={`fr-cart-count${beat ? ' fr-cart-count-beat' : ''}`}>{count}</span>}

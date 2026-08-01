@@ -10,7 +10,6 @@ export default defineConfig({
           if (!id.includes('node_modules')) return
           if (id.includes('@sentry')) return 'sentry'
           if (id.includes('@supabase')) return 'supabase'
-          if (id.includes('framer-motion')) return 'framer-motion'
           if (id.includes('react-router')) return 'router'
           if (id.includes('/react-dom/') || id.includes('/react/') || id.includes('/scheduler/')) return 'react'
         }

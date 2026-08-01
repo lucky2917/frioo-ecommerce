@@ -4,11 +4,12 @@ import { AuthProvider } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 
 import { CartProvider } from './context/CartContext';
+import { loadShop, loadCart, loadProductDetails } from './lib/routeLoaders';
 
 const Home = lazy(() => import('./pages/Home'));
-const Shop = lazy(() => import('./pages/Shop'));
-const Cart = lazy(() => import('./pages/Cart'));
-const ProductDetails = lazy(() => import('./pages/ProductDetails'));
+const Shop = lazy(loadShop);
+const Cart = lazy(loadCart);
+const ProductDetails = lazy(loadProductDetails);
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Orders = lazy(() => import('./pages/Orders'));

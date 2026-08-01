@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { prefetchHandlers } from '../../../hooks/usePrefetchRoute';
+import { loadShop } from '../../../lib/routeLoaders';
 
 const CATEGORIES = [
   { to: '/shop?category=deals', label: 'Daily Deals' },
@@ -13,7 +15,7 @@ export default function CategoryNavigation() {
   return (
     <nav className="fr-catnav" aria-label="Product categories">
       {CATEGORIES.map((c) => (
-        <Link key={c.to} to={c.to} className="fr-catnav-link">{c.label}</Link>
+        <Link key={c.to} to={c.to} className="fr-catnav-link" {...prefetchHandlers(loadShop)}>{c.label}</Link>
       ))}
       <style>{`
         .fr-catnav { display: flex; align-items: center; gap: var(--fr-s5); max-width: 100%; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }

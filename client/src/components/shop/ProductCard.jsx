@@ -3,6 +3,8 @@ import { useDialog } from '../../hooks/useDialog';
 import { useCommitFeedback } from '../../hooks/useCommitFeedback';
 import { Link } from 'react-router-dom';
 import OptimizedImage from '../OptimizedImage';
+import { prefetchHandlers } from '../../hooks/usePrefetchRoute';
+import { loadProductDetails } from '../../lib/routeLoaders';
 import { getStockState, getUnitPrice } from '../../utils/productFacts';
 
 
@@ -71,7 +73,7 @@ export default function ProductCard({ product, onAdd }) {
   return (
     <>
       <article className="fr-pc">
-        <Link to={`/product/${product.id}`} className="fr-pc-media" aria-label={product.title}>
+        <Link to={`/product/${product.id}`} className="fr-pc-media" aria-label={product.title} {...prefetchHandlers(loadProductDetails)}>
           {imageSrc
             ? <OptimizedImage src={imageSrc} alt={product.title} className="fr-pc-img" />
             : <span className="fr-pc-noimg">No photo yet</span>}
