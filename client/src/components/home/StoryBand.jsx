@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useReveal } from '../../hooks/useReveal';
+import SwipeRow from './SwipeRow';
 import { prefetchHandlers } from '../../hooks/usePrefetchRoute';
 import { loadShop } from '../../lib/routeLoaders';
 
@@ -12,8 +12,6 @@ const STEPS = [
 ];
 
 export default function StoryBand() {
-  const revealRef = useReveal();
-
   return (
     <section className="fr-story" aria-label="How Frioo works">
       <div className="fr-story-media" aria-hidden="true">
@@ -27,7 +25,7 @@ export default function StoryBand() {
           <h2 className="fr-story-title">From the market to your kitchen, in one day</h2>
         </header>
 
-        <ol className="fr-story-steps fr-reveal" ref={revealRef}>
+        <SwipeRow as="ol" className="fr-story-steps" count={STEPS.length} column="80%" onDark>
           {STEPS.map(({ key, title, body }, index) => (
             <li className="fr-story-step" key={key} style={{ '--fr-stagger': index }}>
               <span className="fr-story-num">{String(index + 1).padStart(2, '0')}</span>
@@ -35,7 +33,7 @@ export default function StoryBand() {
               <p className="fr-story-step-body">{body}</p>
             </li>
           ))}
-        </ol>
+        </SwipeRow>
 
         <Link to="/shop" className="fr-story-cta" {...prefetchHandlers(loadShop)}>Shop today&apos;s range</Link>
       </div>
@@ -48,7 +46,7 @@ export default function StoryBand() {
         .fr-story-head { max-width: 42rem; margin-bottom: var(--fr-s8); }
         .fr-story-eyebrow { color: #A8D5B5; }
         .fr-story-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-headline); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-tight); letter-spacing: var(--fr-track-headline); color: #FFFFFF; margin: 0; text-wrap: balance; }
-        .fr-story-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--fr-s7); list-style: none; margin: 0 0 var(--fr-s8); padding: 0; counter-reset: none; }
+        .fr-story-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--fr-s7); list-style: none; margin: 0 0 var(--fr-s8); padding: 0; }
         .fr-story-step { border-top: 1px solid rgba(255, 255, 255, 0.28); padding-top: var(--fr-s4); }
         .fr-story-num { display: block; font-family: var(--fr-font-mono); font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-eyebrow); color: #A8D5B5; margin-bottom: var(--fr-s3); }
         .fr-story-step-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-headline); color: #FFFFFF; margin: 0 0 var(--fr-s2); }
@@ -60,8 +58,9 @@ export default function StoryBand() {
         @media (prefers-reduced-motion: reduce) { .fr-story-cta { transition: none; } }
         @media (max-width: 900px) {
           .fr-story { padding: var(--fr-s9) 0; }
-          .fr-story-steps { grid-template-columns: 1fr; gap: var(--fr-s5); margin-bottom: var(--fr-s7); }
-          .fr-story-cta { width: 100%; }
+          .fr-story-steps { margin-bottom: 0; }
+          .fr-story-step { padding: var(--fr-s4) var(--fr-s4) var(--fr-s5); background: rgba(255, 255, 255, 0.07); border-top: none; border-radius: var(--fr-r-card); }
+          .fr-story-cta { width: 100%; margin-top: var(--fr-s7); }
         }
       `}</style>
     </section>

@@ -13,6 +13,7 @@ import NutritionPanel from '../components/home/NutritionPanel';
 import StoryBand from '../components/home/StoryBand';
 import ReasonsGrid from '../components/home/ReasonsGrid';
 import ClosingBand from '../components/home/ClosingBand';
+import SwipeRow from '../components/home/SwipeRow';
 import { useProducts } from '../hooks/useProducts';
 import { useReveal } from '../hooks/useReveal';
 import { useCart } from '../context/cart-context';
@@ -48,7 +49,6 @@ export default function Home() {
   const [activeProductTab, setActiveProductTab] = useState(PRODUCT_TABS[0].slug);
 
   const offerRef = useReveal();
-  const browseRef = useReveal();
 
   const featuredProducts = useMemo(() => products.filter(p => p.featured).slice(0, 10), [products]);
 
@@ -191,13 +191,13 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <div className="fr-browse-grid fr-reveal" ref={browseRef}>
+            <SwipeRow className="fr-browse-grid" count={activeTabProducts.length} column="66%" key={activeProductTab}>
               {activeTabProducts.map((product, index) => (
                 <div key={product.id} style={{ '--fr-stagger': index % 4 }}>
                   <ProductCard product={product} onAdd={addToCart} />
                 </div>
               ))}
-            </div>
+            </SwipeRow>
           </div>
         </section>
       )}
@@ -237,7 +237,6 @@ export default function Home() {
         .home-empty .fr-offer-link { color: var(--fr-brand); }
 
         @media (max-width: 900px) {
-          .fr-browse-grid { grid-template-columns: repeat(2, 1fr); gap: var(--fr-s4); }
           .fr-offer-panel { gap: var(--fr-s6); }
           .fr-tabs { overflow-x: auto; scrollbar-width: none; }
           .fr-tabs::-webkit-scrollbar { display: none; }

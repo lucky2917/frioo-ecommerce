@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useReveal } from '../../hooks/useReveal';
+import SwipeRow from './SwipeRow';
 import { prefetchHandlers } from '../../hooks/usePrefetchRoute';
 import { loadShop } from '../../lib/routeLoaders';
 
@@ -31,8 +31,6 @@ const REASONS = [
 ];
 
 export default function ReasonsGrid() {
-  const revealRef = useReveal();
-
   return (
     <section className="fr-sec fr-reasons" aria-label="Reasons to shop with Frioo">
       <div className="fr-wrap">
@@ -47,7 +45,7 @@ export default function ReasonsGrid() {
           </Link>
         </header>
 
-        <div className="fr-reasons-grid fr-reveal" ref={revealRef}>
+        <SwipeRow className="fr-reasons-grid" count={REASONS.length} column="80%">
           {REASONS.map(({ key, title, body, to, action, img }, index) => (
             <article className="fr-reason" key={key} style={{ '--fr-stagger': index }}>
               <div className="fr-reason-media">
@@ -60,7 +58,7 @@ export default function ReasonsGrid() {
               </div>
             </article>
           ))}
-        </div>
+        </SwipeRow>
       </div>
 
       <style>{`
@@ -79,7 +77,7 @@ export default function ReasonsGrid() {
 
         @media (prefers-reduced-motion: reduce) { .fr-reason, .fr-reason-action { transition: none; } }
         @media (max-width: 900px) {
-          .fr-reasons-grid { grid-template-columns: 1fr; gap: var(--fr-s4); }
+          .fr-reason { height: 100%; }
         }
       `}</style>
     </section>

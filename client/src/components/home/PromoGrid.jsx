@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useReveal } from '../../hooks/useReveal';
+import SwipeRow from './SwipeRow';
 import { prefetchHandlers } from '../../hooks/usePrefetchRoute';
 import { loadShop } from '../../lib/routeLoaders';
 
@@ -34,8 +34,6 @@ const PROMOS = [
 ];
 
 export default function PromoGrid() {
-  const revealRef = useReveal();
-
   return (
     <section className="fr-sec fr-promo" aria-label="Featured collections">
       <div className="fr-wrap">
@@ -46,7 +44,7 @@ export default function PromoGrid() {
           </div>
         </header>
 
-        <div className="fr-promo-grid fr-reveal" ref={revealRef}>
+        <SwipeRow className="fr-promo-grid" count={PROMOS.length} column="82%">
           {PROMOS.map(({ key, to, flag, flagTone, label, img, span }, index) => (
             <Link key={key} to={to} className={`fr-promo-card fr-promo-card--${span}`} style={{ '--fr-stagger': index }} {...prefetchHandlers(loadShop)}>
               <span className="fr-promo-media">
@@ -59,7 +57,7 @@ export default function PromoGrid() {
               </span>
             </Link>
           ))}
-        </div>
+        </SwipeRow>
       </div>
 
       <style>{`
@@ -82,10 +80,11 @@ export default function PromoGrid() {
           .fr-promo-media img, .fr-promo-bar svg { transition: none; }
         }
         @media (max-width: 900px) {
-          .fr-promo-grid { grid-template-columns: 1fr; grid-template-rows: none; min-height: 0; gap: var(--fr-s4); }
-          .fr-promo-card { min-height: 260px; }
+          .fr-promo-grid { grid-template-rows: none; min-height: 0; }
+          .fr-promo-card { min-height: 300px; }
           .fr-promo-card--tall { grid-row: auto; }
           .fr-promo-bar { padding: var(--fr-s8) var(--fr-s5) var(--fr-s5); }
+          .fr-promo-label { font-size: var(--fr-fs-lead); }
         }
       `}</style>
     </section>

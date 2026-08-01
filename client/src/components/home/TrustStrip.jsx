@@ -1,3 +1,4 @@
+import SwipeRow from './SwipeRow';
 import {
   MAX_DELIVERY_RANGE_KM,
   MAX_TAKEAWAY_RANGE_KM,
@@ -54,23 +55,25 @@ const PROMISES = [
 export default function TrustStrip() {
   return (
     <section className="fr-trust" aria-label="How Frioo delivers">
-      <div className="fr-wrap fr-trust-grid">
-        {PROMISES.map(({ key, title, detail, icon }) => (
-          <div className="fr-trust-item" key={key}>
-            <span className="fr-trust-icon" aria-hidden="true">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
-            </span>
-            <span className="fr-trust-copy">
-              <span className="fr-trust-title">{title}</span>
-              <span className="fr-trust-detail">{detail}</span>
-            </span>
-          </div>
-        ))}
+      <div className="fr-wrap">
+        <SwipeRow className="fr-trust-grid" count={PROMISES.length} column="72%" onDark>
+          {PROMISES.map(({ key, title, detail, icon }) => (
+            <div className="fr-trust-item" key={key}>
+              <span className="fr-trust-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
+              </span>
+              <span className="fr-trust-copy">
+                <span className="fr-trust-title">{title}</span>
+                <span className="fr-trust-detail">{detail}</span>
+              </span>
+            </div>
+          ))}
+        </SwipeRow>
       </div>
 
       <style>{`
-        .fr-trust { background: var(--fr-brand); color: var(--fr-on-brand); }
-        .fr-trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--fr-s5); padding-top: var(--fr-s5); padding-bottom: var(--fr-s5); }
+        .fr-trust { background: var(--fr-brand); color: var(--fr-on-brand); padding: var(--fr-s5) 0; }
+        .fr-trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--fr-s5); }
         .fr-trust-item { display: flex; align-items: center; gap: var(--fr-s3); min-width: 0; }
         .fr-trust-item + .fr-trust-item { border-left: 1px solid rgba(255, 255, 255, 0.16); padding-left: var(--fr-s5); }
         .fr-trust-icon { display: inline-flex; flex-shrink: 0; color: #A8D5B5; }
@@ -79,11 +82,8 @@ export default function TrustStrip() {
         .fr-trust-detail { font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-snug); color: #B9D2C3; }
 
         @media (max-width: 900px) {
-          .fr-trust-grid { grid-template-columns: repeat(2, 1fr); gap: var(--fr-s4); }
-          .fr-trust-item + .fr-trust-item { border-left: none; padding-left: 0; }
-        }
-        @media (max-width: 520px) {
-          .fr-trust-grid { grid-template-columns: 1fr; }
+          .fr-trust-item { align-items: flex-start; padding: var(--fr-s4); background: rgba(255, 255, 255, 0.08); border-radius: var(--fr-r-card); }
+          .fr-trust-item + .fr-trust-item { border-left: none; padding-left: var(--fr-s4); }
         }
       `}</style>
     </section>

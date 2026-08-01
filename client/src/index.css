@@ -452,8 +452,8 @@ body {
 .fr-reveal > * { opacity: 1; }
 
 @media (prefers-reduced-motion: no-preference) {
-  .fr-reveal:not(.fr-revealed) > * { opacity: 0; transform: translateY(18px); }
-  .fr-revealed > * { animation: fr-rise var(--fr-dur-expressive) var(--fr-ease-settle) backwards; animation-delay: calc(var(--fr-stagger, 0) * 70ms); }
+  .fr-reveal[data-armed]:not(.fr-revealed) > * { opacity: 0; transform: translateY(18px); }
+  .fr-reveal[data-armed].fr-revealed > * { animation: fr-rise var(--fr-dur-expressive) var(--fr-ease-settle) backwards; animation-delay: calc(var(--fr-stagger, 0) * 70ms); }
 }
 
 @keyframes fr-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
@@ -464,4 +464,41 @@ body {
   .fr-sec-tight { padding: var(--fr-s8) 0; }
   .fr-wrap { padding: 0 var(--fr-s4); }
   .fr-sec-head { margin-bottom: var(--fr-s6); }
+}
+
+@media (max-width: 900px) {
+  .fr-swipe.fr-reveal {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: none;
+    grid-template-rows: none;
+    grid-auto-columns: var(--fr-swipe-col, 78%);
+    gap: var(--fr-s4);
+    min-height: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    margin-inline: calc(var(--fr-s4) * -1);
+    padding-inline: var(--fr-s4);
+    padding-bottom: var(--fr-s1);
+    overscroll-behavior-x: contain;
+  }
+
+  .fr-swipe.fr-reveal::-webkit-scrollbar { display: none; }
+  .fr-swipe.fr-reveal > * { scroll-snap-align: start; min-width: 0; }
+
+  .fr-swipe-bar { display: block; height: 3px; margin-top: var(--fr-s5); background: var(--fr-line); border-radius: var(--fr-r-pill); container-type: inline-size; overflow: hidden; }
+  .fr-swipe-bar[data-rail-static] { visibility: hidden; }
+  .fr-swipe-bar span { display: block; width: 34%; height: 100%; background: var(--fr-brand); border-radius: inherit; transform: translateX(calc(var(--fr-rail-progress, 0) * (100cqw - 100%))); }
+  .fr-swipe-bar--onDark { background: rgba(255, 255, 255, 0.25); }
+  .fr-swipe-bar--onDark span { background: #FFFFFF; }
+}
+
+@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .fr-swipe-bar span { transition: transform var(--fr-dur-quick) var(--fr-ease-standard); }
+}
+
+@media (min-width: 901px) {
+  .fr-swipe-bar { display: none; }
 }
