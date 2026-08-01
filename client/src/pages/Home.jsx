@@ -9,6 +9,10 @@ import TrustStrip from '../components/home/TrustStrip';
 import CategoryRail from '../components/home/CategoryRail';
 import ProductRail from '../components/home/ProductRail';
 import PromoGrid from '../components/home/PromoGrid';
+import NutritionPanel from '../components/home/NutritionPanel';
+import StoryBand from '../components/home/StoryBand';
+import ReasonsGrid from '../components/home/ReasonsGrid';
+import ClosingBand from '../components/home/ClosingBand';
 import { useProducts } from '../hooks/useProducts';
 import { useReveal } from '../hooks/useReveal';
 import { useCart } from '../context/cart-context';
@@ -107,6 +111,8 @@ export default function Home() {
 
       <PromoGrid />
 
+      <StoryBand />
+
       {featuredProducts.length > 0 && (
         <ProductRail
           eyebrow="Our picks"
@@ -117,6 +123,8 @@ export default function Home() {
           tint
         />
       )}
+
+      <NutritionPanel products={products} />
 
       <section className="fr-sec fr-offer" aria-label="First order offer">
         <div className="fr-wrap">
@@ -193,6 +201,9 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      <ReasonsGrid />
+      <ClosingBand />
 
       <style>{`
         .home-page { background: var(--fr-canvas); }

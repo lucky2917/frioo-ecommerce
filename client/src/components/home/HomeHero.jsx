@@ -29,7 +29,7 @@ export default function HomeHero() {
         .fr-hero-media { position: absolute; inset: 0; z-index: -1; }
         .fr-hero-img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .fr-hero-veil { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(12, 26, 20, 0.88) 0%, rgba(12, 26, 20, 0.66) 38%, rgba(12, 26, 20, 0.12) 72%, rgba(12, 26, 20, 0.02) 100%); }
-        .fr-hero-inner { width: 100%; padding-top: var(--fr-s10); padding-bottom: var(--fr-s10); }
+        .fr-hero-inner { width: 100%; padding-top: calc(var(--navbar-height-mobile) + var(--fr-s7)); padding-bottom: var(--fr-s9); }
         .fr-hero-panel { max-width: 34rem; }
         .fr-hero-eyebrow { font-family: var(--fr-font-mono); font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-eyebrow); text-transform: uppercase; color: #CFE3D6; margin: 0 0 var(--fr-s4); }
         .fr-hero-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-display); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-tight); letter-spacing: var(--fr-track-display); color: #FFFFFF; margin: 0 0 var(--fr-s4); text-wrap: balance; }
@@ -51,10 +51,12 @@ export default function HomeHero() {
         }
         @keyframes fr-hero-settle { from { transform: scale(1.07); } to { transform: scale(1); } }
 
+        @media (min-width: 900px) {
+          .fr-hero-inner { padding-top: calc(var(--navbar-height-desktop) + var(--fr-s9)); padding-bottom: var(--fr-s10); }
+        }
         @media (max-width: 900px) {
           .fr-hero { min-height: 0; }
-          .fr-hero-inner { padding-top: var(--fr-s9); padding-bottom: var(--fr-s9); }
-          .fr-hero-veil { background: linear-gradient(180deg, rgba(12, 26, 20, 0.62) 0%, rgba(12, 26, 20, 0.86) 100%); }
+          .fr-hero-veil { background: linear-gradient(180deg, rgba(12, 26, 20, 0.66) 0%, rgba(12, 26, 20, 0.88) 100%); }
           .fr-hero-cta { flex: 1 1 auto; }
         }
       `}</style>
