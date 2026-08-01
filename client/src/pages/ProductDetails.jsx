@@ -6,6 +6,7 @@ import SEO from '../components/SEO';
 import FetchError from '../components/FetchError';
 import VideoModal from '../components/shop/VideoModal';
 import ProductCard from '../components/shop/ProductCard';
+import { MAX_DELIVERY_RANGE_KM, MAX_TAKEAWAY_RANGE_KM, MIN_CART_VALUE } from '../config/constants';
 
 import { useCart } from '../context/cart-context';
 import { useProduct } from '../hooks/useProduct';
@@ -15,6 +16,8 @@ const WEIGHT_OPTIONS = [
   { label: '500g', multiplier: 0.50 },
   { label: '1kg', multiplier: 1.0 }
 ];
+
+const MAX_QTY = 20;
 
 const rotateByOffset = (items, offset) => {
   if (items.length === 0) return items;
@@ -28,6 +31,12 @@ const isMeaningful = (v) => {
   const num = typeof v === 'number' ? v : parseFloat(v);
   return Number.isNaN(num) ? String(v).trim().length > 0 : num > 0;
 };
+
+const DELIVERY_FACTS = [
+  { key: 'range', label: `Delivery within ${MAX_DELIVERY_RANGE_KM} km`, detail: 'From our Allipuram kitchen' },
+  { key: 'pickup', label: `Pickup up to ${MAX_TAKEAWAY_RANGE_KM} km`, detail: 'Collect from the counter' },
+  { key: 'minimum', label: `Orders from ₹${MIN_CART_VALUE}`, detail: 'Minimum basket for delivery' }
+];
 
 export default function ProductDetails() {
   const { addToCart } = useCart();
@@ -47,6 +56,7 @@ export default function ProductDetails() {
   if (product && product.id !== initializedProductId) {
     setInitializedProductId(product.id);
     setQty(1);
+    setSelectedImage(0);
     setSelectedExclusions([]);
     setRemovedIngredients([]);
     setSelectedWeight(product.category === 'Fresh Fruit' && product.unit === 'kg' ? WEIGHT_OPTIONS[2] : null);
@@ -67,29 +77,12 @@ export default function ProductDetails() {
     return [...sameCategory, ...variedOthers].slice(0, 4);
   }, [products, product]);
 
-  const handleAddToCart = () => {
-    if (stockState?.available === false) return;
-    if (!product) return;
-
-    let finalPrice = product.price_cents / 100;
-    let variantLabel = 'Standard';
-
-    if (selectedWeight) {
-      finalPrice = finalPrice * selectedWeight.multiplier;
-      variantLabel = selectedWeight.label;
-    }
-
-    const customization = {
-      exclusions: selectedExclusions,
-      removedIngredients: removedIngredients
-    };
-
-    for (let i = 0; i < qty; i++) {
-      addToCart(product, variantLabel, finalPrice, customization);
-    }
-
-    commit();
-  };
+  const currentPrice = useMemo(() => {
+    if (!product) return 0;
+    let base = product.price_cents / 100;
+    if (selectedWeight) base *= selectedWeight.multiplier;
+    return base;
+  }, [product, selectedWeight]);
 
   const toggleExclusion = (item) => {
     setSelectedExclusions(prev =>
@@ -102,13 +95,6 @@ export default function ProductDetails() {
       prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
     );
   };
-
-  const currentPrice = useMemo(() => {
-    if (!product) return 0;
-    let base = product.price_cents / 100;
-    if (selectedWeight) base *= selectedWeight.multiplier;
-    return base;
-  }, [product, selectedWeight]);
 
   if (loading) return (
     <div className="pd-page">
@@ -143,6 +129,7 @@ export default function ProductDetails() {
     <div className="pd-page">
       <div className="pd-message">
         <h2 className="pd-notfound">Product not found</h2>
+        <p className="pd-notfound-sub">It may have sold out or been taken off the list.</p>
         <Link to="/shop" className="pd-back">Return to shop</Link>
       </div>
       <style>{pdMessageStyles}</style>
@@ -150,9 +137,11 @@ export default function ProductDetails() {
   );
 
   const images = product.images?.length > 0 ? product.images : [];
-  const oldPrice = product.discount > 0 ? Math.round(currentPrice / (1 - product.discount / 100)) : null;
+  const hasDiscount = product.discount > 0;
+  const oldPrice = hasDiscount ? Math.round(currentPrice / (1 - product.discount / 100)) : null;
   const unitSuffix = product.unit === 'kg' ? '/ kg' : product.unit === 'item' ? 'each' : product.unit ? `/ ${product.unit}` : '';
   const stockState = getStockState(product);
+  const soldOut = stockState?.available === false;
 
   const nutrition = product.nutrition || {};
   const nutritionItems = [
@@ -162,14 +151,44 @@ export default function ProductDetails() {
     { label: 'Fat', display: gram(nutrition.fat), raw: nutrition.fat },
   ].filter(n => isMeaningful(n.raw));
 
+  const hasOptions = Boolean(selectedWeight) || product.nutrition?.exclusions?.length > 0 || product.nutrition?.ingredients?.length > 0;
+
+  const handleAddToCart = () => {
+    if (soldOut) return;
+
+    let finalPrice = product.price_cents / 100;
+    let variantLabel = 'Standard';
+
+    if (selectedWeight) {
+      finalPrice = finalPrice * selectedWeight.multiplier;
+      variantLabel = selectedWeight.label;
+    }
+
+    const customization = {
+      exclusions: selectedExclusions,
+      removedIngredients: removedIngredients
+    };
+
+    for (let i = 0; i < qty; i++) {
+      addToCart(product, variantLabel, finalPrice, customization);
+    }
+
+    commit();
+  };
+
+  const stepImage = (direction) => {
+    if (images.length < 2) return;
+    setSelectedImage(prev => (prev + direction + images.length) % images.length);
+  };
+
   return (
     <div className="pd-page">
       <SEO
-        title={product ? `${product.title} — Fresh ${product.category} in Vizag` : 'Product Details'}
-        description={product ? `Order ${product.title} from Frioo in Visakhapatnam. ${product.description?.substring(0, 120)}. Fresh, 100% natural. Delivery in Vizag.` : 'Fresh product details from Frioo Vizag.'}
-        canonical={product ? `/product/${product.id}` : '/shop'}
-        keywords={product ? `${product.title} vizag, ${product.category} vizag, buy ${product.title} online vizag, fresh ${product.category} visakhapatnam` : ''}
-        structuredData={product ? {
+        title={`${product.title} — Fresh ${product.category} in Vizag`}
+        description={`Order ${product.title} from Frioo in Visakhapatnam. ${product.description?.substring(0, 120)}. Fresh, 100% natural. Delivery in Vizag.`}
+        canonical={`/product/${product.id}`}
+        keywords={`${product.title} vizag, ${product.category} vizag, buy ${product.title} online vizag, fresh ${product.category} visakhapatnam`}
+        structuredData={{
           "@context": "https://schema.org",
           "@graph": [
             {
@@ -185,7 +204,7 @@ export default function ProductDetails() {
                 "@type": "Offer",
                 "price": (product.price_cents / 100).toFixed(2),
                 "priceCurrency": "INR",
-                "availability": "https://schema.org/InStock",
+                "availability": soldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
                 "url": `https://frioo.in/product/${product.id}`,
                 "seller": { "@type": "Organization", "name": "Frioo" },
                 "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
@@ -200,12 +219,14 @@ export default function ProductDetails() {
               ]
             }
           ]
-        } : undefined}
+        }}
       />
 
       <main className="pd-shell">
         <nav className="pd-crumbs" aria-label="Breadcrumb">
-          <Link to="/">Home</Link><span>/</span><Link to="/shop">Shop</Link><span>/</span><span className="pd-crumb-current">{product.title}</span>
+          <Link to="/">Home</Link><span aria-hidden="true">/</span>
+          <Link to="/shop">Shop</Link><span aria-hidden="true">/</span>
+          <span className="pd-crumb-current" aria-current="page">{product.title}</span>
         </nav>
 
         <div className="pd-grid">
@@ -213,9 +234,23 @@ export default function ProductDetails() {
             <div className="pd-gallery-sticky">
               <div className="pd-frame">
                 {images[selectedImage]
-                  ? <img loading="lazy" decoding="async" src={images[selectedImage]} alt={product.title} className="pd-frame-img" />
+                  ? <img src={images[selectedImage]} alt={product.title} className="pd-frame-img" fetchPriority="high" decoding="async" />
                   : <span className="pd-noimg">No photo yet</span>}
-                {product.discount > 0 && <span className="pd-badge">Save {product.discount}%</span>}
+
+                {hasDiscount && <span className="pd-badge">Save {product.discount}%</span>}
+                {soldOut && <span className="pd-badge pd-badge-out">Out of stock</span>}
+
+                {images.length > 1 && (
+                  <>
+                    <button type="button" className="pd-nav pd-nav-prev" onClick={() => stepImage(-1)} aria-label="Previous image">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+                    </button>
+                    <button type="button" className="pd-nav pd-nav-next" onClick={() => stepImage(1)} aria-label="Next image">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                    </button>
+                    <span className="pd-counter">{selectedImage + 1} / {images.length}</span>
+                  </>
+                )}
               </div>
 
               {images.length > 1 && (
@@ -234,8 +269,8 @@ export default function ProductDetails() {
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
                   </span>
                   <span className="pd-watch-text">
-                    <strong>Watch how it's made</strong>
-                    <span>Exactly what you'll receive</span>
+                    <strong>Watch how it&apos;s made</strong>
+                    <span>Exactly what you&apos;ll receive</span>
                   </span>
                 </button>
               )}
@@ -262,62 +297,53 @@ export default function ProductDetails() {
               )}
             </div>
 
-            <p className="pd-delivery">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" /></svg>
-              Delivered fresh in Visakhapatnam, within 6&nbsp;km
-            </p>
-
             {product.description && <p className="pd-desc">{product.description}</p>}
-            {(product.perfect_for || nutritionItems.length > 0) && (
-              <div className="pd-support">
-                {product.perfect_for && (
-                  <div className="pd-support-block">
-                    <h2 className="pd-support-title">Good for</h2>
-                    <p className="pd-support-text">{product.perfect_for}</p>
 
-            <div className="pd-options">
-              {selectedWeight && (
-                <div className="pd-opt-group">
-                  <span className="pd-opt-label">Pack size</span>
-                  <div className="pd-opt-pills">
-                    {WEIGHT_OPTIONS.map(opt => (
-                      <button key={opt.label} className={`pd-pill${selectedWeight.label === opt.label ? ' pd-pill-on' : ''}`} onClick={() => setSelectedWeight(opt)} aria-pressed={selectedWeight.label === opt.label}>{opt.label}</button>
-                    ))}
+            {hasOptions && (
+              <div className="pd-options">
+                {selectedWeight && (
+                  <div className="pd-opt-group">
+                    <span className="pd-opt-label">Pack size</span>
+                    <div className="pd-opt-pills">
+                      {WEIGHT_OPTIONS.map(opt => (
+                        <button key={opt.label} className={`pd-pill${selectedWeight.label === opt.label ? ' pd-pill-on' : ''}`} onClick={() => setSelectedWeight(opt)} aria-pressed={selectedWeight.label === opt.label}>{opt.label}</button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {product.nutrition?.exclusions?.length > 0 && (
-                <div className="pd-opt-group">
-                  <span className="pd-opt-label">Want to remove any?</span>
-                  <div className="pd-opt-pills">
-                    {product.nutrition.exclusions.map(item => (
-                      <button key={item} className={`pd-pill${selectedExclusions.includes(item) ? ' pd-pill-on' : ''}`} onClick={() => toggleExclusion(item)} aria-pressed={selectedExclusions.includes(item)}>{selectedExclusions.includes(item) ? 'No ' : ''}{item}</button>
-                    ))}
+                {product.nutrition?.exclusions?.length > 0 && (
+                  <div className="pd-opt-group">
+                    <span className="pd-opt-label">Want to remove any?</span>
+                    <div className="pd-opt-pills">
+                      {product.nutrition.exclusions.map(item => (
+                        <button key={item} className={`pd-pill${selectedExclusions.includes(item) ? ' pd-pill-on' : ''}`} onClick={() => toggleExclusion(item)} aria-pressed={selectedExclusions.includes(item)}>{selectedExclusions.includes(item) ? 'No ' : ''}{item}</button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {product.nutrition?.ingredients?.length > 0 && (
-                <div className="pd-opt-group">
-                  <span className="pd-opt-label">Customize ingredients</span>
-                  <div className="pd-opt-pills">
-                    {product.nutrition.ingredients.map(item => (
-                      <button key={item} className={`pd-pill${removedIngredients.includes(item) ? ' pd-pill-on' : ''}`} onClick={() => toggleIngredient(item)} aria-pressed={removedIngredients.includes(item)}>No {item}</button>
-                    ))}
+                {product.nutrition?.ingredients?.length > 0 && (
+                  <div className="pd-opt-group">
+                    <span className="pd-opt-label">Customize ingredients</span>
+                    <div className="pd-opt-pills">
+                      {product.nutrition.ingredients.map(item => (
+                        <button key={item} className={`pd-pill${removedIngredients.includes(item) ? ' pd-pill-on' : ''}`} onClick={() => toggleIngredient(item)} aria-pressed={removedIngredients.includes(item)}>No {item}</button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             <div className="pd-actions">
               <div className="pd-qty">
-                <button onClick={() => setQty(q => Math.max(1, q - 1))} aria-label="Decrease quantity">&minus;</button>
+                <button onClick={() => setQty(q => Math.max(1, q - 1))} disabled={soldOut || qty <= 1} aria-label="Decrease quantity">&minus;</button>
                 <span aria-live="polite">{qty}</span>
-                <button onClick={() => setQty(q => q + 1)} aria-label="Increase quantity">+</button>
+                <button onClick={() => setQty(q => Math.min(MAX_QTY, q + 1))} disabled={soldOut || qty >= MAX_QTY} aria-label="Increase quantity">+</button>
               </div>
-              <button className={`pd-add${committed ? ' pd-add-done' : ''}`} onClick={handleAddToCart} aria-disabled={stockState?.available === false}>
-                {committed ? (
+              <button className={`pd-add${committed ? ' pd-add-done' : ''}`} onClick={handleAddToCart} aria-disabled={soldOut}>
+                {soldOut ? 'Out of stock' : committed ? (
                   <>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
                     Added
@@ -327,8 +353,24 @@ export default function ProductDetails() {
               <span className="fr-sr-only" aria-live="polite">{committed ? `${qty} ${product.title} added to cart.` : ''}</span>
             </div>
 
+            <ul className="pd-facts">
+              {DELIVERY_FACTS.map(({ key, label, detail }) => (
+                <li className="pd-fact" key={key}>
+                  <span className="pd-fact-label">{label}</span>
+                  <span className="pd-fact-detail">{detail}</span>
+                </li>
+              ))}
+            </ul>
+
+            {(product.perfect_for || nutritionItems.length > 0) && (
+              <div className="pd-support">
+                {product.perfect_for && (
+                  <div className="pd-support-block">
+                    <h2 className="pd-support-title">Good for</h2>
+                    <p className="pd-support-text">{product.perfect_for}</p>
                   </div>
                 )}
+
                 {nutritionItems.length > 0 && (
                   <div className="pd-support-block">
                     <h2 className="pd-support-title">Nutrition</h2>
@@ -340,6 +382,7 @@ export default function ProductDetails() {
                         </div>
                       ))}
                     </div>
+                    <p className="pd-nutri-note">Per 100g / 100ml.</p>
                   </div>
                 )}
               </div>
@@ -362,7 +405,7 @@ export default function ProductDetails() {
       <style>{`
         .pd-page { background: var(--fr-canvas); min-height: 100vh; padding-top: var(--navbar-height-mobile); }
         @media (min-width: 901px) { .pd-page { padding-top: var(--navbar-height-desktop); } }
-        .pd-shell { max-width: 1200px; margin: 0 auto; padding: var(--fr-s6) var(--fr-s7) var(--fr-s10); }
+        .pd-shell { max-width: var(--fr-container); margin: 0 auto; padding: var(--fr-s6) var(--fr-s7) var(--fr-s10); }
 
         .pd-crumbs { display: flex; align-items: center; gap: var(--fr-s2); font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-3); margin-bottom: var(--fr-s6); flex-wrap: wrap; }
         .pd-crumbs a { color: var(--fr-text-2); text-decoration: none; }
@@ -370,13 +413,20 @@ export default function ProductDetails() {
         .pd-crumbs a:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
         .pd-crumb-current { color: var(--fr-text); }
 
-        .pd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--fr-s9); align-items: start; }
+        .pd-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: var(--fr-s9); align-items: start; }
 
         .pd-gallery-sticky { position: sticky; top: calc(var(--navbar-height-desktop) + var(--fr-s5)); display: flex; flex-direction: column; gap: var(--fr-s4); }
-        .pd-frame { position: relative; aspect-ratio: 4 / 5; background: var(--fr-surface-2); border-radius: var(--fr-r-surface); overflow: hidden; box-shadow: var(--fr-elev-1); }
+        .pd-frame { position: relative; aspect-ratio: 1 / 1; background: var(--fr-surface); border-radius: var(--fr-r-surface); overflow: hidden; }
         .pd-noimg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); color: var(--fr-text-3); }
-        .pd-frame-img { width: 100%; height: 100%; object-fit: cover; }
-        .pd-badge { position: absolute; top: var(--fr-s4); right: var(--fr-s4); background: var(--fr-warm); color: var(--fr-on-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); text-transform: uppercase; padding: 5px 11px; border-radius: var(--fr-r-control); }
+        .pd-frame-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .pd-badge { position: absolute; top: var(--fr-s4); left: var(--fr-s4); background: var(--fr-warm); color: var(--fr-on-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: 0.04em; text-transform: uppercase; padding: 5px 11px; border-radius: var(--fr-r-control); }
+        .pd-badge-out { top: auto; bottom: var(--fr-s4); background: var(--fr-text); }
+        .pd-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; background: var(--fr-surface); border: 1px solid var(--fr-line); border-radius: var(--fr-r-pill); color: var(--fr-text); cursor: pointer; box-shadow: var(--fr-elev-1); }
+        .pd-nav-prev { left: var(--fr-s3); }
+        .pd-nav-next { right: var(--fr-s3); }
+        .pd-nav:hover { border-color: var(--fr-brand); color: var(--fr-brand); }
+        .pd-nav:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        .pd-counter { position: absolute; bottom: var(--fr-s4); right: var(--fr-s4); padding: 3px 10px; border-radius: var(--fr-r-pill); background: rgba(18, 32, 26, 0.7); color: #FFFFFF; font-family: var(--fr-font-mono); font-size: var(--fr-fs-label); font-variant-numeric: tabular-nums; }
         .pd-thumbs { display: flex; gap: var(--fr-s3); flex-wrap: wrap; }
         .pd-thumb { width: 72px; height: 72px; padding: 0; border: 2px solid transparent; border-radius: var(--fr-r-control); overflow: hidden; background: var(--fr-surface-2); cursor: pointer; }
         .pd-thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -394,17 +444,14 @@ export default function ProductDetails() {
         .pd-cat { font-family: var(--fr-font-mono); font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-eyebrow); text-transform: uppercase; color: var(--fr-brand); margin: 0 0 var(--fr-s2); }
         .pd-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-headline); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-tight); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: 0 0 var(--fr-s5); }
         .pd-price-block { display: flex; flex-direction: column; gap: var(--fr-s1); padding-bottom: var(--fr-s5); border-bottom: 1px solid var(--fr-line); margin-bottom: var(--fr-s5); }
-        .pd-price-row { display: flex; align-items: baseline; gap: var(--fr-s3); }
-        .pd-price { font-family: var(--fr-font-sans); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-text); font-variant-numeric: tabular-nums; }
+        .pd-price-row { display: flex; align-items: baseline; gap: var(--fr-s3); flex-wrap: wrap; }
+        .pd-price { font-family: var(--fr-font-display); font-size: var(--fr-fs-headline); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-brand); font-variant-numeric: tabular-nums; }
         .pd-old { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-3); text-decoration: line-through; font-variant-numeric: tabular-nums; }
         .pd-unit { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); }
         .pd-stock { display: inline-flex; align-items: center; gap: var(--fr-s2); font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-normal); margin-top: var(--fr-s2); }
         .pd-stock--in { color: var(--fr-success); }
         .pd-stock--out { color: var(--fr-text-3); }
-        .pd-add[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
-        .pd-delivery { display: flex; align-items: center; gap: var(--fr-s2); font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0 0 var(--fr-s5); }
-        .pd-delivery svg { color: var(--fr-brand); flex-shrink: 0; }
-        .pd-desc { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0 0 var(--fr-s6); max-width: 52ch; }
+        .pd-desc { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-relaxed); color: var(--fr-text-2); margin: 0 0 var(--fr-s6); max-width: 52ch; }
 
         .pd-options { display: flex; flex-direction: column; gap: var(--fr-s5); margin-bottom: var(--fr-s6); }
         .pd-opt-group { display: flex; flex-direction: column; gap: var(--fr-s3); }
@@ -416,28 +463,36 @@ export default function ProductDetails() {
         .pd-pill-on:hover { color: var(--fr-on-brand); }
         .pd-pill:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 
-        .pd-actions { display: flex; gap: var(--fr-s3); margin-bottom: var(--fr-s7); }
-        .pd-qty { display: flex; align-items: center; border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); overflow: hidden; }
+        .pd-actions { display: flex; gap: var(--fr-s3); margin-bottom: var(--fr-s6); }
+        .pd-qty { display: flex; align-items: center; border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-control); overflow: hidden; flex-shrink: 0; }
         .pd-qty button { width: 48px; height: 52px; background: var(--fr-surface); border: none; font-family: var(--fr-font-sans); font-size: var(--fr-fs-title); line-height: var(--fr-lh-control); color: var(--fr-text); cursor: pointer; }
-        .pd-qty button:hover { background: var(--fr-surface-2); }
+        .pd-qty button:hover:not(:disabled) { background: var(--fr-surface-2); }
+        .pd-qty button:disabled { opacity: 0.4; cursor: default; }
         .pd-qty button:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: -2px; }
         .pd-qty span { min-width: 44px; text-align: center; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); font-variant-numeric: tabular-nums; }
-        .pd-add { flex: 1; height: 52px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); cursor: pointer; font-variant-numeric: tabular-nums; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .pd-add { flex: 1; min-height: 52px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-control); cursor: pointer; font-variant-numeric: tabular-nums; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
         .pd-add { display: inline-flex; align-items: center; justify-content: center; gap: var(--fr-s2); }
         .pd-add:hover { background: var(--fr-brand-press); }
         .pd-add-done { background: var(--fr-success); }
         .pd-add:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        .pd-add[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
 
-        .pd-support { display: flex; flex-direction: column; gap: var(--fr-s5); border-top: 1px solid var(--fr-line); padding-top: var(--fr-s6); }
+        .pd-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--fr-s3); list-style: none; margin: 0 0 var(--fr-s6); padding: 0; }
+        .pd-fact { display: flex; flex-direction: column; gap: 2px; padding: var(--fr-s3) var(--fr-s4); background: var(--fr-surface); border-radius: var(--fr-r-card); }
+        .pd-fact-label { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); color: var(--fr-text); }
+        .pd-fact-detail { font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-snug); color: var(--fr-text-2); }
+
+        .pd-support { display: flex; flex-direction: column; gap: var(--fr-s6); border-top: 1px solid var(--fr-line); padding-top: var(--fr-s6); }
         .pd-support-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); letter-spacing: var(--fr-track-headline); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0 0 var(--fr-s3); }
-        .pd-support-text { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0; }
+        .pd-support-text { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-relaxed); color: var(--fr-text-2); margin: 0; }
         .pd-nutri { display: flex; flex-wrap: wrap; gap: var(--fr-s3); }
-        .pd-nutri-item { display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--fr-surface-2); border-radius: var(--fr-r-card); padding: var(--fr-s3) var(--fr-s5); min-width: 92px; }
+        .pd-nutri-item { display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--fr-brand-tint); border-radius: var(--fr-r-card); padding: var(--fr-s3) var(--fr-s5); min-width: 92px; }
         .pd-nutri-item strong { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-brand); font-variant-numeric: tabular-nums; }
         .pd-nutri-item span { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); }
+        .pd-nutri-note { font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-3); margin: var(--fr-s3) 0 0; }
 
         .pd-related { border-top: 1px solid var(--fr-line); margin-top: var(--fr-s9); padding-top: var(--fr-s8); }
-        .pd-related-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); letter-spacing: var(--fr-track-headline); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0 0 var(--fr-s5); }
+        .pd-related-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-headline); font-weight: var(--fr-fw-bold); letter-spacing: var(--fr-track-headline); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0 0 var(--fr-s6); }
         .pd-related-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--fr-s5); }
 
         @media (max-width: 900px) {
@@ -445,6 +500,7 @@ export default function ProductDetails() {
           .pd-grid { grid-template-columns: 1fr; gap: var(--fr-s6); }
           .pd-gallery-sticky { position: static; }
           .pd-related-grid { grid-template-columns: repeat(2, 1fr); gap: var(--fr-s4); }
+          .pd-facts { grid-template-columns: 1fr; }
           .pd-actions { position: fixed; bottom: 0; left: 0; right: 0; z-index: var(--fr-z-cta); background: var(--fr-surface); border-top: 1px solid var(--fr-line); padding: var(--fr-s3) var(--fr-s4); padding-bottom: calc(var(--fr-s3) + env(safe-area-inset-bottom)); margin: 0; box-shadow: var(--fr-elev-2); }
         }
 
@@ -459,10 +515,10 @@ export default function ProductDetails() {
 const pdSkeletonStyles = `
   .pd-page { background: var(--fr-canvas); min-height: 100vh; padding-top: var(--navbar-height-mobile); }
   @media (min-width: 901px) { .pd-page { padding-top: var(--navbar-height-desktop); } }
-  .pd-shell { max-width: 1200px; margin: 0 auto; padding: var(--fr-s7); }
-  .pd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--fr-s9); }
+  .pd-shell { max-width: var(--fr-container); margin: 0 auto; padding: var(--fr-s7); }
+  .pd-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: var(--fr-s9); }
   @media (max-width: 900px) { .pd-grid { grid-template-columns: 1fr; gap: var(--fr-s6); } }
-  .pd-skel-media { aspect-ratio: 4 / 5; background: var(--fr-surface-2); border-radius: var(--fr-r-surface); }
+  .pd-skel-media { aspect-ratio: 1 / 1; background: var(--fr-surface-2); border-radius: var(--fr-r-surface); }
   .pd-skel-lines { display: flex; flex-direction: column; gap: var(--fr-s4); padding-top: var(--fr-s3); }
   .pd-skel-line { height: 16px; border-radius: var(--fr-r-control); background: var(--fr-surface-2); }
   .pd-skel-40 { width: 40%; } .pd-skel-70 { width: 70%; height: 34px; } .pd-skel-30 { width: 30%; }
@@ -476,7 +532,6 @@ const pdMessageStyles = `
   @media (min-width: 901px) { .pd-page { padding-top: var(--navbar-height-desktop); } }
   .pd-message { max-width: 520px; margin: 0 auto; padding: var(--fr-s10) var(--fr-s5); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--fr-s4); }
   .pd-notfound { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); letter-spacing: var(--fr-track-headline); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0; }
+  .pd-notfound-sub { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0; }
   .pd-back { color: var(--fr-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); text-decoration: none; }
-  .pd-back:hover { color: var(--fr-brand-press); }
-  .pd-back:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
 `;
