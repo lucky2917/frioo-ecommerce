@@ -1,9 +1,9 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './context/AuthProvider';
 import ErrorBoundary from './components/ErrorBoundary';
 
-import { CartProvider } from './context/CartContext';
+import { CartProvider } from './context/CartProvider';
 import { loadShop, loadCart, loadProductDetails } from './lib/routeLoaders';
 
 const Home = lazy(() => import('./pages/Home'));
