@@ -432,3 +432,36 @@ body {
   }
 
 }
+
+.fr-sec { padding: var(--fr-s10) 0; }
+.fr-sec-tight { padding: var(--fr-s9) 0; }
+.fr-sec-tint { background: var(--fr-surface-2); }
+.fr-sec-surface { background: var(--fr-surface); }
+
+.fr-wrap { max-width: var(--fr-container); margin: 0 auto; padding: 0 var(--fr-s7); }
+
+.fr-sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--fr-s5); margin-bottom: var(--fr-s7); }
+.fr-sec-head-stack { flex-direction: column; align-items: center; text-align: center; }
+.fr-eyebrow { font-family: var(--fr-font-mono); font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-eyebrow); text-transform: uppercase; color: var(--fr-brand); margin: 0 0 var(--fr-s2); }
+.fr-sec-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-headline); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-tight); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: 0; }
+.fr-sec-sub { font-family: var(--fr-font-sans); font-size: var(--fr-fs-lead); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: var(--fr-s3) 0 0; max-width: 52ch; }
+.fr-sec-link { display: inline-flex; align-items: center; gap: var(--fr-s2); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); color: var(--fr-brand); text-decoration: none; white-space: nowrap; }
+.fr-sec-link:hover { color: var(--fr-brand-press); }
+.fr-sec-link:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 3px; border-radius: var(--fr-r-control); }
+
+.fr-reveal > * { opacity: 1; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .fr-reveal:not(.fr-revealed) > * { opacity: 0; transform: translateY(18px); }
+  .fr-revealed > * { animation: fr-rise var(--fr-dur-expressive) var(--fr-ease-settle) backwards; animation-delay: calc(var(--fr-stagger, 0) * 70ms); }
+}
+
+@keyframes fr-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes fr-settle { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 900px) {
+  .fr-sec { padding: var(--fr-s9) 0; }
+  .fr-sec-tight { padding: var(--fr-s8) 0; }
+  .fr-wrap { padding: 0 var(--fr-s4); }
+  .fr-sec-head { margin-bottom: var(--fr-s6); }
+}

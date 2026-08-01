@@ -6,6 +6,7 @@ import OptimizedImage from '../OptimizedImage';
 import { prefetchHandlers } from '../../hooks/usePrefetchRoute';
 import { loadProductDetails } from '../../lib/routeLoaders';
 import { getStockState, getUnitPrice } from '../../utils/productFacts';
+import { getProductSignal } from '../../utils/productSignals';
 
 
 
@@ -36,6 +37,7 @@ export default function ProductCard({ product, onAdd }) {
   const unitSuffix = product.unit === 'kg' ? ' / kg' : product.unit === 'item' ? ' each' : product.unit ? ` / ${product.unit}` : '';
   const unitPrice = getUnitPrice(product);
   const stockState = getStockState(product);
+  const signal = getProductSignal(product);
 
   let finalPrice, variantLabel;
   if (isWeightBased) {
@@ -77,7 +79,7 @@ export default function ProductCard({ product, onAdd }) {
           {imageSrc
             ? <OptimizedImage src={imageSrc} alt={product.title} className="fr-pc-img" />
             : <span className="fr-pc-noimg">No photo yet</span>}
-          {hasDiscount && <span className="fr-pc-badge">{product.discount}% off</span>}
+          {signal && <span className={`fr-pc-badge fr-pc-badge--${signal.code}`}>{signal.label}</span>}
         </Link>
         <div className="fr-pc-body">
           <Link to={`/product/${product.id}`} className="fr-pc-name">{product.title}</Link>
@@ -163,7 +165,9 @@ export default function ProductCard({ product, onAdd }) {
         .fr-pc-media { position: relative; display: block; aspect-ratio: 4 / 5; background: var(--fr-surface-2); overflow: hidden; }
         .fr-pc-img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--fr-dur-base) var(--fr-ease-standard); }
         .fr-pc:hover .fr-pc-img { transform: scale(1.02); }
-        .fr-pc-badge { position: absolute; top: var(--fr-s3); left: var(--fr-s3); background: var(--fr-warm); color: var(--fr-on-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); text-transform: uppercase; padding: 4px 9px; border-radius: var(--fr-r-control); }
+        .fr-pc-badge { position: absolute; top: var(--fr-s3); left: var(--fr-s3); background: var(--fr-warm); color: var(--fr-on-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: 0.04em; text-transform: uppercase; padding: 4px 9px; border-radius: var(--fr-r-control); }
+        .fr-pc-badge--new { background: var(--fr-brand); }
+        .fr-pc-badge--pick { background: var(--fr-info); }
         .fr-pc-body { display: flex; flex-direction: column; gap: var(--fr-s1); padding: var(--fr-s4); flex: 1; }
         .fr-pc-name { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-medium); color: var(--fr-text); text-decoration: none; line-height: var(--fr-lh-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .fr-pc-name:hover { color: var(--fr-brand); }

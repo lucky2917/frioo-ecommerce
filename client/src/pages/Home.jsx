@@ -4,19 +4,16 @@ import { notify } from '../lib/feedbackStore';
 import SEO from '../components/SEO';
 import FetchError from '../components/FetchError';
 import ProductCard from '../components/shop/ProductCard';
-import ProductCardSkeleton from '../components/shop/ProductCardSkeleton';
+import HomeHero from '../components/home/HomeHero';
+import TrustStrip from '../components/home/TrustStrip';
+import CategoryRail from '../components/home/CategoryRail';
+import ProductRail from '../components/home/ProductRail';
+import PromoGrid from '../components/home/PromoGrid';
 import { useProducts } from '../hooks/useProducts';
+import { useReveal } from '../hooks/useReveal';
 import { useCart } from '../context/cart-context';
 import { PRODUCT_CATEGORIES } from '../config/constants';
-
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=1400&q=80';
-
-const CATEGORIES = [
-  { slug: 'juices', label: 'Pure Juices', desc: 'Cold-pressed daily, no concentrates, no added sugar.', img: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=700' },
-  { slug: 'shakes', label: 'Fruit Shakes', desc: 'Rich, creamy shakes made to order with real fruit.', img: 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=700' },
-  { slug: 'salads', label: 'Fresh Salads', desc: 'Seasonal fruit salads, crisp and clean.', img: 'https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?w=700' },
-  { slug: 'fruits', label: 'Fresh Fruits', desc: 'Hand-picked from local Vizag markets every morning.', img: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=700' },
-];
+import { isNewArrival } from '../utils/productSignals';
 
 const homeSchema = {
   "@context": "https://schema.org",
@@ -46,7 +43,15 @@ export default function Home() {
   const [couponCopied, setCouponCopied] = useState(false);
   const [activeProductTab, setActiveProductTab] = useState(PRODUCT_TABS[0].slug);
 
-  const featuredProducts = useMemo(() => products.filter(p => p.featured).slice(0, 8), [products]);
+  const offerRef = useReveal();
+  const browseRef = useReveal();
+
+  const featuredProducts = useMemo(() => products.filter(p => p.featured).slice(0, 10), [products]);
+
+  const freshInProducts = useMemo(() => {
+    const arrivals = products.filter(isNewArrival);
+    return (arrivals.length >= 4 ? arrivals : products).slice(0, 10);
+  }, [products]);
 
   const tabGroups = useMemo(() => {
     return PRODUCT_TABS.reduce((acc, tab) => {
@@ -87,128 +92,102 @@ export default function Home() {
 
       <h1 className="seo-h1">Frioo — Best Fresh Fruits, Juices & Salads Delivery in Vizag, Visakhapatnam</h1>
 
-      <section className="home-hero">
-        <div className="home-hero-media">
-          <img loading="lazy" decoding="async" src={HERO_IMAGE} alt="Fresh fruit, ready at Frioo" className="home-hero-img" />
-        </div>
-        <div className="home-hero-panel">
-          <p className="home-hero-eyebrow">Fresh in Visakhapatnam</p>
-          <h2 className="home-hero-title">Fruit, juices &amp; salads, made the same day.</h2>
-          <p className="home-hero-sub">Hand-picked each morning and delivered across Vizag, within 6&nbsp;km.</p>
-          <Link to="/shop" className="home-hero-cta">Shop fresh</Link>
-        </div>
-      </section>
+      <HomeHero />
+      <TrustStrip />
+      <CategoryRail />
 
-      <section className="home-section" aria-label="Product categories">
-        <div className="home-container">
-          <header className="home-head">
-            <p className="home-eyebrow">What we make</p>
-            <h2 className="home-title">Four things, done properly</h2>
-          </header>
-          <div className="home-cats">
-            {CATEGORIES.map((cat) => (
-              <Link key={cat.slug} to={`/shop?category=${cat.slug}`} className="home-cat">
-                <div className="home-cat-media"><img decoding="async" src={cat.img} alt={cat.label} loading="lazy" /></div>
-                <div className="home-cat-body">
-                  <h3 className="home-cat-title">{cat.label}</h3>
-                  <p className="home-cat-desc">{cat.desc}</p>
-                  <span className="home-cat-link">Shop {cat.label} &rarr;</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ProductRail
+        eyebrow="Fresh in today"
+        title="Just off the morning run"
+        description="What arrived from the market this morning, while it lasts."
+        products={freshInProducts}
+        onAdd={addToCart}
+        loading={isLoadingProducts}
+      />
 
-      {isLoadingProducts && (
-        <section className="home-section">
-          <div className="home-container">
-            <div className="home-grid">{Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)}</div>
-          </div>
-        </section>
-      )}
+      <PromoGrid />
 
       {featuredProducts.length > 0 && (
-        <section className="home-section" aria-label="Featured products">
-          <div className="home-container">
-            <header className="home-head">
-              <p className="home-eyebrow">Freshly made</p>
-              <h2 className="home-title">Today's favourites</h2>
-            </header>
-            <div className="home-grid">
-              {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} onAdd={addToCart} />
-              ))}
-            </div>
-          </div>
-        </section>
+        <ProductRail
+          eyebrow="Our picks"
+          title="Chosen by the people who pack your bag"
+          products={featuredProducts}
+          onAdd={addToCart}
+          loading={false}
+          tint
+        />
       )}
 
-      <section className="home-section home-offer-section" aria-label="First order offer">
-        <div className="home-container">
-          <div className="home-offer">
-            <div className="home-offer-text">
-              <p className="home-eyebrow">First order</p>
-              <h2 className="home-offer-title">10% off your first order</h2>
-              <p className="home-offer-body">Made fresh, delivered the same day. No minimum basket.</p>
+      <section className="fr-sec fr-offer" aria-label="First order offer">
+        <div className="fr-wrap">
+          <div className="fr-offer-panel fr-reveal" ref={offerRef}>
+            <div className="fr-offer-text">
+              <p className="fr-eyebrow fr-offer-eyebrow">First order</p>
+              <h2 className="fr-offer-title">10% off your first basket</h2>
+              <p className="fr-offer-body">No minimum spend. Use this code at checkout.</p>
             </div>
-            <div className="home-offer-action">
-              <div className="home-offer-code">
-                <span className="home-offer-code-text">{COUPON_CODE}</span>
-                <button className="home-offer-copy" onClick={copyCoupon}>{couponCopied ? 'Copied' : 'Copy'}</button>
+            <div className="fr-offer-action">
+              <div className="fr-offer-code">
+                <span className="fr-offer-code-text">{COUPON_CODE}</span>
+                <button className="fr-offer-copy" onClick={copyCoupon}>{couponCopied ? 'Copied' : 'Copy'}</button>
               </div>
-              <Link to="/shop" className="home-offer-link">Shop now &rarr;</Link>
+              <Link to="/shop" className="fr-offer-link">Start shopping &rarr;</Link>
             </div>
           </div>
         </div>
       </section>
 
       {productsError && products.length === 0 && (
-        <section className="home-section">
-          <div className="home-container">
+        <section className="fr-sec fr-sec-tight">
+          <div className="fr-wrap">
             <FetchError message="We couldn't load our fresh picks right now. Please try again." onRetry={loadProducts} />
           </div>
         </section>
       )}
 
       {isEmpty && (
-        <section className="home-section">
-          <div className="home-container">
+        <section className="fr-sec fr-sec-tight">
+          <div className="fr-wrap">
             <div className="home-empty">
-              <p className="home-empty-title">We couldn't load our products</p>
+              <p className="home-empty-title">We couldn&apos;t load our products</p>
               <p className="home-empty-sub">Check your connection and try again.</p>
-              <Link to="/shop" className="home-hero-cta">Browse the shop</Link>
+              <Link to="/shop" className="fr-offer-link">Browse the shop</Link>
             </div>
           </div>
         </section>
       )}
 
       {products.length > 0 && (
-        <section className="home-section" aria-label="All products">
-          <div className="home-container">
-            <header className="home-head home-head-row">
+        <section className="fr-sec fr-browse" aria-label="Browse by category">
+          <div className="fr-wrap">
+            <header className="fr-sec-head">
               <div>
-                <p className="home-eyebrow">Everything fresh</p>
-                <h2 className="home-title">Browse by category</h2>
+                <p className="fr-eyebrow">Everything fresh</p>
+                <h2 className="fr-sec-title">Browse the full range</h2>
               </div>
-              <Link to="/shop" className="home-viewall">View all &rarr;</Link>
+              <Link to="/shop" className="fr-sec-link">
+                View all
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+              </Link>
             </header>
-            <div className="home-tabs" role="tablist">
+            <div className="fr-tabs" role="tablist">
               {PRODUCT_TABS.map((tab) => (
                 <button
                   key={tab.slug}
                   role="tab"
                   aria-selected={activeProductTab === tab.slug}
-                  className={`home-tab${activeProductTab === tab.slug ? ' home-tab-on' : ''}`}
+                  className={`fr-tab${activeProductTab === tab.slug ? ' fr-tab-on' : ''}`}
                   onClick={() => setActiveProductTab(tab.slug)}
                 >
                   {tab.label}
                 </button>
               ))}
             </div>
-            <div className="home-grid">
-              {activeTabProducts.map((product) => (
-                <ProductCard key={product.id} product={product} onAdd={addToCart} />
+            <div className="fr-browse-grid fr-reveal" ref={browseRef}>
+              {activeTabProducts.map((product, index) => (
+                <div key={product.id} style={{ '--fr-stagger': index % 4 }}>
+                  <ProductCard product={product} onAdd={addToCart} />
+                </div>
               ))}
             </div>
           </div>
@@ -218,79 +197,43 @@ export default function Home() {
       <style>{`
         .home-page { background: var(--fr-canvas); }
 
-        .home-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; min-height: 520px; }
-        .home-hero-media { overflow: hidden; background: var(--fr-surface-2); }
-        .home-hero-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .home-hero-panel { display: flex; flex-direction: column; justify-content: center; padding: var(--fr-s10) var(--fr-s9); background: var(--fr-canvas); }
-        .home-hero-eyebrow { font-family: var(--fr-font-mono); font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-eyebrow); text-transform: uppercase; color: var(--fr-brand); margin: 0 0 var(--fr-s4); }
-        .home-hero-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-display); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-tight); letter-spacing: var(--fr-track-display); color: var(--fr-text); margin: 0 0 var(--fr-s4); max-width: 16ch; }
-        .home-hero-sub { font-family: var(--fr-font-sans); font-size: var(--fr-fs-lead); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0 0 var(--fr-s6); max-width: 40ch; }
-        .home-hero-cta { align-self: flex-start; display: inline-flex; align-items: center; height: 52px; padding: 0 var(--fr-s6); background: var(--fr-brand); color: var(--fr-on-brand); border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); text-decoration: none; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
-        .home-hero-cta:hover { background: var(--fr-brand-press); }
-        .home-hero-cta:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
+        .fr-offer { background: var(--fr-brand); }
+        .fr-offer-panel { display: flex; align-items: center; justify-content: space-between; gap: var(--fr-s8); flex-wrap: wrap; }
+        .fr-offer-eyebrow { color: #A8D5B5; }
+        .fr-offer-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-headline); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-tight); letter-spacing: var(--fr-track-headline); color: #FFFFFF; margin: 0 0 var(--fr-s2); }
+        .fr-offer-body { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: #C9DED2; margin: 0; }
+        .fr-offer-action { display: flex; flex-direction: column; align-items: flex-start; gap: var(--fr-s3); }
+        .fr-offer-code { display: flex; align-items: stretch; border-radius: var(--fr-r-control); overflow: hidden; }
+        .fr-offer-code-text { display: flex; align-items: center; font-family: var(--fr-font-mono); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-bold); letter-spacing: var(--fr-track-eyebrow); color: #FFFFFF; padding: 0 var(--fr-s5); background: rgba(255, 255, 255, 0.14); border: 1px dashed rgba(255, 255, 255, 0.5); border-right: none; }
+        .fr-offer-copy { border: none; background: var(--fr-surface); color: var(--fr-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); min-height: 48px; padding: 0 var(--fr-s5); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .fr-offer-copy:hover { background: #EAF3EC; }
+        .fr-offer-copy:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 2px; }
+        .fr-offer-link { font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); color: #FFFFFF; text-decoration: underline; text-underline-offset: 4px; }
+        .fr-offer-link:hover { color: #C9DED2; }
+        .fr-offer-link:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 3px; border-radius: var(--fr-r-control); }
 
-        .home-section { padding: var(--fr-s9) 0; }
-        .home-container { max-width: var(--fr-container); margin: 0 auto; padding: 0 var(--fr-s7); }
-        .home-head { margin-bottom: var(--fr-s6); }
-        .home-head-row { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--fr-s4); }
-        .home-eyebrow { font-family: var(--fr-font-mono); font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-eyebrow); text-transform: uppercase; color: var(--fr-brand); margin: 0 0 var(--fr-s2); }
-        .home-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-headline); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-tight); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: 0; }
-        .home-viewall { font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); color: var(--fr-brand); text-decoration: none; white-space: nowrap; }
-        .home-viewall:hover { color: var(--fr-brand-press); }
-        .home-viewall:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
+        .fr-tabs { display: flex; gap: var(--fr-s2); margin-bottom: var(--fr-s6); border-bottom: 1px solid var(--fr-line); }
+        .fr-tab { padding: var(--fr-s3) var(--fr-s4); min-height: 44px; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); color: var(--fr-text-2); cursor: pointer; transition: color var(--fr-dur-quick) var(--fr-ease-standard), border-color var(--fr-dur-quick) var(--fr-ease-standard); }
+        .fr-tab:hover { color: var(--fr-brand); }
+        .fr-tab-on { color: var(--fr-brand); border-bottom-color: var(--fr-brand); }
+        .fr-tab:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
 
-        .home-cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--fr-s5); }
-        .home-cat { display: flex; flex-direction: column; background: var(--fr-surface); border-radius: var(--fr-r-card); overflow: hidden; box-shadow: var(--fr-elev-1); text-decoration: none; transition: box-shadow var(--fr-dur-base) var(--fr-ease-standard), transform var(--fr-dur-base) var(--fr-ease-standard); }
-        .home-cat:hover { box-shadow: var(--fr-elev-2); transform: translateY(-2px); }
-        .home-cat:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
-        .home-cat-media { aspect-ratio: 4 / 3; overflow: hidden; background: var(--fr-surface-2); }
-        .home-cat-media img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--fr-dur-base) var(--fr-ease-standard); }
-        .home-cat:hover .home-cat-media img { transform: scale(1.03); }
-        .home-cat-body { padding: var(--fr-s4); display: flex; flex-direction: column; gap: var(--fr-s2); }
-        .home-cat-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); letter-spacing: var(--fr-track-headline); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0; }
-        .home-cat-desc { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0; }
-        .home-cat-link { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); color: var(--fr-brand); margin-top: var(--fr-s1); }
-
-        .home-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--fr-s5); }
-
-        .home-tabs { display: flex; gap: var(--fr-s2); margin-bottom: var(--fr-s6); border-bottom: 1px solid var(--fr-line); }
-        .home-tab { padding: var(--fr-s3) var(--fr-s4); background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); color: var(--fr-text-2); cursor: pointer; transition: color var(--fr-dur-quick) var(--fr-ease-standard), border-color var(--fr-dur-quick) var(--fr-ease-standard); }
-        .home-tab:hover { color: var(--fr-brand); }
-        .home-tab-on { color: var(--fr-brand); border-bottom-color: var(--fr-brand); }
-        .home-tab:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
-
-        .home-offer-section { background: var(--fr-surface-2); }
-        .home-offer { display: flex; align-items: center; justify-content: space-between; gap: var(--fr-s7); flex-wrap: wrap; background: var(--fr-surface); border: 1px solid var(--fr-line); border-radius: var(--fr-r-surface); padding: var(--fr-s7) var(--fr-s8); }
-        .home-offer-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-headline); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-tight); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: var(--fr-s1) 0; }
-        .home-offer-body { color: var(--fr-text-2); font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); margin: 0; }
-        .home-offer-action { display: flex; flex-direction: column; align-items: flex-start; gap: var(--fr-s3); }
-        .home-offer-code { display: flex; align-items: stretch; border: 1px dashed var(--fr-brand); border-radius: var(--fr-r-control); overflow: hidden; }
-        .home-offer-code-text { display: flex; align-items: center; font-family: var(--fr-font-mono); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-bold); letter-spacing: var(--fr-track-eyebrow); color: var(--fr-text); padding: 0 var(--fr-s4); background: var(--fr-brand-tint); }
-        .home-offer-copy { border: none; background: var(--fr-brand); color: var(--fr-on-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); padding: var(--fr-s3) var(--fr-s4); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
-        .home-offer-copy:hover { background: var(--fr-brand-press); }
-        .home-offer-copy:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
-        .home-offer-link { font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); color: var(--fr-brand); text-decoration: none; }
-        .home-offer-link:hover { color: var(--fr-brand-press); }
+        .fr-browse-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--fr-s5); }
 
         .home-empty { text-align: center; padding: var(--fr-s9) var(--fr-s5); display: flex; flex-direction: column; align-items: center; gap: var(--fr-s3); }
         .home-empty-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0; }
-        .home-empty-sub { color: var(--fr-text-2); margin: 0 0 var(--fr-s3); } }
+        .home-empty-sub { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0 0 var(--fr-s3); }
+        .home-empty .fr-offer-link { color: var(--fr-brand); }
 
         @media (max-width: 900px) {
-          .home-hero { grid-template-columns: 1fr; min-height: 0; }
-          .home-hero-media { aspect-ratio: 16 / 10; }
-          .home-hero-panel { padding: var(--fr-s7) var(--fr-s5) var(--fr-s8); }
-          .home-cats { grid-template-columns: repeat(2, 1fr); gap: var(--fr-s4); }
-          .home-grid { grid-template-columns: repeat(2, 1fr); gap: var(--fr-s4); }
-          .home-container { padding: 0 var(--fr-s4); }
-          .home-section { padding: var(--fr-s8) 0; }
-          .home-offer { padding: var(--fr-s6); gap: var(--fr-s5); }
-        }
-        @media (max-width: 520px) {
-          .home-cats { grid-template-columns: 1fr; }
+          .fr-browse-grid { grid-template-columns: repeat(2, 1fr); gap: var(--fr-s4); }
+          .fr-offer-panel { gap: var(--fr-s6); }
+          .fr-tabs { overflow-x: auto; scrollbar-width: none; }
+          .fr-tabs::-webkit-scrollbar { display: none; }
+          .fr-tab { white-space: nowrap; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .home-cat, .home-cat-media img, .home-hero-cta, .home-tab { transition: none; }
+          .fr-tab, .fr-offer-copy { transition: none; }
         }
       `}</style>
     </div>
