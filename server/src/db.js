@@ -1,22 +1,8 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
+const { validateEnvironment } = require('./config/env');
 
-const requiredEnvVars = {
-  SUPABASE_URL: process.env.SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY
-};
-
-const missingVars = Object.keys(requiredEnvVars).filter(key => !requiredEnvVars[key]);
-
-if (missingVars.length > 0) {
-  console.error('\n❌ FATAL ERROR: Missing required environment variables:\n');
-  missingVars.forEach(varName => {
-    console.error(`   - ${varName}`);
-  });
-  console.error('\n📝 Please check your .env file and ensure all variables are set.');
-  console.error('   See .env.example for reference.\n');
-  process.exit(1);
-}
+validateEnvironment();
 
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,

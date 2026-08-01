@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { supabaseAdmin } = require('../db');
 const { sendSuccess, sendError } = require('../utils/responses');
+const logger = require('../utils/logger');
 
 /**
  * @swagger
@@ -111,7 +112,7 @@ router.get('/', async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('Products fetch error:', err);
+        logger.error('Products fetch error:', err);
         return sendError(res, 'Failed to fetch products', 500);
     }
 });

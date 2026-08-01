@@ -1,12 +1,8 @@
 require('dotenv').config();
 
-const requiredEnv = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
-const missingEnv = requiredEnv.filter(key => !process.env[key]);
+const { validateEnvironment, describeEnvironment } = require('./config/env');
 
-if (missingEnv.length > 0) {
-  process.stderr.write(`CRITICAL: Missing required environment variables: ${missingEnv.join(', ')}\n`);
-  process.exit(1);
-}
+const { warnings: envWarnings } = validateEnvironment();
 
 const { initSentry, setupSentryErrorHandler } = require('./config/sentry');
 initSentry();
@@ -15,7 +11,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const { requestLogger, performanceLogger } = require('./middleware/requestLogger');
+const { requestContext, requestLogger } = require('./middleware/requestContext');
 const logger = require('./utils/logger');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
@@ -31,6 +27,8 @@ const adminRouter = require('./routes/admin');
 const uploadRoutes = require('./routes/upload');
 const healthRouter = require('./routes/health');
 const settingsRouter = require('./routes/settings');
+
+app.use(requestContext);
 
 app.use(helmet({
   contentSecurityPolicy: {
@@ -152,8 +150,7 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(requestLogger);
-app.use(performanceLogger(1000));
+app.use(requestLogger(1000));
 
 app.use((req, res, next) => {
   req.setTimeout(30000, () => {
@@ -199,6 +196,8 @@ const swaggerUiOptions = {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec));
 
+app.use('/', healthRouter);
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
@@ -239,8 +238,6 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-app.use('/', healthRouter);
-
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'Frioo API is running' });
 });
@@ -254,22 +251,38 @@ app.use('/api/upload', authLimiter, uploadRoutes);
 
 setupSentryErrorHandler(app);
 
-app.use((err, req, res, next) => {
-  logger.error('Unhandled error:', err);
-  res.status(err.status || 500).json({
+app.use((req, res) => {
+  res.status(404).json({
     success: false,
-    error: {
-      message: process.env.NODE_ENV === 'production'
-        ? 'Internal server error'
-        : err.message,
-      code: err.status || 500
-    },
-    data: null
+    data: null,
+    error: { message: 'Route not found', code: 404, requestId: req.id }
   });
 });
 
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+app.use((err, req, res, _next) => {
+  const status = err.status || err.statusCode || 500;
+
+  logger.error('Unhandled error', {
+    requestId: req.id,
+    method: req.method,
+    path: req.originalUrl,
+    status,
+    error: err
+  });
+
+  if (res.headersSent) return;
+
+  res.status(status).json({
+    success: false,
+    data: null,
+    error: {
+      message: status >= 500 && process.env.NODE_ENV === 'production'
+        ? 'Internal server error'
+        : err.message,
+      code: status,
+      requestId: req.id
+    }
+  });
 });
 
 const PORT = process.env.PORT || 4000;
@@ -278,8 +291,8 @@ let server = null;
 
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
   server = app.listen(PORT, () => {
-    logger.info(`Frioo Backend running on port ${PORT}`);
-    logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    logger.info('Frioo API started', { port: PORT, ...describeEnvironment() });
+    envWarnings.forEach((key) => logger.warn('Recommended environment variable is not set', { key }));
   });
 }
 

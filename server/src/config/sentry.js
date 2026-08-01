@@ -1,11 +1,12 @@
 const Sentry = require('@sentry/node');
+const logger = require('../utils/logger');
 const { nodeProfilingIntegration } = require('@sentry/profiling-node');
 
 let sentryInitialized = false;
 
 function initSentry() {
     if (!process.env.SENTRY_DSN) {
-        console.warn('⚠️  Sentry DSN not configured. Error tracking disabled.');
+        logger.warn('Sentry DSN not configured, server error tracking disabled');
         return;
     }
 
@@ -45,7 +46,7 @@ function initSentry() {
 
     sentryInitialized = true;
     if (process.env.NODE_ENV !== 'production') {
-        console.log('✅ Sentry error tracking initialized');
+        logger.info('Sentry error tracking initialized');
     }
 }
 
