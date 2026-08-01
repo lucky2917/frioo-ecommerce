@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useDialog } from '../../hooks/useDialog';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/auth-context';
 import { supabase } from '../../lib/supabaseClient';
 import { DELIVERY_STATUS_DURATION_MS } from '../../config/constants';
 import {

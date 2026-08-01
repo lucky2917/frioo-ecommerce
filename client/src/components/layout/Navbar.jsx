@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDialog } from '../../hooks/useDialog';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/auth-context';
+import { useCart } from '../../context/cart-context';
 import { supabase } from '../../lib/supabaseClient';
 import { logger } from '../../utils/logger';
 import ContextStrip from './nav/ContextStrip';

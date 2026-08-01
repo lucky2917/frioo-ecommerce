@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Field from '../components/form/Field';
+import { fetchWithTimeout } from '../lib/http';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/auth-context';
 import { supabase } from '../lib/supabaseClient';
 import { logger } from '../utils/logger';
 import { validatePhoneNumber, validateAddress, validateName, formatPhoneNumber } from '../utils/validation';
@@ -16,7 +17,14 @@ export default function Onboarding() {
     address: ''
   });
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const [lastUser, setLastUser] = useState(null);
   if (user !== lastUser) {
@@ -59,15 +67,27 @@ export default function Onboarding() {
       const { latitude, longitude } = position.coords;
 
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const res = await fetchWithTimeout(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+          { timeoutMs: 10000 }
+        );
         const data = await res.json();
-        setFormData(prev => ({ ...prev, address: data.display_name }));
+        if (!mountedRef.current) return;
+
+        if (!data?.display_name) {
+          setErrors(prev => ({ ...prev, address: 'We could not find your address automatically. Please type it instead.' }));
+        } else {
+          setFormData(prev => ({ ...prev, address: data.display_name }));
+          setErrors(prev => ({ ...prev, address: undefined }));
+        }
       } catch (error) {
         logger.error('Error fetching address', error);
+        if (!mountedRef.current) return;
         setErrors(prev => ({ ...prev, address: 'We could not find your address automatically. Please type it instead.' }));
       }
-      setLoadingLocation(false);
+      if (mountedRef.current) setLoadingLocation(false);
     }, () => {
+      if (!mountedRef.current) return;
       setErrors(prev => ({ ...prev, address: 'Location access is off. Turn it on in your browser settings, or type the address.' }));
       setLoadingLocation(false);
     });
@@ -75,7 +95,7 @@ export default function Onboarding() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || submitting) return;
 
     const nextErrors = {};
     if (!validateName(formData.full_name)) nextErrors.full_name = 'Enter your name using at least 2 letters.';
@@ -86,24 +106,29 @@ export default function Onboarding() {
     if (Object.keys(nextErrors).length > 0) return;
 
     const formattedPhone = formatPhoneNumber(formData.phone_number);
+    setSubmitting(true);
 
-    const { error } = await supabase.from('profiles').upsert([
-      {
-        id: user.id,
-        email: user.email,
-        full_name: formData.full_name,
-        phone_number: formattedPhone,
-        address: formData.address,
-        avatar_url: user.user_metadata.avatar_url
-      }
-    ]);
+    try {
+      const { error } = await supabase.from('profiles').upsert([
+        {
+          id: user.id,
+          email: user.email,
+          full_name: formData.full_name.trim(),
+          phone_number: formattedPhone,
+          address: formData.address.trim(),
+          avatar_url: user.user_metadata?.avatar_url ?? null
+        }
+      ]);
 
-    if (error) {
-      logger.error('Profile creation error:', error);
-      setErrors({ form: 'We could not save your details. Check your connection and try again.' });
-    } else {
+      if (error) throw error;
+
       await fetchProfile(user.id);
       navigate('/shop');
+    } catch (error) {
+      logger.error('Profile creation error:', error);
+      if (!mountedRef.current) return;
+      setErrors({ form: 'We could not save your details. Check your connection and try again.' });
+      setSubmitting(false);
     }
   };
 
@@ -159,7 +184,7 @@ export default function Onboarding() {
                     value={formData.address}
                     onChange={e => setFormData({ ...formData, address: e.target.value })}
                   />
-                  <button type="button" onClick={getLocation} className="detect-btn" aria-busy={loadingLocation}>
+                  <button type="button" onClick={getLocation} className="detect-btn" disabled={loadingLocation} aria-busy={loadingLocation}>
                     {loadingLocation ? 'Finding…' : 'Detect'}
                   </button>
                 </div>
@@ -167,7 +192,9 @@ export default function Onboarding() {
             </Field>
 
             {errors.form && <p className="onboarding-form-error" role="alert">{errors.form}</p>}
-            <button type="submit" className="onboarding-submit">Save &amp; Continue</button>
+            <button type="submit" className="onboarding-submit" disabled={submitting} aria-busy={submitting}>
+              {submitting ? 'Saving…' : 'Save & Continue'}
+            </button>
           </form>
         </div>
       </div>

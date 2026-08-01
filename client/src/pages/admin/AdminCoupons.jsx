@@ -85,13 +85,21 @@ export default function AdminCoupons() {
 
     const handleSave = async (e) => {
         e.preventDefault();
+        if (submitting) return;
+
+        const parsedValue = parseFloat(form.value);
+        if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+            notify.error('Enter a discount value greater than zero.');
+            return;
+        }
+
         setSubmitting(true);
 
         try {
             const payload = {
                 code: form.code.toUpperCase().trim(),
                 discount_type: form.type,
-                value: parseFloat(form.value),
+                value: parsedValue,
                 min_order_value: parseFloat(form.min_order) || 0,
                 description: form.description.trim() || null,
                 expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
@@ -122,6 +130,7 @@ export default function AdminCoupons() {
     };
 
     const confirmDelete = async () => {
+        if (deleting || !deleteId) return;
         setDeleting(true);
         try {
             const { error } = await supabase.from('coupons').delete().eq('id', deleteId);

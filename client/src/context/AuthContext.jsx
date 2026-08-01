@@ -1,9 +1,8 @@
-import { createContext, useState, useEffect, useContext, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { logger } from '../utils/logger';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { supabase } from '../lib/supabaseClient';
-
-const AuthContext = createContext();
+import { AuthContext } from './auth-context';
 
 const AUTH_INIT_TIMEOUT_MS = 8000;
 const SESSION_RECHECK_INTERVAL_MS = 60 * 1000;
@@ -241,5 +240,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

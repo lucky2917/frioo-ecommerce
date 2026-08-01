@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCommitFeedback } from '../hooks/useCommitFeedback';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/auth-context';
 import { supabase } from '../lib/supabaseClient';
 import { notify } from '../lib/feedbackStore';
 import { logger } from '../utils/logger';

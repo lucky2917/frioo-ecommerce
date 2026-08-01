@@ -1,14 +1,11 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { logger } from '../utils/logger';
 import { API_BASE_URL } from '../config/constants';
 import { fetchWithTimeout } from '../lib/http';
 import { notify } from '../lib/feedbackStore';
-
-const CartContext = createContext();
+import { CartContext } from './cart-context';
 
 const CART_STORAGE_KEY = 'frioo_cart';
-
-export const useCart = () => useContext(CartContext);
 
 const isUsableCartEntry = (entry) => {
     if (!entry || typeof entry !== 'object') return false;

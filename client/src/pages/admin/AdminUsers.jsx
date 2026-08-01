@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { fetchWithTimeout } from '../../lib/http';
 import { supabase } from '../../lib/supabaseClient';
 import { notify } from '../../lib/feedbackStore';
 import { API_BASE_URL } from '../../config/constants';
@@ -26,28 +27,36 @@ export default function AdminUsers() {
     const [formData, setFormData] = useState({ full_name: '', phone_number: '', role: 'customer' });
     const [deleteId, setDeleteId] = useState(null);
     const [deleting, setDeleting] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
-    useEffect(() => {
-        fetchUsers(page);
-    }, [page]);
+    const latestUsersRequestRef = useRef(0);
 
-    const fetchUsers = async (p = 1) => {
+    const fetchUsers = useCallback(async (p = 1) => {
+        const requestId = ++latestUsersRequestRef.current;
         setLoading(true);
+        setLoadError(null);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const res = await fetch(`${API_BASE_URL}/api/admin/users?page=${p}&limit=20`, {
+            const res = await fetchWithTimeout(`${API_BASE_URL}/api/admin/users?page=${p}&limit=20`, {
                 headers: { 'Authorization': `Bearer ${session?.access_token || ''}` }
             });
             const json = await res.json();
+            if (requestId !== latestUsersRequestRef.current) return;
+
             if (!res.ok) throw new Error(json.error || 'Failed to fetch users');
             setUsers(json.users || []);
             setPagination(json.pagination || null);
         } catch {
+            if (requestId !== latestUsersRequestRef.current) return;
             setLoadError("We could not load users. Check your connection and try again.");
         } finally {
-            setLoading(false);
+            if (requestId === latestUsersRequestRef.current) setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        void fetchUsers(page);
+    }, [page, fetchUsers]);
 
     const metrics = useMemo(() => {
         const total = users.length;
@@ -95,8 +104,9 @@ export default function AdminUsers() {
 
     const handleUpdateUser = async (e) => {
         e.preventDefault();
-        if (!editingUser) return;
+        if (!editingUser || submitting) return;
 
+        setSubmitting(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("No active session");
@@ -125,10 +135,13 @@ export default function AdminUsers() {
             }
         } catch (err) {
             notify.error("Update failed: " + err.message);
+        } finally {
+            setSubmitting(false);
         }
     };
 
     const confirmDeleteUser = async () => {
+        if (deleting || !deleteId) return;
         setDeleting(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -252,7 +265,9 @@ export default function AdminUsers() {
                     </div>
                     <div className="au-form-actions">
                         <button type="button" className="adm-btn adm-btn-ghost" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                        <button type="submit" className="adm-btn adm-btn-primary">Save changes</button>
+                        <button type="submit" className="adm-btn adm-btn-primary" disabled={submitting} aria-busy={submitting}>
+                            {submitting ? 'Saving' : 'Save changes'}
+                        </button>
                     </div>
                 </form>
             </AdminModal>

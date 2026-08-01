@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { notify } from '../../lib/feedbackStore';
 import { logger } from '../../utils/logger';
@@ -44,6 +44,8 @@ export default function AdminProducts() {
     const [submitting, setSubmitting] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
     const [deleting, setDeleting] = useState(false);
+
+    const uploadInFlightRef = useRef(false);
 
     const fetchProducts = useCallback(async () => {
         try {
@@ -117,6 +119,7 @@ export default function AdminProducts() {
     };
 
     const confirmDelete = async () => {
+        if (deleting || !deleteId) return;
         setDeleting(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -144,13 +147,21 @@ export default function AdminProducts() {
 
     const handleSave = async (e) => {
         e.preventDefault();
+        if (submitting || uploadInFlightRef.current) return;
+
+        const parsedPrice = parseFloat(formData.price);
+        if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
+            notify.error('Enter a valid price before saving.');
+            return;
+        }
+
         setSubmitting(true);
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error('No active session');
 
-            const price_cents = Math.round(parseFloat(formData.price) * 100);
+            const price_cents = Math.round(parsedPrice * 100);
 
             const payload = {
                 title: formData.title,
@@ -209,7 +220,7 @@ export default function AdminProducts() {
     };
 
     const handleFileUpload = async (file) => {
-        if (!file) return;
+        if (!file || uploadInFlightRef.current) return;
 
         if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
             setUploadError('That file type will not upload. Use a JPG, PNG or WebP image.');
@@ -220,6 +231,8 @@ export default function AdminProducts() {
             setUploadError('That image is over 5MB. Use a smaller file.');
             return;
         }
+
+        uploadInFlightRef.current = true;
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -247,6 +260,8 @@ export default function AdminProducts() {
             logger.error('Upload error:', err);
             setUploadError(err.message || 'The image did not upload. Try again.');
             setFormData(prev => ({ ...prev, uploadProgress: null }));
+        } finally {
+            uploadInFlightRef.current = false;
         }
     };
 

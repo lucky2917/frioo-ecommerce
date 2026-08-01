@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useDialog } from '../hooks/useDialog';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/auth-context';
+import { useCart } from '../context/cart-context';
 import { supabase } from '../lib/supabaseClient';
 import { logger } from '../utils/logger';
 import { sanitizeText } from '../utils/sanitize';
@@ -53,6 +53,7 @@ export default function Cart() {
 
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [checkoutError, setCheckoutError] = useState(null);
   const [orderType, setOrderType] = useState('delivery');
   const [showCouponModal, setShowCouponModal] = useState(false);
@@ -136,13 +137,18 @@ export default function Cart() {
   const isBelowMin = orderType === 'delivery' && finalTotal < MIN_CART_VALUE;
 
   const handleApplyCoupon = async () => {
-    if (!couponInput.trim()) return;
+    if (!couponInput.trim() || applyingCoupon) return;
     couponActionRef.current = 'apply';
     setCouponError(null);
-    const result = await verifyCoupon(couponInput, subTotal);
-    if (result?.ok) setCouponInput('');
-    else setCouponError(result?.error ?? 'That code is not valid. Check it and try again.');
-    setShowCouponModal(false);
+    setApplyingCoupon(true);
+    try {
+      const result = await verifyCoupon(couponInput);
+      if (result?.ok) setCouponInput('');
+      else setCouponError(result?.error ?? 'That code is not valid. Check it and try again.');
+      setShowCouponModal(false);
+    } finally {
+      setApplyingCoupon(false);
+    }
   };
 
   const handleEditClick = async (item) => {
@@ -441,7 +447,7 @@ export default function Cart() {
                   <div className="cart-coupon">
                     <div className="cart-coupon-input">
                       <input ref={couponInputRef} type="text" placeholder="Discount code" aria-label="Discount code" aria-invalid={Boolean(couponError)} value={couponInput} onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(null); }} />
-                      <button onClick={handleApplyCoupon} aria-disabled={!couponInput.trim()} aria-describedby="cart-coupon-hint">Apply</button>
+                      <button onClick={handleApplyCoupon} disabled={applyingCoupon} aria-disabled={!couponInput.trim() || applyingCoupon} aria-busy={applyingCoupon} aria-describedby="cart-coupon-hint">{applyingCoupon ? 'Checking…' : 'Apply'}</button>
                     </div>
                     <p className="fr-sr-only" id="cart-coupon-hint">Enter a discount code to apply it.</p>
                     {couponError && <p className="cart-coupon-error" role="alert">{couponError}</p>}
@@ -506,7 +512,19 @@ export default function Cart() {
                       <div className="cart-offer-desc">{coupon.discount_type === 'percentage' ? `${coupon.value}% off` : `₹${coupon.value} off`}<span> · min ₹{coupon.min_order_value}</span></div>
                     </div>
                     {isEligible
-                      ? <button className="cart-offer-apply" onClick={async () => { couponActionRef.current = 'apply'; setCouponError(null); const result = await verifyCoupon(coupon.code, subTotal); if (!result?.ok) setCouponError(result?.error ?? 'That code is not valid.'); setShowCouponModal(false); }}>Apply</button>
+                      ? <button className="cart-offer-apply" disabled={applyingCoupon} onClick={async () => {
+                          if (applyingCoupon) return;
+                          couponActionRef.current = 'apply';
+                          setCouponError(null);
+                          setApplyingCoupon(true);
+                          try {
+                            const result = await verifyCoupon(coupon.code);
+                            if (!result?.ok) setCouponError(result?.error ?? 'That code is not valid.');
+                            setShowCouponModal(false);
+                          } finally {
+                            setApplyingCoupon(false);
+                          }
+                        }}>Apply</button>
                       : <span className="cart-offer-locked">Add &#8377;{needed.toFixed(0)}</span>}
                   </div>
                 );

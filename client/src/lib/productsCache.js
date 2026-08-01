@@ -26,15 +26,18 @@ export const fetchProducts = async ({ force = false } = {}) => {
     if (fresh) return fresh;
   }
   if (inflightRequest) return inflightRequest;
-  inflightRequest = requestProducts()
-    .then((items) => {
+
+  inflightRequest = (async () => {
+    try {
+      const items = await requestProducts();
       cachedProducts = items;
       cachedAt = Date.now();
       return items;
-    })
-    .finally(() => {
+    } finally {
       inflightRequest = null;
-    });
+    }
+  })();
+
   return inflightRequest;
 };
 

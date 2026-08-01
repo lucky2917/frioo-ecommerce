@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/auth-context';
+import { useCart } from '../context/cart-context';
 import { supabase } from '../lib/supabaseClient';
 import { logger } from '../utils/logger';
 import LoadingSpinner from '../components/LoadingSpinner';

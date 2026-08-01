@@ -77,7 +77,9 @@ export default function AdminOrders() {
     }, [fetchOrders]);
 
     const updateStatus = async (id, newStatus) => {
-        const previous = [...orders];
+        const previousStatus = orders.find(o => o.id === id)?.status;
+        if (previousStatus === undefined || previousStatus === newStatus) return;
+
         setOrders(prev => prev.map(o => o.id === id ? { ...o, status: newStatus } : o));
 
         const { error } = await supabase
@@ -86,11 +88,12 @@ export default function AdminOrders() {
             .eq('id', id);
 
         if (error) {
-            setOrders(previous);
+            setOrders(prev => prev.map(o => o.id === id ? { ...o, status: previousStatus } : o));
             notify.error('Failed to update status');
-        } else {
-            notify.success(`Order updated to ${newStatus}`);
+            return;
         }
+
+        notify.success(`Order updated to ${newStatus}`);
     };
 
     const metrics = useMemo(() => {

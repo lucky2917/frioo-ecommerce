@@ -7,7 +7,7 @@ import FetchError from '../components/FetchError';
 import VideoModal from '../components/shop/VideoModal';
 import ProductCard from '../components/shop/ProductCard';
 
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/cart-context';
 import { useProduct } from '../hooks/useProduct';
 
 const WEIGHT_OPTIONS = [

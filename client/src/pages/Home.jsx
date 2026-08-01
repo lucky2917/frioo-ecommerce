@@ -6,7 +6,7 @@ import FetchError from '../components/FetchError';
 import ProductCard from '../components/shop/ProductCard';
 import ProductCardSkeleton from '../components/shop/ProductCardSkeleton';
 import { useProducts } from '../hooks/useProducts';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/cart-context';
 import { PRODUCT_CATEGORIES } from '../config/constants';
 
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?w=1400&q=80';

@@ -6,7 +6,7 @@ import ProductCardSkeleton from '../components/shop/ProductCardSkeleton';
 import ShopFilters from '../components/shop/ShopFilters';
 import BundleDeals from '../components/shop/BundleDeals';
 import FetchError from '../components/FetchError';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/cart-context';
 import { notify } from '../lib/feedbackStore';
 import SEO from '../components/SEO';
 import { useProducts } from '../hooks/useProducts';
