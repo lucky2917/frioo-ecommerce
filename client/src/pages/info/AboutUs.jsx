@@ -81,7 +81,7 @@ export default function AboutUs() {
         .info-page {
           min-height: 100vh;
           padding: 120px 20px 60px;
-          background: linear-gradient(to bottom, #faf5ed 0%, #ffffff 100%);
+          background: linear-gradient(to bottom, var(--fr-surface-2) 0%, #ffffff 100%);
         }
 
         .info-container {
@@ -100,20 +100,20 @@ export default function AboutUs() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-tight);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0 0 12px 0;
         }
 
         .subtitle {
           font-size: var(--fr-fs-lead);
-          color: #D4AF7A;
+          color: var(--fr-brand);
           font-weight: var(--fr-fw-regular);
         }
 
         .info-content {
           background: white;
-          border-radius: 16px;
-          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+          border-radius: var(--fr-r-surface);
+          box-shadow: var(--fr-elev-2);
           padding: 48px;
         }
 
@@ -131,14 +131,14 @@ export default function AboutUs() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-snug);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0 0 20px 0;
         }
 
         .info-section p {
           font-size: var(--fr-fs-body);
           line-height: var(--fr-lh-relaxed);
-          color: #555;
+          color: var(--fr-text-2);
           margin: 0 0 16px 0;
         }
 
@@ -150,10 +150,10 @@ export default function AboutUs() {
         }
 
         .offering-card {
-          background: #faf5ed;
+          background: var(--fr-surface-2);
           padding: 24px;
-          border-radius: 12px;
-          border: 2px solid #f0e9dc;
+          border-radius: var(--fr-r-card);
+          border: 2px solid var(--fr-line);
         }
 
         .offering-card h3 {
@@ -162,13 +162,13 @@ export default function AboutUs() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-snug);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0 0 12px 0;
         }
 
         .offering-card p {
           font-size: var(--fr-fs-body);
-          color: #666;
+          color: var(--fr-text-2);
           margin: 0;
         }
 
@@ -181,7 +181,7 @@ export default function AboutUs() {
         .values-list li {
           font-size: var(--fr-fs-body);
           line-height: var(--fr-lh-relaxed);
-          color: #555;
+          color: var(--fr-text-2);
           margin-bottom: 16px;
           padding-left: 32px;
           position: relative;
@@ -191,7 +191,7 @@ export default function AboutUs() {
           content: '✓';
           position: absolute;
           left: 0;
-          color: #D4AF7A;
+          color: var(--fr-brand);
           font-weight: var(--fr-fw-bold);
           font-size: var(--fr-fs-title);
         }
@@ -199,7 +199,7 @@ export default function AboutUs() {
         .cta-section {
           margin-top: 48px;
           padding-top: 48px;
-          border-top: 2px solid #f0e9dc;
+          border-top: 2px solid var(--fr-line);
           text-align: center;
         }
 
@@ -209,16 +209,16 @@ export default function AboutUs() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-snug);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0 0 24px 0;
         }
 
         .cta-button {
           display: inline-block;
-          background: #D4AF7A;
+          background: var(--fr-brand);
           color: white;
           padding: 16px 40px;
-          border-radius: 8px;
+          border-radius: var(--fr-r-card);
           font-weight: var(--fr-fw-medium);
           font-size: var(--fr-fs-control);
           line-height: var(--fr-lh-control);
@@ -227,17 +227,14 @@ export default function AboutUs() {
         }
 
         .cta-button:hover {
-          background: #c49a6a;
+          background: var(--fr-brand);
           transform: translateY(-2px);
-          box-shadow: 0 4px 16px rgba(212, 175, 122, 0.3);
+          box-shadow: var(--fr-elev-2);
         }
 
         @media (max-width: 768px) {
           .info-page {
             padding: 100px 16px 40px;
-          }
-
-          .info-header h1 {
           }
 
           .info-content {
@@ -246,9 +243,6 @@ export default function AboutUs() {
 
           .offerings-grid {
             grid-template-columns: 1fr;
-          }
-
-          .info-section h2 {
           }
         }
       `}</style>

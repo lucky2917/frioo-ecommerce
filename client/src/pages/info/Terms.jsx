@@ -47,16 +47,16 @@ export default function Terms() {
       <style jsx>{`
         .legal-page {
           min-height: 100vh;
-          padding: 120px 20px 60px;
-          background: #fafafa;
+          padding: var(--fr-s10) var(--fr-s5) var(--fr-s9);
+          background: var(--fr-canvas);
         }
         .legal-container {
           max-width: 800px;
           margin: 0 auto;
           background: white;
-          padding: 48px;
-          border-radius: 16px;
-          box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+          padding: var(--fr-s8);
+          border-radius: var(--fr-r-surface);
+          box-shadow: var(--fr-elev-1);
         }
         .legal-container h1 {
           font-family: var(--fr-font-display);
@@ -64,19 +64,19 @@ export default function Terms() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-tight);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
-          margin: 0 0 12px 0;
+          color: var(--fr-text);
+          margin: 0 0 var(--fr-s3) 0;
         }
         .legal-container .updated {
-          color: #999;
+          color: var(--fr-text-3);
           font-family: var(--fr-font-sans);
           font-size: var(--fr-fs-caption);
           font-weight: var(--fr-fw-regular);
           line-height: var(--fr-lh-normal);
-          margin: 0 0 32px 0;
+          margin: 0 0 var(--fr-s6) 0;
         }
         .legal-container section {
-          margin-bottom: 32px;
+          margin-bottom: var(--fr-s6);
         }
         .legal-container h2 {
           font-family: var(--fr-font-display);
@@ -84,19 +84,19 @@ export default function Terms() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-snug);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
-          margin: 0 0 16px 0;
+          color: var(--fr-text);
+          margin: 0 0 var(--fr-s4) 0;
         }
         .legal-container p {
           font-family: var(--fr-font-sans);
           font-size: var(--fr-fs-body);
           font-weight: var(--fr-fw-regular);
           line-height: var(--fr-lh-relaxed);
-          color: #555;
+          color: var(--fr-text-2);
         }
         @media (max-width: 768px) {
-          .legal-page { padding: 100px 16px 40px; }
-          .legal-container { padding: 24px; }
+          .legal-page { padding: var(--fr-s9) var(--fr-s4) var(--fr-s7); }
+          .legal-container { padding: var(--fr-s5); }
         }
       `}</style>
     </div>

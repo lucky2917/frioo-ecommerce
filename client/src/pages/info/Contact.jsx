@@ -45,7 +45,7 @@ export default function Contact() {
             <h2>Contact Information</h2>
 
             <div className="info-item">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
               </svg>
               <div>
@@ -55,7 +55,7 @@ export default function Contact() {
             </div>
 
             <div className="info-item">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                 <polyline points="22,6 12,13 2,6" />
               </svg>
@@ -66,7 +66,7 @@ export default function Contact() {
             </div>
 
             <div className="info-item">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
                 <circle cx="12" cy="10" r="3" />
                 <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z" />
               </svg>
@@ -77,7 +77,7 @@ export default function Contact() {
             </div>
 
             <div className="info-item">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
               </svg>
@@ -96,11 +96,11 @@ export default function Contact() {
             </p>
             <div className="contact-direct">
               <a className="contact-direct-action" href="tel:+919347043329">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
                 Call +91 93470 43329
               </a>
               <a className="contact-direct-action contact-direct-secondary" href="mailto:frioo.trust@gmail.com">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
                 Email frioo.trust@gmail.com
               </a>
             </div>
@@ -113,7 +113,7 @@ export default function Contact() {
         .contact-page {
           min-height: 100vh;
           padding: 120px 20px 60px;
-          background: linear-gradient(to bottom, #faf5ed 0%, #ffffff 100%);
+          background: linear-gradient(to bottom, var(--fr-surface-2) 0%, #ffffff 100%);
         }
 
         .contact-container {
@@ -132,13 +132,13 @@ export default function Contact() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-tight);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0 0 12px 0;
         }
 
         .subtitle {
           font-size: var(--fr-fs-lead);
-          color: #D4AF7A;
+          color: var(--fr-brand);
           font-weight: var(--fr-fw-regular);
         }
 
@@ -151,8 +151,8 @@ export default function Contact() {
         .contact-info {
           background: white;
           padding: 40px;
-          border-radius: 16px;
-          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+          border-radius: var(--fr-r-surface);
+          box-shadow: var(--fr-elev-2);
           height: fit-content;
         }
 
@@ -162,7 +162,7 @@ export default function Contact() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-snug);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0 0 32px 0;
         }
 
@@ -177,7 +177,7 @@ export default function Contact() {
         }
 
         .info-item svg {
-          color: #D4AF7A;
+          color: var(--fr-brand);
           flex-shrink: 0;
         }
 
@@ -187,13 +187,13 @@ export default function Contact() {
           line-height: var(--fr-lh-snug);
           letter-spacing: var(--fr-track-headline);
           font-weight: var(--fr-fw-medium);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0 0 8px 0;
         }
 
         .info-item p {
           font-size: var(--fr-fs-body);
-          color: #666;
+          color: var(--fr-text-2);
           margin: 0;
           line-height: var(--fr-lh-normal);
         }
@@ -201,8 +201,8 @@ export default function Contact() {
         .contact-form-wrapper {
           background: white;
           padding: 40px;
-          border-radius: 16px;
-          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+          border-radius: var(--fr-r-surface);
+          box-shadow: var(--fr-elev-2);
         }
 
         .contact-form-wrapper h2 {
@@ -211,13 +211,13 @@ export default function Contact() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-snug);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0 0 24px 0;
         }
 
         .contact-unavailable-lead { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0 0 24px; max-width: var(--fr-measure); }
         .contact-direct { display: flex; flex-direction: column; gap: 12px; }
-        .contact-direct-action { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 20px; border-radius: 6px; background: var(--fr-brand); color: var(--fr-on-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); }
+        .contact-direct-action { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 0 20px; border-radius: var(--fr-r-control); background: var(--fr-brand); color: var(--fr-on-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); }
         .contact-direct-action:hover { background: var(--fr-brand-press); }
         .contact-direct-secondary { background: var(--fr-surface); color: var(--fr-text); border: 1px solid var(--fr-line-strong); }
         .contact-direct-secondary:hover { background: var(--fr-surface-2); }
@@ -226,7 +226,7 @@ export default function Contact() {
           background: #4CAF50;
           color: white;
           padding: 16px;
-          border-radius: 8px;
+          border-radius: var(--fr-r-card);
           margin-bottom: 24px;
           text-align: center;
           font-weight: var(--fr-fw-regular);
@@ -255,14 +255,14 @@ export default function Contact() {
         .form-field label {
           font-size: var(--fr-fs-caption);
           font-weight: var(--fr-fw-medium);
-          color: #2d2d2d;
+          color: var(--fr-text);
         }
 
         .form-field input,
         .form-field textarea {
           padding: 12px 16px;
           border: 2px solid #e5e5e5;
-          border-radius: 8px;
+          border-radius: var(--fr-r-card);
           font-size: var(--fr-fs-control);
           line-height: var(--fr-lh-normal);
           font-family: var(--fr-font-sans);
@@ -272,8 +272,8 @@ export default function Contact() {
 
         .form-field input:focus,
         .form-field textarea:focus {
-          border-color: #D4AF7A;
-          box-shadow: 0 0 0 3px rgba(212, 175, 122, 0.1);
+          border-color: var(--fr-brand);
+          box-shadow: 0 0 0 3px var(--fr-line);
         }
 
         .form-field textarea {
@@ -282,11 +282,11 @@ export default function Contact() {
         }
 
         .submit-button {
-          background: #D4AF7A;
+          background: var(--fr-brand);
           color: white;
           padding: 16px 32px;
           border: none;
-          border-radius: 8px;
+          border-radius: var(--fr-r-card);
           font-weight: var(--fr-fw-medium);
           font-size: var(--fr-fs-control);
           line-height: var(--fr-lh-control);
@@ -296,9 +296,9 @@ export default function Contact() {
         }
 
         .submit-button:hover {
-          background: #c49a6a;
+          background: var(--fr-brand);
           transform: translateY(-2px);
-          box-shadow: 0 4px 16px rgba(212, 175, 122, 0.3);
+          box-shadow: var(--fr-elev-2);
         }
 
         @media (max-width: 968px) {
@@ -311,9 +311,6 @@ export default function Contact() {
         @media (max-width: 768px) {
           .contact-page {
             padding: 100px 16px 40px;
-          }
-
-          .contact-header h1 {
           }
 
           .contact-info,

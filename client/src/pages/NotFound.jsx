@@ -26,7 +26,7 @@ export default function NotFound() {
 
             <style>{`
         .not-found-page {
-          background-color: #FAFAFA;
+          background-color: var(--fr-canvas);
           min-height: 100vh;
           display: flex;
           flex-direction: column;
@@ -43,9 +43,9 @@ export default function NotFound() {
           max-width: 500px;
           background: white;
           padding: 60px 40px;
-          border-radius: 20px;
-          box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-          border: 1px solid #f0f0f0;
+          border-radius: var(--fr-r-pill);
+          box-shadow: var(--fr-elev-1);
+          border: 1px solid var(--fr-surface-2);
           animation: fadeUp 0.5s ease;
         }
         .nf-emoji { font-size: 5rem; margin-bottom: 20px; }
@@ -55,23 +55,23 @@ export default function NotFound() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-tight);
           letter-spacing: var(--fr-track-headline);
-          color: #3E2723;
+          color: var(--fr-text);
           margin-bottom: 15px;
         }
         .nf-text {
           font-family: var(--fr-font-sans);
           font-size: var(--fr-fs-lead);
           font-weight: var(--fr-fw-regular);
-          color: #666;
+          color: var(--fr-text-2);
           line-height: var(--fr-lh-normal);
           margin-bottom: 40px;
         }
         .nf-btn {
           display: inline-block;
-          background: #C5A065;
+          background: var(--fr-brand);
           color: white;
           padding: 14px 35px;
-          border-radius: 30px;
+          border-radius: var(--fr-r-pill);
           font-family: var(--fr-font-sans);
           font-size: var(--fr-fs-control);
           font-weight: var(--fr-fw-medium);
@@ -81,9 +81,9 @@ export default function NotFound() {
           box-shadow: 0 4px 15px rgba(197, 160, 101, 0.3);
         }
         .nf-btn:hover {
-          background: #1a1a1a;
+          background: var(--fr-text);
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+          box-shadow: var(--fr-elev-2);
         }
 
         @keyframes fadeUp {

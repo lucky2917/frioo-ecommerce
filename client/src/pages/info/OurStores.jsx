@@ -51,7 +51,7 @@ export default function OurStores() {
             <div className="store-details">
               <div className="detail-item">
                 <div className="detail-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
                     <circle cx="12" cy="10" r="3" />
                     <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z" />
                   </svg>
@@ -64,7 +64,7 @@ export default function OurStores() {
 
               <div className="detail-item">
                 <div className="detail-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12 6 12 12 16 14" />
                   </svg>
@@ -78,7 +78,7 @@ export default function OurStores() {
 
               <div className="detail-item">
                 <div className="detail-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                   </svg>
                 </div>
@@ -92,14 +92,14 @@ export default function OurStores() {
 
             <div className="action-buttons">
               <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
                   <path d="M12 2L2 7l10 5 10-5-10-5z" />
                   <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
                 </svg>
                 Get Directions
               </a>
               <a href={`tel:${store.phone}`} className="btn-secondary">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                 </svg>
                 Call Store
@@ -128,7 +128,7 @@ export default function OurStores() {
 
         <div className="expansion-notice">
           <div className="notice-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
               <circle cx="12" cy="10" r="3" />
             </svg>
@@ -141,7 +141,7 @@ export default function OurStores() {
       <style jsx>{`
         .stores-page {
           min-height: 100vh;
-          background: linear-gradient(180deg, #faf5ed 0%, #ffffff 50%, #f8f9fa 100%);
+          background: linear-gradient(180deg, var(--fr-surface-2) 0%, #ffffff 50%, #f8f9fa 100%);
           padding: 100px 20px 80px;
         }
 
@@ -167,14 +167,14 @@ export default function OurStores() {
           font-size: var(--fr-fs-headline);
           line-height: var(--fr-lh-tight);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0 0 16px 0;
           font-weight: var(--fr-fw-bold);
         }
 
         .subtitle {
           font-size: var(--fr-fs-lead);
-          color: #D4AF7A;
+          color: var(--fr-brand);
           font-weight: var(--fr-fw-regular);
           margin: 0;
         }
@@ -190,7 +190,7 @@ export default function OurStores() {
 
         .decoration-circle {
           position: absolute;
-          border: 2px solid rgba(212, 175, 122, 0.1);
+          border: 2px solid var(--fr-line);
           border-radius: 50%;
           animation: pulse-circle 3s ease-in-out infinite;
         }
@@ -226,7 +226,7 @@ export default function OurStores() {
           grid-template-columns: 1fr 1fr;
           gap: 40px;
           background: white;
-          border-radius: 24px;
+          border-radius: var(--fr-r-pill);
           padding: 48px;
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
           margin-bottom: 60px;
@@ -241,7 +241,7 @@ export default function OurStores() {
           left: 0;
           right: 0;
           height: 4px;
-          background: linear-gradient(90deg, #D4AF7A 0%, #c49a6a 100%);
+          background: linear-gradient(90deg, var(--fr-brand) 0%, var(--fr-brand) 100%);
         }
 
         .store-content {
@@ -254,16 +254,16 @@ export default function OurStores() {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          background: linear-gradient(135deg, #D4AF7A 0%, #c49a6a 100%);
+          background: linear-gradient(135deg, var(--fr-brand) 0%, var(--fr-brand) 100%);
           color: white;
           padding: 10px 20px;
-          border-radius: 50px;
+          border-radius: var(--fr-r-pill);
           font-size: var(--fr-fs-label);
           font-weight: var(--fr-fw-medium);
           text-transform: uppercase;
           letter-spacing: var(--fr-track-eyebrow);
           width: fit-content;
-          box-shadow: 0 4px 16px rgba(212, 175, 122, 0.3);
+          box-shadow: var(--fr-elev-2);
         }
 
         .store-name {
@@ -271,7 +271,7 @@ export default function OurStores() {
           font-size: var(--fr-fs-title);
           line-height: var(--fr-lh-snug);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0;
           font-weight: var(--fr-fw-bold);
         }
@@ -291,17 +291,17 @@ export default function OurStores() {
         .detail-icon {
           width: 56px;
           height: 56px;
-          background: linear-gradient(135deg, #faf5ed 0%, #f0e9dc 100%);
-          border-radius: 16px;
+          background: linear-gradient(135deg, var(--fr-surface-2) 0%, var(--fr-line) 100%);
+          border-radius: var(--fr-r-surface);
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          box-shadow: 0 4px 12px rgba(212, 175, 122, 0.1);
+          box-shadow: 0 4px 12px var(--fr-line);
         }
 
         .detail-icon svg {
-          color: #D4AF7A;
+          color: var(--fr-brand);
         }
 
         .detail-content h3 {
@@ -309,7 +309,7 @@ export default function OurStores() {
           font-family: var(--fr-font-sans);
           line-height: var(--fr-lh-snug);
           font-weight: var(--fr-fw-medium);
-          color: #999;
+          color: var(--fr-text-3);
           text-transform: uppercase;
           letter-spacing: var(--fr-track-eyebrow);
           margin: 0 0 8px 0;
@@ -317,25 +317,25 @@ export default function OurStores() {
 
         .detail-content p {
           font-size: var(--fr-fs-body);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0;
           line-height: var(--fr-lh-normal);
         }
 
         .detail-content p.days {
-          color: #666;
+          color: var(--fr-text-2);
           font-size: var(--fr-fs-caption);
           margin-top: 4px;
         }
 
         .detail-content a {
-          color: #D4AF7A;
+          color: var(--fr-brand);
           text-decoration: none;
           transition: color 0.3s;
         }
 
         .detail-content a:hover {
-          color: #c49a6a;
+          color: var(--fr-brand);
         }
 
         .action-buttons {
@@ -352,7 +352,7 @@ export default function OurStores() {
           justify-content: center;
           gap: 10px;
           padding: 16px 24px;
-          border-radius: 12px;
+          border-radius: var(--fr-r-card);
           font-weight: var(--fr-fw-medium);
           font-size: var(--fr-fs-control);
           line-height: var(--fr-lh-control);
@@ -362,30 +362,30 @@ export default function OurStores() {
         }
 
         .btn-primary {
-          background: linear-gradient(135deg, #D4AF7A 0%, #c49a6a 100%);
+          background: linear-gradient(135deg, var(--fr-brand) 0%, var(--fr-brand) 100%);
           color: white;
-          box-shadow: 0 4px 16px rgba(212, 175, 122, 0.3);
+          box-shadow: var(--fr-elev-2);
         }
 
         .btn-primary:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 24px rgba(212, 175, 122, 0.4);
+          box-shadow: var(--fr-elev-3);
         }
 
         .btn-secondary {
           background: white;
-          color: #D4AF7A;
-          border-color: #D4AF7A;
+          color: var(--fr-brand);
+          border-color: var(--fr-brand);
         }
 
         .btn-secondary:hover {
-          background: #faf5ed;
+          background: var(--fr-surface-2);
           transform: translateY(-2px);
         }
 
         .map-container {
           position: relative;
-          border-radius: 20px;
+          border-radius: var(--fr-r-pill);
           overflow: hidden;
           box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
         }
@@ -394,7 +394,7 @@ export default function OurStores() {
           width: 100%;
           height: 100%;
           min-height: 500px;
-          background: #f0f0f0;
+          background: var(--fr-surface-2);
         }
 
         .map-overlay-link {
@@ -403,28 +403,28 @@ export default function OurStores() {
           right: 20px;
           background: white;
           padding: 12px 24px;
-          border-radius: 50px;
+          border-radius: var(--fr-r-pill);
           font-weight: var(--fr-fw-medium);
           font-size: var(--fr-fs-control);
           line-height: var(--fr-lh-control);
-          color: #2d2d2d;
+          color: var(--fr-text);
           text-decoration: none;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+          box-shadow: var(--fr-elev-2);
           transition: all 0.3s;
         }
 
         .map-overlay-link:hover {
-          background: #D4AF7A;
+          background: var(--fr-brand);
           color: white;
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(212, 175, 122, 0.4);
+          box-shadow: var(--fr-elev-2);
         }
 
         .expansion-notice {
           text-align: center;
-          background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+          background: linear-gradient(135deg, var(--fr-text) 0%, var(--fr-text) 100%);
           padding: 60px 40px;
-          border-radius: 24px;
+          border-radius: var(--fr-r-pill);
           color: white;
           position: relative;
           overflow: hidden;
@@ -437,7 +437,7 @@ export default function OurStores() {
           left: 0;
           right: 0;
           bottom: 0;
-          background: radial-gradient(circle at top right, rgba(212, 175, 122, 0.1) 0%, transparent 70%);
+          background: radial-gradient(circle at top right, var(--fr-line) 0%, transparent 70%);
           pointer-events: none;
         }
 
@@ -454,7 +454,7 @@ export default function OurStores() {
         }
 
         .notice-icon svg {
-          color: #D4AF7A;
+          color: var(--fr-brand);
         }
 
         .expansion-notice h2 {
@@ -495,17 +495,8 @@ export default function OurStores() {
             padding: 40px 16px;
           }
 
-          .stores-hero h1 {
-          }
-
-          .subtitle {
-          }
-
           .main-store-card {
             padding: 24px;
-          }
-
-          .store-name {
           }
 
           .action-buttons {
@@ -514,9 +505,6 @@ export default function OurStores() {
 
           .expansion-notice {
             padding: 40px 24px;
-          }
-
-          .expansion-notice h2 {
           }
         }
       `}</style>

@@ -18,7 +18,7 @@ export default function Disclosure({ summary, children, defaultOpen = false, cla
       >
         <span className="fr-disclosure-summary">{summary}</span>
         <span className="fr-disclosure-mark" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
         </span>
       </button>
 

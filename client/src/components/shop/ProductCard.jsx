@@ -87,7 +87,7 @@ export default function ProductCard({ product, onAdd }) {
           {unitPrice && <div className="fr-pc-measure">{unitPrice.label}</div>}
           {stockState && (
             <div className={`fr-pc-stock fr-pc-stock--${stockState.code}`}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 {stockState.available ? <path d="M20 6 9 17l-5-5" /> : <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>}
               </svg>
               {stockState.label}
@@ -183,7 +183,7 @@ export default function ProductCard({ product, onAdd }) {
         .fr-pc-add:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 
         .fr-pc-scrim { position: fixed; inset: 0; z-index: var(--fr-z-modal); background: var(--fr-scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: var(--fr-s5); }
-        .fr-pc-sheet { width: 100%; max-width: 440px; background: var(--fr-surface); border-radius: var(--fr-r-surface); box-shadow: var(--fr-elev-3); overflow: hidden; }
+        .fr-pc-sheet { width: 100%; min-width: 0; max-width: 440px; background: var(--fr-surface); border-radius: var(--fr-r-surface); box-shadow: var(--fr-elev-3); overflow: hidden; }
         .fr-pc-sheet-head { display: flex; align-items: center; justify-content: space-between; padding: var(--fr-s4) var(--fr-s5); border-bottom: 1px solid var(--fr-line); }
         .fr-pc-sheet-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); letter-spacing: var(--fr-track-headline); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0; }
         .fr-pc-sheet-close { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }

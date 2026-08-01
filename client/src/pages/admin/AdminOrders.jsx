@@ -22,9 +22,9 @@ const OrderTypeBadge = ({ type }) => {
     return (
         <span className="ao-type">
             {delivery ? (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="6.5" cy="17.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" /><path d="M4 17.5H2.5v-4l2-4h6l3 4h4.5a2 2 0 0 1 2 2v2H20M9 17.5h6" /></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="6.5" cy="17.5" r="2.5" /><circle cx="17.5" cy="17.5" r="2.5" /><path d="M4 17.5H2.5v-4l2-4h6l3 4h4.5a2 2 0 0 1 2 2v2H20M9 17.5h6" /></svg>
             ) : (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 9l1-5h16l1 5M4 9v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M3 9h18" /></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 9l1-5h16l1 5M4 9v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M3 9h18" /></svg>
             )}
             {delivery ? 'Delivery' : 'Pickup'}
         </span>
@@ -265,7 +265,7 @@ export default function AdminOrders() {
                                             onClick={() => toggleOrder(order.id)}
                                             aria-expanded={isExpanded}
                                         >
-                                            <svg className={`ao-chevron ${isExpanded ? 'up' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
+                                            <svg className={`ao-chevron ${isExpanded ? 'up' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
                                             {isExpanded ? 'Collapse' : 'Expand'}
                                         </button>
                                     </div>
@@ -301,7 +301,7 @@ export default function AdminOrders() {
                                             )}
                                             {order.order_type === 'delivery' && order.address && (
                                                 <button className="adm-btn adm-btn-secondary adm-btn-sm ao-directions" onClick={() => openDirections(order)}>
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>
                                                     Get directions
                                                 </button>
                                             )}
@@ -429,7 +429,7 @@ export default function AdminOrders() {
                 .ao-item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
                 .ao-item-title-row { display: flex; align-items: center; gap: var(--fr-s2); }
                 .ao-item-title { font-weight: var(--fr-fw-medium); color: var(--adm-text); font-size: var(--fr-fs-caption); }
-                .ao-ai-label { font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); color: var(--fr-info); background: #E3EDF3; padding: 0 var(--fr-s1); border-radius: var(--fr-r-control); }
+                .ao-ai-label { font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); color: var(--fr-info); background: var(--fr-info-tint); padding: 0 var(--fr-s1); border-radius: var(--fr-r-control); }
                 .ao-item-variant { font-size: var(--fr-fs-label); color: var(--adm-text-2); }
                 .ao-item-price { font-weight: var(--fr-fw-medium); color: var(--adm-text); font-size: var(--fr-fs-caption);  font-variant-numeric: tabular-nums; }
                 .ao-item-custom { margin-top: var(--fr-s2); margin-left: 28px; display: flex; flex-direction: column; gap: 2px; }

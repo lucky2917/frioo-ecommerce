@@ -211,7 +211,7 @@ export default function AdminUsers() {
                             <div className="au-actions">
                                 <button className="adm-btn adm-btn-secondary adm-btn-sm" onClick={() => handleEdit(user)}>Edit</button>
                                 <button className="adm-icon-btn adm-icon-btn--danger" onClick={() => setDeleteId(user.id)} aria-label={`Delete ${user.full_name || 'user'}`}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
                                 </button>
                             </div>
                         </td>
@@ -222,13 +222,13 @@ export default function AdminUsers() {
             {pagination && pagination.pages > 1 && (
                 <div className="au-pagination">
                     <button className="adm-btn adm-btn-secondary adm-btn-sm" onClick={() => setPage(p => p - 1)} disabled={!pagination.hasPrev}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
                         Prev
                     </button>
                     <span className="au-page-info">Page {pagination.page} of {pagination.pages}</span>
                     <button className="adm-btn adm-btn-secondary adm-btn-sm" onClick={() => setPage(p => p + 1)} disabled={!pagination.hasNext}>
                         Next
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
                     </button>
                 </div>
             )}

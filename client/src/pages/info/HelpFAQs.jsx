@@ -133,7 +133,7 @@ export default function HelpFAQs() {
         .faq-page {
           min-height: 100vh;
           padding: 120px 20px 60px;
-          background: linear-gradient(to bottom, #faf5ed 0%, #ffffff 100%);
+          background: linear-gradient(to bottom, var(--fr-surface-2) 0%, #ffffff 100%);
         }
 
         .faq-container {
@@ -152,20 +152,20 @@ export default function HelpFAQs() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-tight);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0 0 12px 0;
         }
 
         .subtitle {
           font-size: var(--fr-fs-lead);
-          color: #D4AF7A;
+          color: var(--fr-brand);
           font-weight: var(--fr-fw-regular);
         }
 
         .faq-content {
           background: white;
-          border-radius: 16px;
-          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+          border-radius: var(--fr-r-surface);
+          box-shadow: var(--fr-elev-2);
           padding: 48px;
           margin-bottom: 48px;
         }
@@ -184,10 +184,10 @@ export default function HelpFAQs() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-snug);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0 0 24px 0;
           padding-bottom: 12px;
-          border-bottom: 2px solid #f0e9dc;
+          border-bottom: 2px solid var(--fr-line);
         }
 
         .faq-list {
@@ -197,14 +197,14 @@ export default function HelpFAQs() {
         }
 
         .faq-item {
-          border: 2px solid #f0e9dc;
-          border-radius: 12px;
+          border: 2px solid var(--fr-line);
+          border-radius: var(--fr-r-card);
           overflow: hidden;
           transition: all 0.3s;
         }
 
         .faq-item.open {
-          border-color: #D4AF7A;
+          border-color: var(--fr-brand);
         }
 
         .faq-question {
@@ -221,22 +221,22 @@ export default function HelpFAQs() {
           font-family: var(--fr-font-sans);
           line-height: var(--fr-lh-control);
           font-weight: var(--fr-fw-medium);
-          color: #2d2d2d;
+          color: var(--fr-text);
           transition: all 0.3s;
         }
 
         .faq-question:hover {
-          background: #faf5ed;
+          background: var(--fr-surface-2);
         }
 
         .faq-item.open .faq-question {
-          background: #faf5ed;
+          background: var(--fr-surface-2);
         }
 
         .chevron {
           flex-shrink: 0;
           transition: transform 0.3s;
-          color: #D4AF7A;
+          color: var(--fr-brand);
         }
 
         .faq-item.open .chevron {
@@ -258,15 +258,15 @@ export default function HelpFAQs() {
           margin: 0;
           font-size: var(--fr-fs-body);
           line-height: var(--fr-lh-relaxed);
-          color: #666;
+          color: var(--fr-text-2);
         }
 
         .contact-cta {
           text-align: center;
           background: white;
           padding: 48px 32px;
-          border-radius: 16px;
-          box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+          border-radius: var(--fr-r-surface);
+          box-shadow: var(--fr-elev-2);
         }
 
         .contact-cta h2 {
@@ -275,23 +275,23 @@ export default function HelpFAQs() {
           font-weight: var(--fr-fw-bold);
           line-height: var(--fr-lh-snug);
           letter-spacing: var(--fr-track-headline);
-          color: #2d2d2d;
+          color: var(--fr-text);
           margin: 0 0 12px 0;
         }
 
         .contact-cta p {
           font-size: var(--fr-fs-body);
           line-height: var(--fr-lh-normal);
-          color: #666;
+          color: var(--fr-text-2);
           margin: 0 0 24px 0;
         }
 
         .contact-button {
           display: inline-block;
-          background: #D4AF7A;
+          background: var(--fr-brand);
           color: white;
           padding: 16px 40px;
-          border-radius: 8px;
+          border-radius: var(--fr-r-card);
           font-weight: var(--fr-fw-medium);
           font-size: var(--fr-fs-control);
           line-height: var(--fr-lh-control);
@@ -300,17 +300,14 @@ export default function HelpFAQs() {
         }
 
         .contact-button:hover {
-          background: #c49a6a;
+          background: var(--fr-brand);
           transform: translateY(-2px);
-          box-shadow: 0 4px 16px rgba(212, 175, 122, 0.3);
+          box-shadow: var(--fr-elev-2);
         }
 
         @media (max-width: 768px) {
           .faq-page {
             padding: 100px 16px 40px;
-          }
-
-          .faq-header h1 {
           }
 
           .faq-content {

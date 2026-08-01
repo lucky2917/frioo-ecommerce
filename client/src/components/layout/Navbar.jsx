@@ -300,7 +300,7 @@ export default function Navbar() {
         .fr-mobile-search-hidden { height: 0; margin-top: 0; margin-bottom: 0; border-color: transparent; opacity: 0; }
 
         .fr-modal-scrim { position: fixed; inset: 0; z-index: var(--fr-z-modal); background: var(--fr-scrim); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: var(--fr-s5); }
-        .fr-modal { width: 100%; max-width: 460px; background: var(--fr-surface); border-radius: var(--fr-r-surface); box-shadow: var(--fr-elev-3); overflow: hidden; }
+        .fr-modal { width: 100%; min-width: 0; max-width: 460px; background: var(--fr-surface); border-radius: var(--fr-r-surface); box-shadow: var(--fr-elev-3); overflow: hidden; }
         .fr-modal-head { display: flex; align-items: center; justify-content: space-between; padding: var(--fr-s5); border-bottom: 1px solid var(--fr-line); }
         .fr-modal-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: 0; }
         .fr-modal-close { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text-2); cursor: pointer; border-radius: var(--fr-r-control); }

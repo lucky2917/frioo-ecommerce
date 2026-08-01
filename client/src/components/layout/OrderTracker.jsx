@@ -118,7 +118,7 @@ export default function OrderTracker() {
                 aria-label="Close order tracker"
                 ref={closeButtonRef}
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
 
@@ -322,7 +322,7 @@ export default function OrderTracker() {
           margin-bottom: var(--fr-s5);
         }
 
-        .fr-status--info { background: #E3EDF3; color: var(--fr-info); }
+        .fr-status--info { background: var(--fr-info-tint); color: var(--fr-info); }
         .fr-status--brand { background: var(--fr-brand-tint); color: var(--fr-brand); }
         .fr-status--success { background: var(--fr-brand-tint); color: var(--fr-success); }
         .fr-status--danger { background: var(--fr-warm-tint); color: var(--fr-danger); }

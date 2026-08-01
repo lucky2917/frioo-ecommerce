@@ -176,7 +176,7 @@ export default function Onboarding() {
         .onboarding-page {
           font-family: var(--fr-font-sans);
           min-height: 100vh;
-          background: #FAFAFA;
+          background: var(--fr-canvas);
         }
 
         .onboarding-verify {
@@ -187,7 +187,7 @@ export default function Onboarding() {
           align-items: center;
           justify-content: center;
           font-family: var(--fr-font-sans);
-          color: #666;
+          color: var(--fr-text-2);
         }
 
         .onboarding-container {
@@ -195,7 +195,7 @@ export default function Onboarding() {
           margin: 100px auto 80px;
           padding: 50px 40px;
           background: white;
-          border-radius: 16px;
+          border-radius: var(--fr-r-surface);
           box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
           text-align: center;
         }
@@ -211,7 +211,7 @@ export default function Onboarding() {
         }
 
         .onboarding-sub {
-          color: #888;
+          color: var(--fr-text-3);
           font-size: var(--fr-fs-lead);
           font-weight: var(--fr-fw-regular);
           line-height: var(--fr-lh-normal);
@@ -230,7 +230,7 @@ export default function Onboarding() {
           font-size: var(--fr-fs-eyebrow);
           font-weight: var(--fr-fw-medium);
           line-height: var(--fr-lh-snug);
-          color: #555;
+          color: var(--fr-text-2);
           text-transform: uppercase;
           letter-spacing: var(--fr-track-eyebrow);
           margin-top: 12px;
@@ -238,13 +238,13 @@ export default function Onboarding() {
 
         .onboarding-input {
           padding: 12px 14px;
-          border-radius: 8px;
+          border-radius: var(--fr-r-card);
           border: 1px solid #ddd;
           font-size: var(--fr-fs-control);
           font-weight: var(--fr-fw-regular);
           line-height: var(--fr-lh-control);
           font-family: var(--fr-font-sans);
-          background: #fafafa;
+          background: var(--fr-canvas);
           transition: border-color 0.2s, box-shadow 0.2s;
           outline: none;
           width: 100%;
@@ -252,7 +252,7 @@ export default function Onboarding() {
         }
 
         .onboarding-input:focus {
-          border-color: #D4AF7A;
+          border-color: var(--fr-brand);
           box-shadow: 0 0 0 3px rgba(212, 175, 122, 0.15);
           background: white;
         }
@@ -273,7 +273,7 @@ export default function Onboarding() {
           background: #f0f7ff;
           border: 1px solid #b3d4f5;
           color: #1565c0;
-          border-radius: 8px;
+          border-radius: var(--fr-r-card);
           cursor: pointer;
           font-family: var(--fr-font-sans);
           font-size: var(--fr-fs-control);
@@ -297,7 +297,7 @@ export default function Onboarding() {
           background: #2F4F4F;
           color: white;
           border: none;
-          border-radius: 8px;
+          border-radius: var(--fr-r-card);
           font-size: var(--fr-fs-control);
           font-weight: var(--fr-fw-medium);
           line-height: var(--fr-lh-control);

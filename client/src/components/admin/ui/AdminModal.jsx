@@ -24,7 +24,7 @@ export default function AdminModal({ open, onClose, title, size = 'md', children
         <div className="adm-dialog-head">
           <h2 className="adm-dialog-title" id={titleId}>{title}</h2>
           <button className="adm-icon-btn" onClick={onClose} aria-label="Close dialog" ref={closeRef}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
           </button>
         </div>
         <div className="adm-dialog-body">{children}</div>

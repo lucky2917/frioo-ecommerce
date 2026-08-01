@@ -459,7 +459,7 @@ export default function Orders() {
           white-space: nowrap;
         }
 
-        .fr-status--info { background: #E3EDF3; color: var(--fr-info); }
+        .fr-status--info { background: var(--fr-info-tint); color: var(--fr-info); }
         .fr-status--brand { background: var(--fr-brand-tint); color: var(--fr-brand); }
         .fr-status--success { background: var(--fr-brand-tint); color: var(--fr-success); }
         .fr-status--danger { background: var(--fr-warm-tint); color: var(--fr-danger); }
@@ -760,6 +760,6 @@ export default function Orders() {
 
 const StateIcon = () => (
   <div className="fr-ord-state-icon">
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" /><line x1="3" y1="6" x2="21" y2="6" /><path d="M16 10a4 4 0 0 1-8 0" /></svg>
   </div>
 );
