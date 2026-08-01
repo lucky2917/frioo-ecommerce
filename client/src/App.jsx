@@ -37,13 +37,11 @@ import CouponPopup from './components/layout/CouponPopup';
 import StorefrontLayout from './components/layout/StorefrontLayout';
 import RouteFallback from './components/layout/RouteFallback';
 import FeedbackRegion from './components/feedback/FeedbackRegion';
-import OrderTracker from './components/layout/OrderTracker';
 
 const AppInner = () => {
   return (
     <>
       <FeedbackRegion />
-      <OrderTracker />
       <CouponPopup />
 
       <ErrorBoundary>

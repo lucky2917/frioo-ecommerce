@@ -1,10 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useDialog } from '../../hooks/useDialog';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/auth-context';
 import { useCart } from '../../context/cart-context';
 import { supabase } from '../../lib/supabaseClient';
 import { logger } from '../../utils/logger';
+import {
+  ORDER_STATUS_FLOW,
+  getStatusPresentation,
+  getStatusStepIndex,
+  getStatusProgress,
+  formatOrderAmount,
+} from '../../utils/orderStatus';
 import ContextStrip from './nav/ContextStrip';
 import CategoryNavigation from './nav/CategoryNavigation';
 import SearchBar from './nav/SearchBar';
@@ -81,6 +88,16 @@ export default function Navbar() {
   const trackerCloseRef = useRef(null);
 
   useDialog({ open: showTrackerModal, onClose: () => setShowTrackerModal(false), dialogRef: trackerDialogRef, initialFocusRef: trackerCloseRef });
+
+  const trackerStatus = getStatusPresentation(activeOrder?.status);
+  const trackerStep = getStatusStepIndex(activeOrder?.status);
+  const trackerItems = useMemo(() => {
+    let items = activeOrder?.items;
+    if (typeof items === 'string') {
+      try { items = JSON.parse(items); } catch { items = []; }
+    }
+    return Array.isArray(items) ? items : [];
+  }, [activeOrder]);
 
   const [lastLocation, setLastLocation] = useState(location);
   if (location !== lastLocation) {
@@ -267,10 +284,37 @@ export default function Navbar() {
               </button>
             </div>
             <div className="fr-modal-body">
+              <span className={`fr-modal-chip fr-status--${trackerStatus.tone}`}>{trackerStatus.label}</span>
+
+              <div className="fr-modal-progress">
+                <div className="fr-modal-track">
+                  <div className="fr-modal-fill" style={{ width: `${getStatusProgress(activeOrder.status)}%` }} />
+                </div>
+                <ol className="fr-modal-steps">
+                  {ORDER_STATUS_FLOW.map((stepKey, index) => (
+                    <li key={stepKey} className={`fr-modal-step${index <= trackerStep ? ' fr-modal-step-done' : ''}`}>
+                      <span className="fr-modal-dot" aria-hidden="true" />
+                      <span className="fr-modal-step-label">{getStatusPresentation(stepKey).label}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
               <div className="fr-modal-row"><span>Order</span><span>#{activeOrder.id}</span></div>
-              <div className="fr-modal-row"><span>Status</span><span className="fr-modal-status">{activeOrder.status}</span></div>
-              <div className="fr-modal-row"><span>Type</span><span>{activeOrder.order_type}</span></div>
-              <div className="fr-modal-row"><span>Total</span><span>&#8377;{activeOrder.total_amount?.toFixed(0)}</span></div>
+              <div className="fr-modal-row"><span>Type</span><span className="fr-modal-status">{activeOrder.order_type}</span></div>
+
+              {trackerItems.length > 0 && (
+                <div className="fr-modal-items">
+                  {trackerItems.map((item, index) => (
+                    <div className="fr-modal-row" key={index}>
+                      <span>{item.qty}x {item.title}{item.variant && item.variant !== 'Standard' ? ` (${item.variant})` : ''}</span>
+                      <span>&#8377;{formatOrderAmount(item.price * item.qty)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="fr-modal-total"><span>Total</span><span>&#8377;{formatOrderAmount(activeOrder.total_amount)}</span></div>
             </div>
           </div>
         </div>
@@ -317,6 +361,24 @@ export default function Navbar() {
         .fr-modal-row > span:first-child { color: var(--fr-text-2); }
         .fr-modal-row > span:last-child { color: var(--fr-text); font-weight: var(--fr-fw-medium); }
         .fr-modal-status { text-transform: capitalize; color: var(--fr-brand) !important; }
+        .fr-modal-body { max-height: 72vh; overflow-y: auto; }
+        .fr-modal-chip { align-self: flex-start; padding: var(--fr-s1) var(--fr-s3); border-radius: var(--fr-r-pill); font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); }
+        .fr-status--info { background: var(--fr-info-tint); color: var(--fr-info); }
+        .fr-status--brand { background: var(--fr-brand-tint); color: var(--fr-brand); }
+        .fr-status--success { background: var(--fr-brand-tint); color: var(--fr-success); }
+        .fr-status--danger { background: var(--fr-warm-tint); color: var(--fr-danger); }
+        .fr-modal-progress { margin: var(--fr-s2) 0 var(--fr-s3); }
+        .fr-modal-track { position: relative; height: 4px; background: var(--fr-line); border-radius: var(--fr-r-pill); margin-bottom: var(--fr-s3); }
+        .fr-modal-fill { position: absolute; inset: 0 auto 0 0; height: 4px; background: var(--fr-brand); border-radius: var(--fr-r-pill); transition: width var(--fr-dur-expressive) var(--fr-ease-settle); }
+        .fr-modal-steps { display: flex; justify-content: space-between; list-style: none; margin: 0; padding: 0; gap: var(--fr-s1); }
+        .fr-modal-step { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 0; }
+        .fr-modal-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--fr-line-strong); margin-bottom: var(--fr-s2); }
+        .fr-modal-step-done .fr-modal-dot { background: var(--fr-brand); }
+        .fr-modal-step-label { font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-snug); color: var(--fr-text-3); text-align: center; }
+        .fr-modal-step-done .fr-modal-step-label { color: var(--fr-text-2); font-weight: var(--fr-fw-medium); }
+        .fr-modal-items { display: flex; flex-direction: column; gap: var(--fr-s2); padding-top: var(--fr-s3); border-top: 1px solid var(--fr-line); }
+        .fr-modal-total { display: flex; align-items: center; justify-content: space-between; gap: var(--fr-s3); padding-top: var(--fr-s3); border-top: 1px solid var(--fr-line); font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-normal); color: var(--fr-text); font-variant-numeric: tabular-nums; }
+        @media (prefers-reduced-motion: reduce) { .fr-modal-fill { transition: none; } }
 
         @media (max-width: 900px) {
           .fr-bar-inner { height: 52px; gap: var(--fr-s3); padding: 0 var(--fr-s4); }
