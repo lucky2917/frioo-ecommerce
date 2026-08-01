@@ -1,5 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { notify } from '../lib/feedbackStore';
 import SEO from '../components/SEO';
 import FetchError from '../components/FetchError';
 import ProductCard from '../components/shop/ProductCard';
@@ -37,6 +38,8 @@ const homeSchema = {
 
 const PRODUCT_TABS = PRODUCT_CATEGORIES.filter(c => c.dbValue !== null).slice(0, 3);
 
+const COUPON_CODE = 'FRESH10';
+
 export default function Home() {
   const { products, loading, error: productsError, refetch: loadProducts } = useProducts();
   const { addToCart } = useCart();
@@ -54,11 +57,19 @@ export default function Home() {
 
   const activeTabProducts = tabGroups[activeProductTab] ?? [];
 
-  const copyCoupon = useCallback(() => {
-    navigator.clipboard.writeText('FRESH10').then(() => {
+  const copyResetTimerRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(copyResetTimerRef.current), []);
+
+  const copyCoupon = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(COUPON_CODE);
       setCouponCopied(true);
-      setTimeout(() => setCouponCopied(false), 2000);
-    });
+      clearTimeout(copyResetTimerRef.current);
+      copyResetTimerRef.current = setTimeout(() => setCouponCopied(false), 2000);
+    } catch {
+      notify.info(`Copy this code to use it: ${COUPON_CODE}`);
+    }
   }, []);
 
   const isLoadingProducts = loading && products.length === 0;
@@ -143,7 +154,7 @@ export default function Home() {
             </div>
             <div className="home-offer-action">
               <div className="home-offer-code">
-                <span className="home-offer-code-text">FRESH10</span>
+                <span className="home-offer-code-text">{COUPON_CODE}</span>
                 <button className="home-offer-copy" onClick={copyCoupon}>{couponCopied ? 'Copied' : 'Copy'}</button>
               </div>
               <Link to="/shop" className="home-offer-link">Shop now &rarr;</Link>

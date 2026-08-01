@@ -69,11 +69,11 @@ class ErrorBoundary extends React.Component {
             return (
                 <div style={styles.container}>
                     <div style={styles.card}>
-                        <h1 style={styles.title}>😵 Oops! Something went wrong</h1>
+                        <h1 style={styles.title}>Something went wrong</h1>
                         <p style={styles.message}>
                             {name !== 'Application'
-                                ? `The ${name} section encountered an error. You can try refreshing this section or return to the home page.`
-                                : "We're sorry for the inconvenience. The app encountered an unexpected error."
+                                ? `The ${name} section stopped working. Try loading it again, or return to the home page.`
+                                : 'This page stopped working. Try again, or return to the home page.'
                             }
                         </p>
 
@@ -118,17 +118,17 @@ const styles = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'var(--fr-surface, #ffffff)',
         padding: '20px'
     },
     card: {
-        background: 'white',
-        borderRadius: '20px',
+        background: 'var(--fr-surface, #ffffff)',
+        border: '1px solid var(--fr-line, #e5e5e5)',
+        borderRadius: 'var(--fr-r-panel, 16px)',
         padding: '40px',
         maxWidth: '600px',
         width: '100%',
-        textAlign: 'center',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+        textAlign: 'center'
     },
     title: {
         fontSize: 'var(--fr-fs-headline)',
@@ -136,14 +136,14 @@ const styles = {
         lineHeight: 'var(--fr-lh-tight)',
         letterSpacing: 'var(--fr-track-headline)',
         marginBottom: '20px',
-        color: '#1a1a1a',
+        color: 'var(--fr-text, #1a1a1a)',
         fontFamily: 'var(--fr-font-display)'
     },
     message: {
         fontSize: 'var(--fr-fs-body)',
         fontWeight: 'var(--fr-fw-regular)',
         lineHeight: 'var(--fr-lh-normal)',
-        color: '#666',
+        color: 'var(--fr-text-2, #666666)',
         marginBottom: '30px'
     },
     errorDetailsContainer: {
@@ -183,30 +183,30 @@ const styles = {
         flexWrap: 'wrap'
     },
     buttonPrimary: {
-        background: '#1a1a1a',
-        color: 'white',
-        border: 'none',
-        padding: '15px 30px',
-        borderRadius: '30px',
+        background: 'var(--fr-brand, #1a1a1a)',
+        color: 'var(--fr-on-brand, #ffffff)',
+        border: '1px solid transparent',
+        minHeight: '44px',
+        padding: '12px 28px',
+        borderRadius: 'var(--fr-r-control, 8px)',
         fontFamily: 'var(--fr-font-sans)',
         fontSize: 'var(--fr-fs-control)',
         fontWeight: 'var(--fr-fw-medium)',
         lineHeight: 'var(--fr-lh-control)',
-        cursor: 'pointer',
-        transition: 'all 0.2s'
+        cursor: 'pointer'
     },
     buttonSecondary: {
         background: 'transparent',
-        color: '#1a1a1a',
-        border: '2px solid #1a1a1a',
-        padding: '15px 30px',
-        borderRadius: '30px',
+        color: 'var(--fr-text, #1a1a1a)',
+        border: '1px solid var(--fr-line, #1a1a1a)',
+        minHeight: '44px',
+        padding: '12px 28px',
+        borderRadius: 'var(--fr-r-control, 8px)',
         fontFamily: 'var(--fr-font-sans)',
         fontSize: 'var(--fr-fs-control)',
         fontWeight: 'var(--fr-fw-medium)',
         lineHeight: 'var(--fr-lh-control)',
-        cursor: 'pointer',
-        transition: 'all 0.2s'
+        cursor: 'pointer'
     }
 };
 

@@ -269,12 +269,7 @@ export default function Cart() {
 
     } catch (error) {
       logger.error('Order Placement Error:', error);
-      if (error.response) {
-        logger.error('Error response:', error.response);
-      }
-      const errorMessage = error.message || 'Failed to place order';
-      notify.error(errorMessage);
-      console.error('Full error details:', error);
+      notify.error(error.message || 'Failed to place order');
     } finally {
       setIsPlacingOrder(false);
     }

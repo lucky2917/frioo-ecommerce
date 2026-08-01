@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../config/constants';
+import { fetchWithTimeout } from './http';
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -7,10 +8,11 @@ let cachedAt = 0;
 let inflightRequest = null;
 
 const requestProducts = async () => {
-  const res = await fetch(`${API_BASE_URL}/api/products`);
+  const res = await fetchWithTimeout(`${API_BASE_URL}/api/products`);
   if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
   const payload = await res.json();
-  return payload.data?.items || [];
+  const items = payload.data?.items;
+  return Array.isArray(items) ? items : [];
 };
 
 export const getCachedProducts = () => {

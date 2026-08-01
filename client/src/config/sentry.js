@@ -37,7 +37,7 @@ export function initSentry() {
             'aborted',
         ],
 
-        beforeSend(event, hint) {
+        beforeSend(event) {
             if (event.request && event.request.headers) {
                 delete event.request.headers['Authorization'];
                 delete event.request.headers['Cookie'];

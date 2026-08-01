@@ -28,6 +28,9 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const blurTimerRef = useRef(null);
+  useEffect(() => () => clearTimeout(blurTimerRef.current), []);
+
   const [lastSearchQuery, setLastSearchQuery] = useState(searchQuery);
   if (searchQuery !== lastSearchQuery) {
     setLastSearchQuery(searchQuery);
@@ -145,11 +148,11 @@ export default function Navbar() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/shop?search=${searchQuery}`);
-      setShowSearchResults(false);
-      setIsMobileMenuOpen(false);
-    }
+    const term = searchQuery.trim();
+    if (!term) return;
+    navigate(`/shop?search=${encodeURIComponent(term)}`);
+    setShowSearchResults(false);
+    setIsMobileMenuOpen(false);
   };
 
   const handleResultClick = (id) => {
@@ -163,7 +166,10 @@ export default function Navbar() {
     if (e.target.value.length > 1) setShowSearchResults(true);
   };
   const handleSearchFocus = () => { if (searchQuery.length > 1) setShowSearchResults(true); };
-  const handleSearchBlur = () => { setTimeout(() => setShowSearchResults(false), 200); };
+  const handleSearchBlur = () => {
+    clearTimeout(blurTimerRef.current);
+    blurTimerRef.current = setTimeout(() => setShowSearchResults(false), 200);
+  };
 
   return (
     <>

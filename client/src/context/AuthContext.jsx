@@ -1,36 +1,72 @@
-import { createContext, useState, useEffect, useContext, useRef, useCallback } from 'react';
+import { createContext, useState, useEffect, useContext, useRef, useCallback, useMemo } from 'react';
 import { logger } from '../utils/logger';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { supabase } from '../lib/supabaseClient';
 
 const AuthContext = createContext();
 
+const AUTH_INIT_TIMEOUT_MS = 8000;
+const SESSION_RECHECK_INTERVAL_MS = 60 * 1000;
+const CART_STORAGE_KEY = 'frioo_cart';
+
+const isNetworkError = (error) => {
+  const message = error?.message || '';
+  return /network|fetch|timeout|offline|connection/i.test(message);
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const mountedRef = useRef(true);
   const profileRef = useRef(null);
+  const sessionCheckInFlightRef = useRef(false);
+  const lastSessionCheckRef = useRef(0);
+
   useEffect(() => {
     profileRef.current = profile;
   }, [profile]);
 
-  const hardReset = async () => {
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  const hardReset = useCallback(async () => {
     logger.warn('Performing hard reset of auth state');
-    const cart = localStorage.getItem('frioo_cart');
+    let preservedCart = null;
 
-    try { await supabase.auth.signOut(); } catch (_) {  }
+    try {
+      preservedCart = localStorage.getItem(CART_STORAGE_KEY);
+    } catch (err) {
+      logger.warn('Could not read cart before reset:', err);
+    }
 
-    localStorage.clear();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      logger.warn('Sign out during hard reset failed:', err);
+    }
 
-    if (cart) localStorage.setItem('frioo_cart', cart);
+    try {
+      localStorage.clear();
+      if (preservedCart) localStorage.setItem(CART_STORAGE_KEY, preservedCart);
+    } catch (err) {
+      logger.warn('Could not clear storage during reset:', err);
+    }
 
+    if (!mountedRef.current) return;
     setUser(null);
     setProfile(null);
     setLoading(false);
-  };
+  }, []);
 
   const fetchProfile = useCallback(async (userId) => {
+    if (!userId) return null;
+
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -38,11 +74,12 @@ export const AuthProvider = ({ children }) => {
         .eq('id', userId)
         .single();
 
-      if (!error && data) {
-        setProfile(data);
-      } else if (error) {
+      if (error) {
         logger.error('Profile fetch error:', error);
+        return null;
       }
+
+      if (data && mountedRef.current) setProfile(data);
       return data;
     } catch (err) {
       logger.error('Auth Error:', err);
@@ -51,62 +88,64 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    let safetyTimeout = null;
+
+    const finishLoading = () => {
+      if (!mountedRef.current) return;
+      setLoading(false);
+    };
+
     const initAuth = async () => {
-      const safetyTimeout = setTimeout(() => {
-        if (loading) {
-          logger.warn('Auth initialization timed out - forcing load');
-          setLoading(false);
-        }
-      }, 3000);
+      safetyTimeout = setTimeout(() => {
+        logger.warn('Auth initialization timed out - continuing without session');
+        finishLoading();
+      }, AUTH_INIT_TIMEOUT_MS);
 
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
           logger.error('Failed to get session:', error);
-          if (error.message && !error.message.includes('Network')) {
+          if (!isNetworkError(error)) {
             await hardReset();
+            return;
           }
-        } else if (session?.user) {
+        } else if (session?.user && mountedRef.current) {
           setUser(session.user);
-          fetchProfile(session.user.id).catch(e => logger.error('Background profile fetch failed:', e));
+          fetchProfile(session.user.id).catch((err) => logger.error('Background profile fetch failed:', err));
         }
-
       } catch (err) {
         logger.error('Auth initialization error:', err);
-        setUser(null);
-        setProfile(null);
+        if (mountedRef.current) {
+          setUser(null);
+          setProfile(null);
+        }
       } finally {
         clearTimeout(safetyTimeout);
-        setLoading(false);
+        finishLoading();
       }
     };
 
     initAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       logger.info('Auth state changed:', event);
 
-      if (event === 'TOKEN_REFRESHED') {
-        logger.info('Token refreshed successfully');
-      } else if (event === 'SIGNED_OUT') {
+      if (!mountedRef.current) return;
+
+      if (event === 'SIGNED_OUT') {
         setUser(null);
         setProfile(null);
         setLoading(false);
-      }
-
-      if (session?.error) {
-        logger.error('Session error detected:', session.error);
-        await hardReset();
         return;
       }
 
       if (session?.user) {
         setUser(session.user);
-        if (!profileRef.current || profileRef.current.id !== session.user.id) {
-          fetchProfile(session.user.id).catch(e => logger.error('Background profile fetch failed:', e));
+        if (profileRef.current?.id !== session.user.id) {
+          fetchProfile(session.user.id).catch((err) => logger.error('Background profile fetch failed:', err));
         }
-      } else if (!loading) {
+      } else {
         setUser(null);
         setProfile(null);
       }
@@ -114,124 +153,90 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
 
-    const refreshInterval = setInterval(async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.refreshSession();
-        if (error) {
-          logger.error('Scheduled session refresh failed:', error);
-        } else if (session?.user) {
-          logger.info('Session refreshed successfully (scheduled)');
-          setUser(session.user);
-        }
-      } catch (err) {
-        logger.error('Session refresh error:', err);
-      }
-    }, 50 * 60 * 1000);
+    const verifySessionStillValid = async () => {
+      if (document.visibilityState !== 'visible') return;
+      if (sessionCheckInFlightRef.current) return;
 
-    const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'visible') {
-        logger.info('App became visible, checking session...');
+      const now = Date.now();
+      if (now - lastSessionCheckRef.current < SESSION_RECHECK_INTERVAL_MS) return;
 
-        try {
-          const { data: { session }, error } = await supabase.auth.getSession();
-
-          if (error) {
-            logger.error('Session check on visibility change failed:', error);
-            if (error.message && !error.message.includes('Network')) {
-              await hardReset();
-            }
-            return;
-          }
-
-          if (session?.user) {
-            const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-
-            if (refreshError) {
-              logger.error('Session refresh on visibility failed:', refreshError);
-              if (refreshError.message && !refreshError.message.includes('Network')) {
-                await hardReset();
-              }
-            } else if (refreshData?.session?.user) {
-              logger.info('Session refreshed on app wake');
-              setUser(refreshData.session.user);
-              await fetchProfile(refreshData.session.user.id);
-            }
-          } else {
-            setUser(null);
-            setProfile(null);
-          }
-        } catch (err) {
-          logger.error('Visibility change handler error:', err);
-          setUser(null);
-          setProfile(null);
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    const handleFocus = async () => {
-      logger.info('Window focused, validating session...');
+      sessionCheckInFlightRef.current = true;
+      lastSessionCheckRef.current = now;
 
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
 
+        if (!mountedRef.current) return;
+
         if (error) {
-          if (error.message && !error.message.includes('Network')) {
-            await hardReset();
-          }
-        } else if (!session) {
-          logger.warn('No valid session on focus');
+          logger.error('Session check failed:', error);
+          if (!isNetworkError(error)) await hardReset();
+          return;
+        }
+
+        if (!session) {
           setUser(null);
           setProfile(null);
         }
       } catch (err) {
-        logger.error('Focus handler error:', err);
+        logger.error('Session check error:', err);
+      } finally {
+        sessionCheckInFlightRef.current = false;
       }
     };
 
-    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', verifySessionStillValid);
+    window.addEventListener('focus', verifySessionStillValid);
 
     return () => {
+      clearTimeout(safetyTimeout);
       subscription.unsubscribe();
-      clearInterval(refreshInterval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', verifySessionStillValid);
+      window.removeEventListener('focus', verifySessionStillValid);
     };
-  }, [fetchProfile]);
+  }, [fetchProfile, hardReset]);
 
-  const refreshSession = async () => {
+  const refreshSession = useCallback(async () => {
     try {
       const { data: { session }, error } = await supabase.auth.refreshSession();
       if (error) throw error;
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
-        return true;
-      }
-      return false;
+      if (!session?.user) return false;
+
+      if (mountedRef.current) setUser(session.user);
+      await fetchProfile(session.user.id);
+      return true;
     } catch (err) {
       logger.error('Manual session refresh failed:', err);
       return false;
     }
-  };
+  }, [fetchProfile]);
 
-  const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
+  const signInWithGoogle = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: window.location.origin + '/onboarding'
-      }
+      options: { redirectTo: `${window.location.origin}/onboarding` }
     });
-  };
+    if (error) logger.error('Google sign in failed:', error);
+    return !error;
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await hardReset();
     window.location.href = '/';
-  };
+  }, [hardReset]);
+
+  const value = useMemo(() => ({
+    user,
+    profile,
+    loading,
+    signInWithGoogle,
+    signOut,
+    fetchProfile,
+    refreshSession
+  }), [user, profile, loading, signInWithGoogle, signOut, fetchProfile, refreshSession]);
 
   return (
-    <AuthContext.Provider value={{ user, profile, signInWithGoogle, signOut, loading, fetchProfile, refreshSession }}>
+    <AuthContext.Provider value={value}>
       {loading ? <LoadingSpinner fullScreen={true} message="Verifying session..." /> : children}
     </AuthContext.Provider>
   );

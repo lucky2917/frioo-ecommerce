@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDialog } from '../../hooks/useDialog';
+import { logger } from '../../utils/logger';
 
 export default function CouponPopup() {
   const [show, setShow] = useState(false);
@@ -9,11 +10,23 @@ export default function CouponPopup() {
   useDialog({ open: show, onClose: () => setShow(false), dialogRef, initialFocusRef: closeRef });
 
   useEffect(() => {
-    const welcomeSeen = localStorage.getItem('frioo_welcome_seen');
-    if (!welcomeSeen) {
-      setTimeout(() => setShow(true), 1500);
-      localStorage.setItem('frioo_welcome_seen', 'true');
+    let welcomeSeen = true;
+    try {
+      welcomeSeen = Boolean(localStorage.getItem('frioo_welcome_seen'));
+    } catch {
+      return;
     }
+
+    if (welcomeSeen) return;
+
+    const timer = setTimeout(() => setShow(true), 1500);
+    try {
+      localStorage.setItem('frioo_welcome_seen', 'true');
+    } catch {
+      logger.warn('Could not record welcome dialog state');
+    }
+
+    return () => clearTimeout(timer);
   }, []);
 
   if (!show) return null;
