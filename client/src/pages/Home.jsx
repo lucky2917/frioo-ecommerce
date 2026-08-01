@@ -78,7 +78,7 @@ export default function Home() {
 
       <section className="home-hero">
         <div className="home-hero-media">
-          <img src={HERO_IMAGE} alt="Fresh fruit, ready at Frioo" className="home-hero-img" />
+          <img loading="lazy" decoding="async" src={HERO_IMAGE} alt="Fresh fruit, ready at Frioo" className="home-hero-img" />
         </div>
         <div className="home-hero-panel">
           <p className="home-hero-eyebrow">Fresh in Visakhapatnam</p>
@@ -97,7 +97,7 @@ export default function Home() {
           <div className="home-cats">
             {CATEGORIES.map((cat) => (
               <Link key={cat.slug} to={`/shop?category=${cat.slug}`} className="home-cat">
-                <div className="home-cat-media"><img src={cat.img} alt={cat.label} loading="lazy" /></div>
+                <div className="home-cat-media"><img decoding="async" src={cat.img} alt={cat.label} loading="lazy" /></div>
                 <div className="home-cat-body">
                   <h3 className="home-cat-title">{cat.label}</h3>
                   <p className="home-cat-desc">{cat.desc}</p>

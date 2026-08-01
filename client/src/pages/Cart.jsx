@@ -374,7 +374,7 @@ export default function Cart() {
                 const hasPrefs = prefs && (prefs.exclusions?.length > 0 || prefs.removedIngredients?.length > 0 || prefs.note);
                 return (
                   <div className="fr-ci" key={itemKey}>
-                    <Link to={`/product/${item.id}`} className="fr-ci-media"><img src={item.image} alt={item.title} /></Link>
+                    <Link to={`/product/${item.id}`} className="fr-ci-media"><img loading="lazy" decoding="async" src={item.image} alt={item.title} /></Link>
                     <div className="fr-ci-main">
                       <div className="fr-ci-top">
                         <Link to={`/product/${item.id}`} className="fr-ci-title">{item.title}</Link>

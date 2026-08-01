@@ -141,7 +141,7 @@ export default function Profile() {
         <header className="fr-pf-header">
           <div className="fr-pf-avatar">
             {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt={fullName ? `${fullName}'s avatar` : 'Your avatar'} className="fr-pf-avatar-img" />
+              <img loading="lazy" decoding="async" src={profile.avatar_url} alt={fullName ? `${fullName}'s avatar` : 'Your avatar'} className="fr-pf-avatar-img" />
             ) : (
               <span className="fr-pf-avatar-initials" role="img" aria-label={fullName || email || 'Account'}>
                 {getInitials(fullName, email)}

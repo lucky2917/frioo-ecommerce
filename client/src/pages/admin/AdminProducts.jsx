@@ -327,7 +327,7 @@ export default function AdminProducts() {
                     {filteredProducts.map(product => (
                         <div key={product.id} className="ap-card">
                             <div className="ap-img">
-                                <img src={product.images?.[0] || '/placeholder.png'} alt={product.title} onError={e => { e.target.src = '/placeholder.png'; }} />
+                                <img loading="lazy" decoding="async" src={product.images?.[0] || '/placeholder.png'} alt={product.title} onError={e => { e.target.src = '/placeholder.png'; }} />
                                 {product.featured && <span className="ap-tag ap-tag-featured">Featured</span>}
                                 {product.discount > 0 && <span className="ap-tag ap-tag-discount">{product.discount}% off</span>}
                             </div>
@@ -457,7 +457,7 @@ export default function AdminProducts() {
 
                             {formData.image_url && (
                                 <div className="ap-preview">
-                                    <img src={formData.image_url} alt="Product preview" onError={e => { e.target.src = '/placeholder.png'; }} />
+                                    <img loading="lazy" decoding="async" src={formData.image_url} alt="Product preview" onError={e => { e.target.src = '/placeholder.png'; }} />
                                     <button type="button" className="ap-preview-remove" onClick={() => setField('image_url', '')} aria-label="Remove image">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                                     </button>

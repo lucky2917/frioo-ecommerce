@@ -22,7 +22,7 @@ export default function UserMenu({ user, open, onToggle, onSignOut, onSignIn }) 
     <div className="fr-usermenu">
       <button className="fr-avatar-btn" onClick={onToggle} aria-haspopup="menu" aria-expanded={open} aria-label="Account menu">
         {avatar
-          ? <img src={avatar} alt="" className="fr-avatar" />
+          ? <img loading="lazy" decoding="async" src={avatar} alt="" className="fr-avatar" />
           : <span className="fr-avatar fr-avatar-fallback">{user.email?.charAt(0).toUpperCase()}</span>}
       </button>
       {open && (

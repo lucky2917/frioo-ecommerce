@@ -214,7 +214,7 @@ export default function ProductDetails() {
             <div className="pd-gallery-sticky">
               <div className="pd-frame">
                 {images[selectedImage]
-                  ? <img src={images[selectedImage]} alt={product.title} className="pd-frame-img" />
+                  ? <img loading="lazy" decoding="async" src={images[selectedImage]} alt={product.title} className="pd-frame-img" />
                   : <span className="pd-noimg">No photo yet</span>}
                 {product.discount > 0 && <span className="pd-badge">Save {product.discount}%</span>}
               </div>
@@ -223,7 +223,7 @@ export default function ProductDetails() {
                 <div className="pd-thumbs">
                   {images.map((img, idx) => (
                     <button key={idx} className={`pd-thumb${selectedImage === idx ? ' pd-thumb-on' : ''}`} onClick={() => setSelectedImage(idx)} aria-label={`View image ${idx + 1}`} aria-pressed={selectedImage === idx}>
-                      <img src={img} alt="" />
+                      <img loading="lazy" decoding="async" src={img} alt="" />
                     </button>
                   ))}
                 </div>

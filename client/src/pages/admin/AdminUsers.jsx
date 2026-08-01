@@ -194,7 +194,7 @@ export default function AdminUsers() {
                         <td>
                             <div className="au-user">
                                 <div className="au-avatar" aria-hidden="true">
-                                    {user.avatar_url ? <img src={user.avatar_url} alt="" /> : (user.full_name?.charAt(0).toUpperCase() || 'U')}
+                                    {user.avatar_url ? <img loading="lazy" decoding="async" src={user.avatar_url} alt="" /> : (user.full_name?.charAt(0).toUpperCase() || 'U')}
                                 </div>
                                 <div className="au-user-info">
                                     <div className="au-name">{user.full_name || 'Guest'}</div>

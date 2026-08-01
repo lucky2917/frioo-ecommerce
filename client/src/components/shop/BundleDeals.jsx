@@ -33,7 +33,7 @@ export default function BundleDeals({ products, onAddBundle }) {
           <article key={bundle.id} className="fr-bundle">
             <div className="fr-bundle-thumbs">
               {bundle.products.map((p) => (
-                <img key={p.id} src={p.images?.[0]} alt="" className="fr-bundle-thumb" loading="lazy" />
+                <img decoding="async" key={p.id} src={p.images?.[0]} alt="" className="fr-bundle-thumb" loading="lazy" />
               ))}
             </div>
             <div className="fr-bundle-body">
