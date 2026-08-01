@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useCommitFeedback } from '../hooks/useCommitFeedback';
-import { getStockState, getUnitPrice } from '../utils/productFacts';
+import { getStockState } from '../utils/productFacts';
 import { useParams, Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import FetchError from '../components/FetchError';
@@ -152,7 +152,6 @@ export default function ProductDetails() {
   const images = product.images?.length > 0 ? product.images : [];
   const oldPrice = product.discount > 0 ? Math.round(currentPrice / (1 - product.discount / 100)) : null;
   const unitSuffix = product.unit === 'kg' ? '/ kg' : product.unit === 'item' ? 'each' : product.unit ? `/ ${product.unit}` : '';
-  const unitPrice = getUnitPrice(product);
   const stockState = getStockState(product);
 
   const nutrition = product.nutrition || {};
@@ -253,7 +252,6 @@ export default function ProductDetails() {
                 {oldPrice && <span className="pd-old">&#8377;{oldPrice}</span>}
                 <span className="pd-unit">{selectedWeight ? `/ ${selectedWeight.label}` : unitSuffix}</span>
               </div>
-              {unitPrice && <div className="pd-measure">{unitPrice.label}</div>}
               {stockState && (
                 <div className={`pd-stock pd-stock--${stockState.code}`}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -404,7 +402,6 @@ export default function ProductDetails() {
         .pd-stock--in { color: var(--fr-success); }
         .pd-stock--out { color: var(--fr-text-3); }
         .pd-add[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
-        .pd-measure { font-family: var(--fr-font-mono); font-size: var(--fr-fs-measure); font-weight: var(--fr-fw-regular); color: var(--fr-text-2); font-variant-numeric: tabular-nums; }
         .pd-delivery { display: flex; align-items: center; gap: var(--fr-s2); font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0 0 var(--fr-s5); }
         .pd-delivery svg { color: var(--fr-brand); flex-shrink: 0; }
         .pd-desc { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0 0 var(--fr-s6); max-width: 52ch; }

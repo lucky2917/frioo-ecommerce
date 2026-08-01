@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import OptimizedImage from '../OptimizedImage';
 import { prefetchHandlers } from '../../hooks/usePrefetchRoute';
 import { loadProductDetails } from '../../lib/routeLoaders';
-import { getStockState, getUnitPrice } from '../../utils/productFacts';
+import { getStockState } from '../../utils/productFacts';
 import { getProductSignal } from '../../utils/productSignals';
 
 
@@ -35,7 +35,6 @@ export default function ProductCard({ product, onAdd }) {
   const originalPrice = hasDiscount ? Math.round(basePrice / (1 - product.discount / 100)) : null;
 
   const unitSuffix = product.unit === 'kg' ? ' / kg' : product.unit === 'item' ? ' each' : product.unit ? ` / ${product.unit}` : '';
-  const unitPrice = getUnitPrice(product);
   const stockState = getStockState(product);
   const signal = getProductSignal(product);
 
@@ -90,7 +89,6 @@ export default function ProductCard({ product, onAdd }) {
           <Link to={`/product/${product.id}`} className="fr-pc-name">{product.title}</Link>
           {product.description && <p className="fr-pc-desc">{product.description}</p>}
           <div className="fr-pc-meta">
-            {unitPrice && <span className="fr-pc-measure">{unitPrice.label}</span>}
             {stockState && !stockState.available && (
               <span className="fr-pc-stock fr-pc-stock--out">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
@@ -128,7 +126,6 @@ export default function ProductCard({ product, onAdd }) {
                       <button key={opt.label} className={`fr-pc-chip${selectedWeight.label === opt.label ? ' fr-pc-chip-on' : ''}`} onClick={() => setSelectedWeight(opt)}>{opt.label}</button>
                     ))}
                   </div>
-                  {unitPrice && <div className="fr-pc-measure">{unitPrice.label}</div>}
                 </div>
               )}
               {product.nutrition?.exclusions?.length > 0 && (
@@ -183,10 +180,9 @@ export default function ProductCard({ product, onAdd }) {
         .fr-pc-stock--in { color: var(--fr-success); }
         .fr-pc-stock--out { color: var(--fr-text-3); }
         .fr-pc-add[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
-        .fr-pc-measure { font-family: var(--fr-font-mono); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-regular); color: var(--fr-text-3); font-variant-numeric: tabular-nums; }
-        .fr-pc-add { margin-top: auto; min-height: 52px; background: var(--fr-accent); color: #FFFFFF; border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-control); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .fr-pc-add { margin-top: auto; min-height: 52px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-control); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
         .fr-pc-add { display: inline-flex; align-items: center; justify-content: center; gap: var(--fr-s2); }
-        .fr-pc-add:hover { background: var(--fr-accent-press); }
+        .fr-pc-add:hover { background: var(--fr-brand-press); }
         .fr-pc-add:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
         .fr-pc-add-done { background: var(--fr-success); }
         .fr-pc-add:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
