@@ -82,21 +82,22 @@ export default function ProductCard({ product, onAdd }) {
           {signal && <span className={`fr-pc-badge fr-pc-badge--${signal.code}`}>{signal.label}</span>}
         </Link>
         <div className="fr-pc-body">
-          <Link to={`/product/${product.id}`} className="fr-pc-name">{product.title}</Link>
           <div className="fr-pc-price-row">
             <span className={`fr-pc-price${hasDiscount ? ' fr-pc-price-sale' : ''}`}>&#8377;{basePrice.toFixed(0)}</span>
             <span className="fr-pc-unit">{unitSuffix}</span>
             {hasDiscount && <span className="fr-pc-original">&#8377;{originalPrice}</span>}
           </div>
-          {unitPrice && <div className="fr-pc-measure">{unitPrice.label}</div>}
-          {stockState && (
-            <div className={`fr-pc-stock fr-pc-stock--${stockState.code}`}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                {stockState.available ? <path d="M20 6 9 17l-5-5" /> : <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>}
-              </svg>
-              {stockState.label}
-            </div>
-          )}
+          <Link to={`/product/${product.id}`} className="fr-pc-name">{product.title}</Link>
+          {product.description && <p className="fr-pc-desc">{product.description}</p>}
+          <div className="fr-pc-meta">
+            {unitPrice && <span className="fr-pc-measure">{unitPrice.label}</span>}
+            {stockState && !stockState.available && (
+              <span className="fr-pc-stock fr-pc-stock--out">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                {stockState.label}
+              </span>
+            )}
+          </div>
           <button className={`fr-pc-add${committed ? ' fr-pc-add-done' : ''}`} onClick={handleActionClick} aria-disabled={stockState?.available === false}>
             {committed ? (
               <>
@@ -159,21 +160,22 @@ export default function ProductCard({ product, onAdd }) {
       )}
 
       <style>{`
-        .fr-pc { display: flex; flex-direction: column; background: var(--fr-surface); border-radius: var(--fr-r-card); box-shadow: var(--fr-elev-1); overflow: hidden; height: 100%; transition: box-shadow var(--fr-dur-base) var(--fr-ease-standard), transform var(--fr-dur-base) var(--fr-ease-standard); }
-        .fr-pc:hover { box-shadow: var(--fr-elev-2); transform: translateY(-2px); }
+        .fr-pc { display: flex; flex-direction: column; background: transparent; height: 100%; }
         .fr-pc-noimg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); color: var(--fr-text-3); }
-        .fr-pc-media { position: relative; display: block; aspect-ratio: 4 / 5; background: var(--fr-surface-2); overflow: hidden; }
+        .fr-pc-media { position: relative; display: block; aspect-ratio: 1 / 1; background: var(--fr-surface); overflow: hidden; border-radius: var(--fr-r-card); }
         .fr-pc-img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--fr-dur-base) var(--fr-ease-standard); }
         .fr-pc:hover .fr-pc-img { transform: scale(1.02); }
         .fr-pc-badge { position: absolute; top: var(--fr-s3); left: var(--fr-s3); background: var(--fr-warm); color: var(--fr-on-brand); font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: 0.04em; text-transform: uppercase; padding: 4px 9px; border-radius: var(--fr-r-control); }
         .fr-pc-badge--new { background: var(--fr-brand); }
         .fr-pc-badge--pick { background: var(--fr-info); }
-        .fr-pc-body { display: flex; flex-direction: column; gap: var(--fr-s1); padding: var(--fr-s4); flex: 1; }
-        .fr-pc-name { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-medium); color: var(--fr-text); text-decoration: none; line-height: var(--fr-lh-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .fr-pc-body { display: flex; flex-direction: column; gap: var(--fr-s2); padding: var(--fr-s4) 0 0; flex: 1; }
+        .fr-pc-name { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); letter-spacing: var(--fr-track-headline); color: var(--fr-text); text-decoration: none; line-height: var(--fr-lh-snug); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .fr-pc-name:hover { color: var(--fr-brand); }
         .fr-pc-name:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
-        .fr-pc-price-row { display: flex; align-items: baseline; gap: var(--fr-s2); margin-top: var(--fr-s1); }
-        .fr-pc-price { font-family: var(--fr-font-sans); font-size: var(--fr-fs-lead); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-text); font-variant-numeric: tabular-nums; }
+        .fr-pc-desc { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-3); margin: 0; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .fr-pc-meta { display: flex; align-items: center; gap: var(--fr-s3); flex-wrap: wrap; min-height: 0; }
+        .fr-pc-price-row { display: flex; align-items: baseline; gap: var(--fr-s2); }
+        .fr-pc-price { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-brand); font-variant-numeric: tabular-nums; }
         .fr-pc-price-sale { color: var(--fr-warm); }
         .fr-pc-unit { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); color: var(--fr-text-2); }
         .fr-pc-original { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); color: var(--fr-text-3); text-decoration: line-through; font-variant-numeric: tabular-nums; }
@@ -181,10 +183,11 @@ export default function ProductCard({ product, onAdd }) {
         .fr-pc-stock--in { color: var(--fr-success); }
         .fr-pc-stock--out { color: var(--fr-text-3); }
         .fr-pc-add[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
-        .fr-pc-measure { font-family: var(--fr-font-mono); font-size: var(--fr-fs-measure); font-weight: var(--fr-fw-regular); color: var(--fr-text-2); font-variant-numeric: tabular-nums; }
-        .fr-pc-add { margin-top: auto; height: 44px; background: var(--fr-brand); color: var(--fr-on-brand); border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
+        .fr-pc-measure { font-family: var(--fr-font-mono); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-regular); color: var(--fr-text-3); font-variant-numeric: tabular-nums; }
+        .fr-pc-add { margin-top: auto; min-height: 52px; background: var(--fr-accent); color: #FFFFFF; border: none; border-radius: var(--fr-r-control); font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-control); cursor: pointer; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
         .fr-pc-add { display: inline-flex; align-items: center; justify-content: center; gap: var(--fr-s2); }
-        .fr-pc-add:hover { background: var(--fr-brand-press); }
+        .fr-pc-add:hover { background: var(--fr-accent-press); }
+        .fr-pc-add:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
         .fr-pc-add-done { background: var(--fr-success); }
         .fr-pc-add:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; }
 

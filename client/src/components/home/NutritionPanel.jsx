@@ -106,11 +106,11 @@ export default function NutritionPanel({ products }) {
         .fr-nutri-body { padding: var(--fr-s6); display: flex; flex-direction: column; gap: var(--fr-s3); }
         .fr-nutri-name { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: 0; }
         .fr-nutri-for { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: 0; }
-        .fr-nutri-macros { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--fr-s3); margin: var(--fr-s2) 0 var(--fr-s3); }
-        .fr-nutri-macro { padding: var(--fr-s3) var(--fr-s4); background: var(--fr-brand-tint); border-radius: var(--fr-r-card); }
+        .fr-nutri-macros { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--fr-s2); margin: var(--fr-s2) 0 var(--fr-s3); }
+        .fr-nutri-macro { display: flex; align-items: baseline; justify-content: space-between; gap: var(--fr-s3); padding: var(--fr-s3) var(--fr-s4); background: var(--fr-brand-tint); border-radius: var(--fr-r-card); }
         .fr-nutri-macro dt { font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: 0.04em; text-transform: uppercase; color: var(--fr-text-2); }
-        .fr-nutri-macro dd { margin: 2px 0 0; font-family: var(--fr-font-sans); font-size: var(--fr-fs-lead); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-brand); font-variant-numeric: tabular-nums; }
-        .fr-nutri-macro dd span { font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); margin-left: 2px; }
+        .fr-nutri-macro dd { margin: 0; font-family: var(--fr-font-sans); font-size: var(--fr-fs-lead); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-brand); font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .fr-nutri-macro dd span { font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); margin-left: 2px; }
 
         @media (min-width: 901px) {
           .fr-nutri-cards { display: block; }
@@ -122,6 +122,11 @@ export default function NutritionPanel({ products }) {
           .fr-nutri-shell { grid-template-columns: 1fr; gap: var(--fr-s6); }
           .fr-nutri-picker { display: none; }
           .fr-nutri-card { display: flex; height: 100%; }
+          .fr-nutri-media { aspect-ratio: 3 / 2; }
+          .fr-nutri-body { padding: var(--fr-s5); gap: var(--fr-s2); }
+          .fr-nutri-macros { grid-template-columns: 1fr; gap: var(--fr-s1); margin: var(--fr-s3) 0; }
+          .fr-nutri-macro { padding: var(--fr-s2) var(--fr-s4); }
+          .fr-nutri-macro dd { font-size: var(--fr-fs-body); }
         }
       `}</style>
     </section>

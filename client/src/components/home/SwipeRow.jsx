@@ -1,10 +1,11 @@
-import { useRail } from '../../hooks/useRail';
+import { useRail, useAutoAdvance } from '../../hooks/useRail';
 import { useReveal } from '../../hooks/useReveal';
 
-export default function SwipeRow({ children, className = '', count, column, onDark = false, style, as = 'div', ...rest }) {
+export default function SwipeRow({ children, className = '', count, column, onDark = false, autoAdvanceMs, style, as = 'div', ...rest }) {
   const Track = as;
   const { trackRef, progressRef } = useRail(count);
   const setTrack = useReveal(trackRef);
+  useAutoAdvance(trackRef, autoAdvanceMs);
 
   const trackStyle = column ? { ...style, '--fr-swipe-col': column } : style;
 

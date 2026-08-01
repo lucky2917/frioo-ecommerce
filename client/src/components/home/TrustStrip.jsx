@@ -56,7 +56,7 @@ export default function TrustStrip() {
   return (
     <section className="fr-trust" aria-label="How Frioo delivers">
       <div className="fr-wrap">
-        <SwipeRow className="fr-trust-grid" count={PROMISES.length} column="72%" onDark>
+        <SwipeRow className="fr-trust-grid" count={PROMISES.length} column="72%" onDark autoAdvanceMs={4000}>
           {PROMISES.map(({ key, title, detail, icon }) => (
             <div className="fr-trust-item" key={key}>
               <span className="fr-trust-icon" aria-hidden="true">

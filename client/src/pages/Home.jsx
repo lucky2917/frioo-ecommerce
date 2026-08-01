@@ -18,7 +18,6 @@ import { useProducts } from '../hooks/useProducts';
 import { useReveal } from '../hooks/useReveal';
 import { useCart } from '../context/cart-context';
 import { PRODUCT_CATEGORIES } from '../config/constants';
-import { isNewArrival } from '../utils/productSignals';
 
 const homeSchema = {
   "@context": "https://schema.org",
@@ -42,6 +41,17 @@ const PRODUCT_TABS = PRODUCT_CATEGORIES.filter(c => c.dbValue !== null).slice(0,
 
 const COUPON_CODE = 'FRESH10';
 
+const FRUIT_CATEGORY = PRODUCT_CATEGORIES.find(c => c.slug === 'fruits').dbValue;
+
+const shuffle = (items) => {
+  const pool = [...items];
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool;
+};
+
 export default function Home() {
   const { products, loading, error: productsError, refetch: loadProducts } = useProducts();
   const { addToCart } = useCart();
@@ -50,11 +60,11 @@ export default function Home() {
 
   const offerRef = useReveal();
 
-  const featuredProducts = useMemo(() => products.filter(p => p.featured).slice(0, 10), [products]);
+  const dealProducts = useMemo(() => products.filter(p => p.featured === true).slice(0, 10), [products]);
 
-  const freshInProducts = useMemo(() => {
-    const arrivals = products.filter(isNewArrival);
-    return (arrivals.length >= 4 ? arrivals : products).slice(0, 10);
+  const fruitPicks = useMemo(() => {
+    const fruits = products.filter(p => p.category === FRUIT_CATEGORY);
+    return shuffle(fruits).slice(0, 10);
   }, [products]);
 
   const tabGroups = useMemo(() => {
@@ -103,23 +113,26 @@ export default function Home() {
       <ProductRail
         eyebrow="Fresh in today"
         title="Just off the morning run"
-        description="What arrived from the market this morning, while it lasts."
-        products={freshInProducts}
+        description="Today's deals, picked out and priced down while they last."
+        products={dealProducts}
         onAdd={addToCart}
         loading={isLoadingProducts}
+        viewAllTo="/shop?category=deals"
       />
 
       <PromoGrid />
 
       <StoryBand />
 
-      {featuredProducts.length > 0 && (
+      {fruitPicks.length > 0 && (
         <ProductRail
           eyebrow="Our picks"
           title="Chosen by the people who pack your bag"
-          products={featuredProducts}
+          description="A different handful of fruit each time you visit."
+          products={fruitPicks}
           onAdd={addToCart}
           loading={false}
+          viewAllTo="/shop?category=fruits"
           tint
         />
       )}
