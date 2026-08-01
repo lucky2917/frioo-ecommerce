@@ -38,6 +38,25 @@ export default function Navbar() {
   const blurTimerRef = useRef(null);
   useEffect(() => () => clearTimeout(blurTimerRef.current), []);
 
+  const accountRef = useRef(null);
+  useEffect(() => {
+    if (!showDropdown) return;
+
+    const closeOnOutside = (event) => {
+      if (!accountRef.current?.contains(event.target)) setShowDropdown(false);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setShowDropdown(false);
+    };
+
+    document.addEventListener('mousedown', closeOnOutside);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('mousedown', closeOnOutside);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [showDropdown]);
+
   const [lastSearchQuery, setLastSearchQuery] = useState(searchQuery);
   if (searchQuery !== lastSearchQuery) {
     setLastSearchQuery(searchQuery);
@@ -230,7 +249,7 @@ export default function Navbar() {
               />
             </div>
 
-            <div className="fr-desktop">
+            <div className="fr-account" ref={accountRef}>
               <UserMenu
                 user={user}
                 open={showDropdown}
@@ -239,17 +258,6 @@ export default function Navbar() {
                 onSignIn={signInWithGoogle}
               />
             </div>
-
-            <button
-              className="fr-icon-btn fr-mobile"
-              onClick={user ? () => navigate('/orders') : signInWithGoogle}
-              aria-label={user ? 'My orders' : 'Login'}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </button>
 
             <CartButton count={cartCount} />
           </div>
@@ -341,6 +349,7 @@ export default function Navbar() {
 
         .fr-desktop { display: flex; }
         .fr-mobile { display: none; }
+        .fr-account { display: flex; align-items: center; }
 
         .fr-mobile-search { display: none; align-items: center; gap: var(--fr-s2); height: 44px; margin: 0 var(--fr-s4) var(--fr-s2); padding: 0 var(--fr-s4); background: var(--fr-surface-2); border: 1px solid var(--fr-line); border-radius: var(--fr-r-pill); overflow: hidden; }
         .fr-mobile-search:focus-within { border-color: var(--fr-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fr-brand) 16%, transparent); background: var(--fr-surface); }

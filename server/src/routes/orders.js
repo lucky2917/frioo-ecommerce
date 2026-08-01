@@ -23,7 +23,7 @@ const formatHour = (hour) => {
 const SHOP_LAT = 17.721086639920603;
 const SHOP_LNG = 83.29694119604164;
 const MAX_DELIVERY_KM = 6;
-const MIN_DELIVERY_ORDER_VALUE = 349;
+const MIN_DELIVERY_ORDER_VALUE = 199;
 
 const haversineKm = (lat1, lon1, lat2, lon2) => {
     const R = 6371;
