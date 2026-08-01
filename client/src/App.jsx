@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthProvider';
 import ErrorBoundary from './components/ErrorBoundary';
 
 import { CartProvider } from './context/CartProvider';
+import { StoreSettingsProvider } from './context/StoreSettingsProvider';
 import { loadShop, loadCart, loadProductDetails } from './lib/routeLoaders';
 
 const Home = lazy(() => import('./pages/Home'));
@@ -23,6 +24,7 @@ const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
 const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
 const AdminCoupons = lazy(() => import('./pages/admin/AdminCoupons'));
+const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 
 const AboutUs = lazy(() => import('./pages/info/AboutUs'));
 const Contact = lazy(() => import('./pages/info/Contact'));
@@ -69,6 +71,7 @@ const AppInner = () => {
               <Route path="products" element={<AdminProducts />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="coupons" element={<AdminCoupons />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
 
             <Route element={<StorefrontLayout />}>
@@ -94,9 +97,11 @@ function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <BrowserRouter>
-          <AppInner />
-        </BrowserRouter>
+        <StoreSettingsProvider>
+          <BrowserRouter>
+            <AppInner />
+          </BrowserRouter>
+        </StoreSettingsProvider>
       </CartProvider>
     </AuthProvider>
   );

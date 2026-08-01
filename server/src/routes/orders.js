@@ -7,6 +7,18 @@ const { requireAuth } = require('../middleware/auth');
 const { orderValidators } = require('../utils/validators');
 const { sendError, sendValidationError, sendSuccess } = require('../utils/responses');
 const logger = require('../utils/logger');
+const {
+    fetchStoreSettings,
+    getStoreAvailability,
+    isCategoryUnavailable,
+    calculateDeliveryFee
+} = require('../services/storeSettings');
+
+const formatHour = (hour) => {
+    const period = hour >= 12 ? 'pm' : 'am';
+    const display = hour % 12 === 0 ? 12 : hour % 12;
+    return `${display}${period}`;
+};
 
 const SHOP_LAT = 17.721086639920603;
 const SHOP_LNG = 83.29694119604164;
@@ -168,6 +180,16 @@ router.post('/',
 
             const user_id = req.user.id;
 
+            const settings = await fetchStoreSettings();
+            const availability = getStoreAvailability(settings);
+
+            if (!availability.accepting) {
+                const message = availability.reason === 'outside-hours'
+                    ? `We are closed right now. Orders open again at ${formatHour(settings.opens_at_hour)}.`
+                    : settings.closed_message || 'The store is not accepting orders right now.';
+                return sendError(res, message, 409);
+            }
+
             if (order_type === 'delivery') {
                 if (!delivery_address) {
                     return sendError(res, 'Delivery address is required for delivery orders', 400);
@@ -184,7 +206,7 @@ router.post('/',
             const productIds = items.map(item => item.id);
             const { data: products, error: productsError } = await supabaseAdmin
                 .from('products')
-                .select('id, price_cents, stock')
+                .select('id, price_cents, stock, category')
                 .in('id', productIds);
 
             if (productsError) {
@@ -200,6 +222,9 @@ router.post('/',
                 }
                 if (product.stock !== null && product.stock < item.qty) {
                     return sendError(res, `"${item.title}" only has ${product.stock} in stock`, 400);
+                }
+                if (isCategoryUnavailable(settings, product.category)) {
+                    return sendError(res, `"${item.title}" is not available right now. Please remove it and try again.`, 409);
                 }
                 serverCalculatedSubtotal += (product.price_cents / 100) * item.qty;
             }
@@ -254,14 +279,16 @@ router.post('/',
                 appliedCoupon = coupon;
             }
 
-            const serverCalculatedTotal = serverCalculatedSubtotal - serverCalculatedDiscount;
+            const goodsTotal = serverCalculatedSubtotal - serverCalculatedDiscount;
+            const deliveryFee = calculateDeliveryFee(settings, order_type, goodsTotal);
+            const serverCalculatedTotal = goodsTotal + deliveryFee;
             const priceDifference = Math.abs(serverCalculatedTotal - total_amount);
 
             if (priceDifference > 0.01) {
                 return sendError(res, 'Price verification failed. Please refresh and try again.', 400);
             }
 
-            if (order_type === 'delivery' && serverCalculatedTotal < MIN_DELIVERY_ORDER_VALUE) {
+            if (order_type === 'delivery' && goodsTotal < MIN_DELIVERY_ORDER_VALUE) {
                 return sendError(res, `Minimum delivery order is ₹${MIN_DELIVERY_ORDER_VALUE}`, 400);
             }
 
@@ -280,6 +307,7 @@ router.post('/',
                     customer_lng: customer_lng || null,
                     coupon_code: coupon_code || null,
                     discount: serverCalculatedDiscount,
+                    delivery_fee: deliveryFee,
                     status: 'pending',
                     created_at: new Date().toISOString()
                 }])

@@ -5,6 +5,7 @@ const { supabaseAdmin } = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 const { phoneValidator } = require('../utils/validators');
 const { sendError, sendValidationError, sendSuccess } = require('../utils/responses');
+const { fetchStoreSettings, invalidateStoreSettings } = require('../services/storeSettings');
 const logger = require('../utils/logger');
 
 router.use(requireAdmin);
@@ -740,6 +741,92 @@ router.patch('/users/:id',
         } catch (err) {
             logger.error('Admin update user error:', err);
             return sendError(res, 'Failed to update user profile', 500);
+        }
+    }
+);
+
+/**
+ * @swagger
+ * /api/admin/settings:
+ *   get:
+ *     summary: Read store settings
+ *     tags: [Admin]
+ *     security: [{ bearerAuth: [] }]
+ *   patch:
+ *     summary: Update store availability, hours and delivery pricing
+ *     description: |
+ *       Every field is optional. Only the fields sent are changed.
+ *       Category names must match the product category values exactly.
+ *     tags: [Admin]
+ *     security: [{ bearerAuth: [] }]
+ */
+router.get('/settings', async (_req, res) => {
+    try {
+        const settings = await fetchStoreSettings({ force: true });
+        return sendSuccess(res, { settings });
+    } catch (err) {
+        logger.error('Admin read settings error:', err);
+        return sendError(res, 'Failed to load store settings', 500);
+    }
+});
+
+router.patch('/settings',
+    body('is_open').optional().isBoolean(),
+    body('closed_message').optional({ nullable: true }).isString().isLength({ max: 200 }).trim(),
+    body('unavailable_categories').optional().isArray({ max: 40 }),
+    body('unavailable_categories.*').isString().isLength({ max: 80 }).trim(),
+    body('opens_at_hour').optional().isInt({ min: 0, max: 23 }).toInt(),
+    body('closes_at_hour').optional().isInt({ min: 1, max: 24 }).toInt(),
+    body('delivery_fee_cents').optional().isInt({ min: 0, max: 500000 }).toInt(),
+    body('free_delivery_threshold_cents').optional().isInt({ min: 0, max: 10000000 }).toInt(),
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return sendValidationError(res, errors);
+        }
+
+        const FIELDS = [
+            'is_open',
+            'closed_message',
+            'unavailable_categories',
+            'opens_at_hour',
+            'closes_at_hour',
+            'delivery_fee_cents',
+            'free_delivery_threshold_cents'
+        ];
+
+        const updates = {};
+        FIELDS.forEach((field) => {
+            if (req.body[field] !== undefined) updates[field] = req.body[field];
+        });
+
+        if (Object.keys(updates).length === 0) {
+            return sendError(res, 'No settings were provided to update', 400);
+        }
+
+        try {
+            const current = await fetchStoreSettings({ force: true });
+            const opensAt = updates.opens_at_hour ?? current.opens_at_hour;
+            const closesAt = updates.closes_at_hour ?? current.closes_at_hour;
+
+            if (closesAt <= opensAt) {
+                return sendError(res, 'Closing hour must be later than the opening hour', 400);
+            }
+
+            const { data, error } = await supabaseAdmin
+                .from('store_settings')
+                .update(updates)
+                .eq('id', true)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            invalidateStoreSettings();
+            return sendSuccess(res, { settings: data });
+        } catch (err) {
+            logger.error('Admin update settings error:', err);
+            return sendError(res, 'Failed to update store settings', 500);
         }
     }
 );

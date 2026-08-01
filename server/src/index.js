@@ -30,6 +30,7 @@ const ordersRouter = require('./routes/orders');
 const adminRouter = require('./routes/admin');
 const uploadRoutes = require('./routes/upload');
 const healthRouter = require('./routes/health');
+const settingsRouter = require('./routes/settings');
 
 app.use(helmet({
   contentSecurityPolicy: {
@@ -244,6 +245,7 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'Frioo API is running' });
 });
 
+app.use('/api/settings', settingsRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/coupons', couponsRouter);
 app.use('/api/orders', ordersRouter);

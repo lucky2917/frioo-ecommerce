@@ -7,6 +7,7 @@ import { prefetchHandlers } from '../../hooks/usePrefetchRoute';
 import { loadProductDetails } from '../../lib/routeLoaders';
 import { getStockState } from '../../utils/productFacts';
 import { getProductSignal } from '../../utils/productSignals';
+import { useStoreSettings } from '../../context/store-settings-context';
 
 
 
@@ -38,6 +39,12 @@ export default function ProductCard({ product, onAdd }) {
   const stockState = getStockState(product);
   const signal = getProductSignal(product);
 
+  const { accepting = true, isCategoryUnavailable } = useStoreSettings();
+  const categoryOff = isCategoryUnavailable ? isCategoryUnavailable(product.category) : false;
+  const blocked = stockState?.available === false || categoryOff || !accepting;
+
+  const blockedLabel = categoryOff ? 'Section unavailable' : !accepting ? 'Store closed' : 'Out of stock';
+
   let finalPrice, variantLabel;
   if (isWeightBased) {
     finalPrice = basePrice * selectedWeight.multiplier;
@@ -50,7 +57,7 @@ export default function ProductCard({ product, onAdd }) {
   const imageSrc = product.images?.[0];
 
   const handleActionClick = () => {
-    if (stockState?.available === false) return;
+    if (blocked) return;
     if (hasOptions || isWeightBased) {
       setShowCustomize(true);
     } else {
@@ -96,8 +103,8 @@ export default function ProductCard({ product, onAdd }) {
               </span>
             )}
           </div>
-          <button className={`fr-pc-add${committed ? ' fr-pc-add-done' : ''}`} onClick={handleActionClick} aria-disabled={stockState?.available === false}>
-            {committed ? (
+          <button className={`fr-pc-add${committed ? ' fr-pc-add-done' : ''}`} onClick={handleActionClick} aria-disabled={blocked}>
+            {blocked ? blockedLabel : committed ? (
               <>
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
                 Added

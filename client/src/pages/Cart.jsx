@@ -3,6 +3,7 @@ import { useDialog } from '../hooks/useDialog';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/auth-context';
 import { useCart } from '../context/cart-context';
+import { useStoreSettings } from '../context/store-settings-context';
 import { supabase } from '../lib/supabaseClient';
 import { logger } from '../utils/logger';
 import { sanitizeText } from '../utils/sanitize';
@@ -49,7 +50,7 @@ export default function Cart() {
       : appliedCoupon.value)
     : 0;
 
-  const finalTotal = Math.max(0, subTotal - discountAmount);
+  const goodsTotal = Math.max(0, subTotal - discountAmount);
 
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState(null);
@@ -80,6 +81,13 @@ export default function Cart() {
   const emptyBtnRef = useRef(null);
   const summaryRef = useRef(null);
   const couponActionRef = useRef(null);
+
+  const { settings: storeSettings, closedNotice, accepting = true, deliveryFeeFor, isCategoryUnavailable } = useStoreSettings();
+
+  const deliveryFee = deliveryFeeFor ? deliveryFeeFor(goodsTotal, orderType) : 0;
+  const finalTotal = goodsTotal + deliveryFee;
+  const amountToFreeDelivery = Math.max(0, (storeSettings?.freeDeliveryThreshold ?? 0) - goodsTotal);
+  const blockedItems = isCategoryUnavailable ? cartItems.filter((item) => isCategoryUnavailable(item.category)) : [];
 
   const anyModalOpen = !!editingItem || showCouponModal || warningModal.show;
 
@@ -133,8 +141,8 @@ export default function Cart() {
     </div>
   );
 
-  const amountToMin = Math.max(0, MIN_CART_VALUE - finalTotal);
-  const isBelowMin = orderType === 'delivery' && finalTotal < MIN_CART_VALUE;
+  const amountToMin = Math.max(0, MIN_CART_VALUE - goodsTotal);
+  const isBelowMin = orderType === 'delivery' && goodsTotal < MIN_CART_VALUE;
 
   const handleApplyCoupon = async () => {
     if (!couponInput.trim() || applyingCoupon) return;
@@ -284,6 +292,15 @@ export default function Cart() {
   const handlePreCheckout = async () => {
     if (isChecking || isPlacingOrder) return;
     setCheckoutError(null);
+
+    if (!accepting) {
+      setCheckoutError(closedNotice ? `${closedNotice.title}. ${closedNotice.detail}` : 'The store is not accepting orders right now.');
+      return;
+    }
+    if (blockedItems.length > 0) {
+      setCheckoutError('Remove the unavailable items from your bag before placing the order.');
+      return;
+    }
     modalTriggerRef.current = document.activeElement;
     if (cartItems.length === 0) return;
 
@@ -347,7 +364,7 @@ export default function Cart() {
 
   const submitting = isChecking || isPlacingOrder;
   const placeOrderLabel = isChecking ? 'Confirming your location…' : isPlacingOrder ? 'Placing order…' : `Place order · ₹${finalTotal.toFixed(0)}`;
-  const placeOrderDisabled = isBelowMin || isChecking || isPlacingOrder;
+  const placeOrderDisabled = isBelowMin || isChecking || isPlacingOrder || !accepting || blockedItems.length > 0;
   const placeOrderStatus = isChecking ? 'Confirming your location' : isPlacingOrder ? 'Placing your order' : '';
 
   return (
@@ -439,7 +456,12 @@ export default function Cart() {
                 <div className="cart-rows">
                   <div className="cart-row"><span>Subtotal</span><span>&#8377;{subTotal.toFixed(0)}</span></div>
                   {appliedCoupon && <div className="cart-row cart-row-discount"><span>Discount ({appliedCoupon.code})</span><span>&minus;&#8377;{discountAmount.toFixed(0)}</span></div>}
-                  {orderType === 'delivery' && <div className="cart-row"><span>Delivery</span><span className="cart-free">Free</span></div>}
+                  {orderType === 'delivery' && (
+                    <div className="cart-row">
+                      <span>Delivery</span>
+                      <span className={deliveryFee > 0 ? undefined : 'cart-free'}>{deliveryFee > 0 ? `\u20B9${deliveryFee.toFixed(0)}` : 'Free'}</span>
+                    </div>
+                  )}
                   <div className="cart-row cart-row-total"><span>Total</span><span>&#8377;{finalTotal.toFixed(0)}</span></div>
                 </div>
 
@@ -458,6 +480,29 @@ export default function Cart() {
                 ) : (
                   <button ref={removeCouponRef} onClick={handleRemoveCoupon} className="cart-offers-link">Remove coupon</button>
                 )}
+
+                {orderType === 'delivery' && deliveryFee > 0 && amountToFreeDelivery > 0 && (
+                  <p className="cart-nudge">Add &#8377;{amountToFreeDelivery.toFixed(0)} more for free delivery.</p>
+                )}
+
+                <div className="cart-alerts">
+                  {closedNotice && (
+                    <div className="cart-alert" role="status">
+                      <strong>{closedNotice.title}</strong>
+                      <span>{closedNotice.detail}</span>
+                    </div>
+                  )}
+                  {blockedItems.length > 0 && (
+                    <div className="cart-alert" role="status">
+                      <strong>Some items are unavailable right now</strong>
+                      <span>{blockedItems.map((item) => item.title).join(', ')}. Remove them to continue.</span>
+                    </div>
+                  )}
+                  <div className="cart-alert">
+                    <strong>Guaranteed delivery in 2 to 3 hours</strong>
+                    <span>If you have any concern, call the store for details.</span>
+                  </div>
+                </div>
 
                 {checkoutError && <p className="cart-checkout-error" role="alert">{checkoutError}</p>}
                 {isBelowMin && <p className="cart-nudge" id="cart-min-note">Add &#8377;{amountToMin.toFixed(0)} more to place a delivery order.</p>}
@@ -632,6 +677,11 @@ const cartBaseStyles = `
   .cart-continue:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 2px; border-radius: var(--fr-r-control); }
 
   .cart-checkout { position: sticky; top: calc(var(--navbar-height-desktop) + var(--fr-s5)); }
+  .cart-alerts { display: flex; flex-direction: column; gap: var(--fr-s2); margin: var(--fr-s4) 0 var(--fr-s3); }
+  .cart-alert { display: flex; flex-direction: column; gap: 2px; padding: var(--fr-s3) var(--fr-s4); background: var(--fr-warm-tint); border-left: 3px solid var(--fr-danger); border-radius: var(--fr-r-control); }
+  .cart-alert strong { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-danger); }
+  .cart-alert span { font-family: var(--fr-font-sans); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); }
+
   .cart-summary { background: var(--fr-surface); border: 1px solid var(--fr-line); border-radius: var(--fr-r-surface); box-shadow: var(--fr-elev-1); padding: var(--fr-s5); }
   .cart-summary-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); letter-spacing: var(--fr-track-headline); line-height: var(--fr-lh-snug); color: var(--fr-text); margin: 0 0 var(--fr-s4); }
   .cart-seg { display: flex; gap: 4px; background: var(--fr-surface-2); border-radius: var(--fr-r-control); padding: 4px; margin-bottom: var(--fr-s4); }

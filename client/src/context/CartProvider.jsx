@@ -115,6 +115,7 @@ export const CartProvider = ({ children }) => {
                 [cartKey]: {
                     id: product.id,
                     title: product.title,
+                    category: product.category ?? null,
                     variant,
                     price,
                     qty: existing ? existing.qty + 1 : 1,
