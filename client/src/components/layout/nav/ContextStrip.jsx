@@ -28,7 +28,7 @@ export default function ContextStrip({ activeOrder, onTrack }) {
         </div>
       )}
       <style>{`
-        .fr-context-strip { min-height: 28px; display: flex; align-items: center; justify-content: center; padding: var(--fr-s1) var(--fr-s4); text-align: center; background: var(--fr-surface-2); border-bottom: 1px solid var(--fr-line); font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); }
+        .fr-context-strip { min-height: 28px; display: flex; align-items: center; justify-content: center; padding: var(--fr-s1) max(var(--fr-s4), env(safe-area-inset-right)) var(--fr-s1) max(var(--fr-s4), env(safe-area-inset-left)); text-align: center; background: var(--fr-surface-2); border-bottom: 1px solid var(--fr-line); font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); }
         .fr-service { display: flex; align-items: center; gap: var(--fr-s2); color: var(--fr-text-2); min-width: 0; max-width: 100%; }
         .fr-service-text { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .fr-service-lead-sm { display: none; }

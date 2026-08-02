@@ -331,7 +331,7 @@ export default function Navbar() {
       <style>{`
         .fr-header { position: fixed; top: 0; left: 0; right: 0; z-index: var(--fr-z-nav); background: var(--fr-surface); border-bottom: 1px solid var(--fr-line); }
 
-        .fr-bar-inner { display: flex; align-items: center; gap: var(--fr-s5); height: 60px; max-width: var(--fr-container); margin: 0 auto; padding: 0 var(--fr-s7); }
+        .fr-bar-inner { display: flex; align-items: center; gap: var(--fr-s5); height: 60px; max-width: var(--fr-container); margin: 0 auto; padding-left: max(var(--fr-s7), env(safe-area-inset-left)); padding-right: max(var(--fr-s7), env(safe-area-inset-right)); }
 
         .fr-hamburger, .fr-icon-btn { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; background: none; border: none; color: var(--fr-text); cursor: pointer; border-radius: var(--fr-r-pill); flex-shrink: 0; transition: background var(--fr-dur-quick) var(--fr-ease-standard); }
         .fr-hamburger { display: none; }
@@ -351,7 +351,7 @@ export default function Navbar() {
         .fr-mobile { display: none; }
         .fr-account { display: flex; align-items: center; }
 
-        .fr-mobile-search { display: none; align-items: center; gap: var(--fr-s2); height: 44px; margin: 0 var(--fr-s4) var(--fr-s2); padding: 0 var(--fr-s4); background: var(--fr-surface-2); border: 1px solid var(--fr-line); border-radius: var(--fr-r-pill); overflow: hidden; }
+        .fr-mobile-search { display: none; align-items: center; gap: var(--fr-s2); height: 44px; margin: 0 max(var(--fr-s4), env(safe-area-inset-right)) var(--fr-s2) max(var(--fr-s4), env(safe-area-inset-left)); padding: 0 var(--fr-s4); background: var(--fr-surface-2); border: 1px solid var(--fr-line); border-radius: var(--fr-r-pill); overflow: hidden; }
         .fr-mobile-search:focus-within { border-color: var(--fr-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--fr-brand) 16%, transparent); background: var(--fr-surface); }
         .fr-mobile-search svg { color: var(--fr-text-3); flex-shrink: 0; }
         .fr-mobile-search-input { flex: 1; min-width: 0; border: none; background: none; outline: none; font-family: var(--fr-font-sans); font-size: var(--fr-fs-control); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-control); color: var(--fr-text); }
