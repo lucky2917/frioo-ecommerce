@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { formatOrderAmount, getStatusPresentation } from '../../utils/orderStatus';
 import { AdminPage, MetricCard, AdminTable, StatusChip, AdminErrorState } from '../../components/admin/ui';
+import SystemPanel from '../../components/admin/SystemPanel';
 
 const TONE_VARS = {
     info: 'var(--fr-info)',
@@ -284,6 +285,8 @@ export default function AdminDashboard() {
                     .db-charts, .db-bottom { grid-template-columns: 1fr; }
                 }
             `}</style>
+
+            <SystemPanel />
         </AdminPage>
     );
 }

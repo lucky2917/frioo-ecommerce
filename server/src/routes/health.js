@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { supabaseAdmin } = require('../db');
+const metrics = require('../services/metrics');
+const { getBuildInfo } = require('../config/version');
 
 /**
  * @swagger
@@ -24,12 +26,17 @@ const { supabaseAdmin } = require('../db');
  *               version: '1.0.0'
  */
 router.get('/health', (req, res) => {
+    const build = getBuildInfo();
+
     res.status(200).json({
         status: 'ok',
+        service: 'frioo-api',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        service: 'frioo-api',
-        version: process.env.npm_package_version || '1.0.0'
+        version: build.version,
+        commit: build.commitShort,
+        environment: build.environment,
+        metrics: metrics.getSummary()
     });
 });
 
@@ -141,21 +148,16 @@ router.get('/health/ready', async (req, res) => {
  *                 system: 78910
  */
 router.get('/health/status', (req, res) => {
-    const status = {
-        service: 'frioo-api',
-        version: process.env.npm_package_version || '1.0.0',
-        environment: process.env.NODE_ENV || 'development',
-        uptime: process.uptime(),
-        timestamp: new Date().toISOString(),
-        memory: {
-            used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + ' MB',
-            total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + ' MB',
-            rss: Math.round(process.memoryUsage().rss / 1024 / 1024) + ' MB'
-        },
-        cpu: process.cpuUsage()
-    };
+    const build = getBuildInfo();
 
-    res.status(200).json(status);
+    res.status(200).json({
+        service: 'frioo-api',
+        version: build.version,
+        commit: build.commitShort,
+        environment: build.environment,
+        timestamp: new Date().toISOString(),
+        metrics: metrics.getSummary()
+    });
 });
 
 module.exports = router;

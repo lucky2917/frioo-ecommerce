@@ -4,7 +4,7 @@ const { validateEnvironment, describeEnvironment } = require('./config/env');
 
 const { warnings: envWarnings } = validateEnvironment();
 
-const { initSentry, setupSentryErrorHandler } = require('./config/sentry');
+const { initSentry, setupSentryErrorHandler, tagRequest } = require('./config/sentry');
 initSentry();
 
 const express = require('express');
@@ -160,10 +160,13 @@ app.use(compression({
   }
 }));
 
+app.use(tagRequest);
 app.use(requestLogger(1000));
 
+const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS) || 25000;
+
 app.use((req, res, next) => {
-  req.setTimeout(30000, () => {
+  req.setTimeout(REQUEST_TIMEOUT_MS, () => {
     res.status(408).json({
       success: false,
       error: {
@@ -173,7 +176,7 @@ app.use((req, res, next) => {
     });
   });
 
-  res.setTimeout(30000, () => {
+  res.setTimeout(REQUEST_TIMEOUT_MS, () => {
     if (!res.headersSent) {
       res.status(504).json({
         success: false,

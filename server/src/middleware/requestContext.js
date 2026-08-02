@@ -1,5 +1,6 @@
 const { randomUUID } = require('crypto');
 const logger = require('../utils/logger');
+const metrics = require('../services/metrics');
 
 const REQUEST_ID_HEADER = 'x-request-id';
 const MAX_INBOUND_ID_LENGTH = 64;
@@ -35,6 +36,8 @@ const requestLogger = (slowThresholdMs = 1000) => (req, res, next) => {
         const durationMs = Number(process.hrtime.bigint() - req.startedAt) / 1e6;
         const rounded = Math.round(durationMs * 100) / 100;
         const { statusCode } = res;
+
+        metrics.record({ method: req.method, path: req.originalUrl, status: statusCode, durationMs: rounded });
 
         const level = statusCode >= 500 ? 'error' : statusCode >= 400 ? 'warn' : 'info';
 

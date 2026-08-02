@@ -1,5 +1,6 @@
 const Sentry = require('@sentry/node');
 const logger = require('../utils/logger');
+const { getRelease, getBuildInfo } = require('./version');
 const { nodeProfilingIntegration } = require('@sentry/profiling-node');
 
 let sentryInitialized = false;
@@ -13,7 +14,7 @@ function initSentry() {
     Sentry.init({
         dsn: process.env.SENTRY_DSN,
         environment: process.env.NODE_ENV || 'development',
-        release: process.env.npm_package_version || '1.0.0',
+        release: getRelease(),
         tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
         profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
         integrations: [
@@ -27,6 +28,7 @@ function initSentry() {
             'ENOENT',
             'NetworkError',
         ],
+        initialScope: { tags: { commit: getBuildInfo().commitShort || 'local' } },
         beforeSend(event) {
             if (event.request && event.request.headers) {
                 delete event.request.headers['authorization'];
@@ -54,9 +56,17 @@ const setupSentryErrorHandler = (app) => {
     if (!sentryInitialized) return;
     Sentry.setupExpressErrorHandler(app, {
         shouldHandleError(error) {
-            return error.status >= 400;
+            const status = error?.status ?? error?.statusCode ?? 500;
+            return status >= 500;
         },
     });
+};
+
+const tagRequest = (req, _res, next) => {
+    if (sentryInitialized) {
+        Sentry.getCurrentScope().setTag('requestId', req.id);
+    }
+    next();
 };
 
 const captureError = (error, context = {}) => {
@@ -72,6 +82,7 @@ const captureError = (error, context = {}) => {
 module.exports = {
     initSentry,
     setupSentryErrorHandler,
+    tagRequest,
     captureError,
     Sentry,
 };

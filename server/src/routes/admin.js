@@ -6,6 +6,8 @@ const { requireAdmin } = require('../middleware/auth');
 const { phoneValidator } = require('../utils/validators');
 const { sendError, sendValidationError, sendSuccess } = require('../utils/responses');
 const { fetchStoreSettings, invalidateStoreSettings } = require('../services/storeSettings');
+const metrics = require('../services/metrics');
+const { getBuildInfo } = require('../config/version');
 const logger = require('../utils/logger');
 
 router.use(requireAdmin);
@@ -830,5 +832,42 @@ router.patch('/settings',
         }
     }
 );
+
+/**
+ * @swagger
+ * /api/admin/system:
+ *   get:
+ *     summary: Operational metrics for the admin dashboard
+ *     description: |
+ *       Request counts, status classes, response timings, memory and build
+ *       information for the instance serving this request.
+ *
+ *       On serverless these counters are per instance and reset on a cold
+ *       start, so treat them as a live sample rather than lifetime totals.
+ *     tags: [Admin]
+ *     security: [{ bearerAuth: [] }]
+ */
+router.get('/system', async (_req, res) => {
+    let database = 'unknown';
+    const startedAt = Date.now();
+
+    try {
+        const { error } = await supabaseAdmin.from('products').select('id').limit(1);
+        database = error ? 'error' : 'ok';
+    } catch {
+        database = 'error';
+    }
+
+    return sendSuccess(res, {
+        build: getBuildInfo(),
+        process: metrics.getProcessInfo(),
+        requests: metrics.getSummary(),
+        routes: metrics.getRoutes().slice(0, 20),
+        dependencies: {
+            database,
+            databaseLatencyMs: Date.now() - startedAt
+        }
+    });
+});
 
 module.exports = router;
