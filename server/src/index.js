@@ -10,6 +10,7 @@ initSentry();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const { requestContext, requestLogger } = require('./middleware/requestContext');
 const logger = require('./utils/logger');
@@ -101,53 +102,62 @@ app.use((req, res, next) => {
   next();
 });
 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5174',
+const PRODUCTION_ORIGINS = [
   'https://frioo.in',
   'https://www.frioo.in',
-  'https://frioo-shop.vercel.app',
-  process.env.PRODUCTION_URL
+  'https://admin.frioo.in'
+];
+
+const DEVELOPMENT_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:5174'
+];
+
+const allowedOrigins = [
+  ...PRODUCTION_ORIGINS,
+  ...(process.env.NODE_ENV === 'production' ? [] : DEVELOPMENT_ORIGINS),
+  process.env.PRODUCTION_URL,
+  ...(process.env.EXTRA_ALLOWED_ORIGINS || '').split(',').map((value) => value.trim())
 ].filter(Boolean);
+
+const isAllowedOrigin = (origin) => allowedOrigins.includes(origin);
+
+app.use(cors({
+  origin: (origin, callback) => callback(null, !origin || isAllowedOrigin(origin)),
+  credentials: true,
+  maxAge: 86400,
+  optionsSuccessStatus: 204
+}));
 
 const enforceOrigin = (req, res, next) => {
   if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
     return next();
   }
-  if (process.env.NODE_ENV !== 'production') {
-    return next();
-  }
+
   const origin = req.headers.origin;
-  if (!origin) {
+  if (!origin || isAllowedOrigin(origin)) {
     return next();
   }
-  if (allowedOrigins.includes(origin)) {
-    return next();
-  }
+
+  logger.warn('Rejected cross-origin write', { requestId: req.id, origin, path: req.originalUrl });
+
   return res.status(403).json({
     success: false,
     data: null,
-    error: { message: 'Origin not allowed', code: 403 }
+    error: { message: 'Origin not allowed', code: 403, requestId: req.id }
   });
 };
 
 app.use('/api', enforceOrigin);
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-
-    if (process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
-    }
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
+app.use(compression({
+  threshold: 1024,
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) return false;
+    const type = res.getHeader('Content-Type');
+    if (typeof type === 'string' && /^(image|video|audio)\//.test(type)) return false;
+    return compression.filter(req, res);
+  }
 }));
 
 app.use(requestLogger(1000));
@@ -178,7 +188,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
 
 const swaggerUiOptions = {
     customSiteTitle: 'Frioo API Docs',
@@ -193,8 +203,14 @@ const swaggerUiOptions = {
     }
 };
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
-app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec));
+const apiDocsEnabled = process.env.NODE_ENV !== 'production' || process.env.ENABLE_API_DOCS === 'true';
+
+if (apiDocsEnabled) {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+  app.get('/api-docs.json', (_req, res) => res.json(swaggerSpec));
+} else {
+  logger.info('API docs disabled in production');
+}
 
 app.use('/', healthRouter);
 
@@ -242,14 +258,46 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'Frioo API is running' });
 });
 
+const couponLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: {
+    success: false,
+    data: null,
+    error: { message: 'Too many coupon checks. Please try again later.', code: 429 }
+  }
+});
+
 app.use('/api/settings', settingsRouter);
 app.use('/api/products', productsRouter);
+app.use('/api/coupons/validate', couponLimiter);
 app.use('/api/coupons', couponsRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/admin', authLimiter, adminRouter);
 app.use('/api/upload', authLimiter, uploadRoutes);
 
 setupSentryErrorHandler(app);
+
+app.use((err, req, res, next) => {
+  if (err?.name !== 'MulterError') return next(err);
+
+  const isTooLarge = err.code === 'LIMIT_FILE_SIZE';
+  const status = isTooLarge ? 413 : 400;
+
+  logger.warn('Upload rejected', { requestId: req.id, code: err.code, field: err.field });
+
+  return res.status(status).json({
+    success: false,
+    data: null,
+    error: {
+      message: isTooLarge ? 'That image is over 5MB. Use a smaller file.' : 'That upload was not accepted.',
+      code: status,
+      requestId: req.id
+    }
+  });
+});
 
 app.use((req, res) => {
   res.status(404).json({
