@@ -12,7 +12,7 @@ const SEO = ({
     const SITE_NAME = 'Frioo';
     const DEFAULT_TITLE = 'Frioo — Fresh Fruits, Juices & Salads Delivered in Vizag | Best Fruits in Visakhapatnam';
     const DEFAULT_DESC = 'Order the freshest fruits, pure juices, fruit milkshakes & healthy salads in Visakhapatnam (Vizag). 100% natural, no preservatives. Free delivery within 6km. Shop now!';
-    const DEFAULT_IMAGE = 'https://frioo.in/og-image.jpg';
+    const DEFAULT_IMAGE = 'https://frioo.in/og-image.png';
     const BASE_URL = 'https://frioo.in';
     const DEFAULT_KEYWORDS = 'fresh fruits vizag, best fruits in vizag, fruit delivery vizag, fresh juice vizag, buy fruits online vizag, frioo vizag, visakhapatnam fruits';
 

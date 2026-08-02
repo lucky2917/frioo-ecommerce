@@ -5,6 +5,27 @@
             "has": [{ "type": "host", "value": "www.frioo.in" }],
             "destination": "https://frioo.in/$1",
             "permanent": true
+        },
+        {
+            "source": "/",
+            "has": [{ "type": "host", "value": "admin.frioo.in" }],
+            "destination": "/admin",
+            "permanent": false
+        }
+    ],
+    "headers": [
+        {
+            "source": "/(.*)",
+            "has": [{ "type": "host", "value": "admin.frioo.in" }],
+            "headers": [
+                { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+            ]
+        },
+        {
+            "source": "/assets/(.*)",
+            "headers": [
+                { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+            ]
         }
     ],
     "rewrites": [

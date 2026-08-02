@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/react';
 
 export function initSentry() {
     if (!import.meta.env.VITE_SENTRY_DSN) {
-        console.warn('⚠️  Sentry DSN not configured. Client error tracking disabled.');
+        if (import.meta.env.DEV) console.warn('Sentry DSN not configured, client error tracking disabled');
         return;
     }
 
@@ -10,6 +10,8 @@ export function initSentry() {
         dsn: import.meta.env.VITE_SENTRY_DSN,
 
         environment: import.meta.env.MODE || 'development',
+
+        release: import.meta.env.VITE_COMMIT_SHA || `frioo-web@${import.meta.env.VITE_APP_VERSION || '1.0.0'}`,
 
         integrations: [
             Sentry.browserTracingIntegration(),

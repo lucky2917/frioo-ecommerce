@@ -22,6 +22,9 @@ Disallow: /onboarding
 
 Sitemap: https://frioo.in/sitemap.xml
 
+# The admin panel is served on admin.frioo.in and is additionally
+# marked noindex at the edge for that host.
+
 User-agent: Bingbot
 Allow: /
 Disallow: /admin

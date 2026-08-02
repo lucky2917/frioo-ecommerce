@@ -2,91 +2,91 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://frioo.in/</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://frioo.in/shop</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
     <loc>https://frioo.in/shop?category=fruits</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
     <loc>https://frioo.in/shop?category=juices</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://frioo.in/shop?category=shakes</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://frioo.in/shop?category=salads</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
   <url>
     <loc>https://frioo.in/shop?category=deals</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://frioo.in/stores</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
     <loc>https://frioo.in/about</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.70</priority>
   </url>
   <url>
     <loc>https://frioo.in/contact</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.65</priority>
   </url>
   <url>
     <loc>https://frioo.in/faq</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.55</priority>
   </url>
   <url>
     <loc>https://frioo.in/shipping</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.40</priority>
   </url>
   <url>
     <loc>https://frioo.in/returns</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.40</priority>
   </url>
   <url>
     <loc>https://frioo.in/privacy</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.30</priority>
   </url>
   <url>
     <loc>https://frioo.in/terms</loc>
-    <lastmod>2026-08-01</lastmod>
+    <lastmod>2026-08-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.30</priority>
   </url>

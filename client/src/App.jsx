@@ -35,6 +35,8 @@ const Terms = lazy(() => import('./pages/info/Terms'));
 const ShippingPolicy = lazy(() => import('./pages/info/ShippingPolicy'));
 const Returns = lazy(() => import('./pages/info/Returns'));
 
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import CouponPopup from './components/layout/CouponPopup';
 import StorefrontLayout from './components/layout/StorefrontLayout';
 import RouteFallback from './components/layout/RouteFallback';
@@ -45,6 +47,8 @@ const AppInner = () => {
     <>
       <FeedbackRegion />
       <CouponPopup />
+      <Analytics />
+      <SpeedInsights />
 
       <ErrorBoundary>
         <Suspense fallback={<RouteFallback />}>
