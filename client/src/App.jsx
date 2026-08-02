@@ -39,18 +39,23 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import InstallPrompt from './components/pwa/InstallPrompt';
 import UpdatePrompt from './components/pwa/UpdatePrompt';
+import ConnectivityBanner from './components/pwa/ConnectivityBanner';
+import { useStorageGuard } from './hooks/useStorageGuard';
 import CouponPopup from './components/layout/CouponPopup';
 import StorefrontLayout from './components/layout/StorefrontLayout';
 import RouteFallback from './components/layout/RouteFallback';
 import FeedbackRegion from './components/feedback/FeedbackRegion';
 
 const AppInner = () => {
+  useStorageGuard();
+
   return (
     <>
       <FeedbackRegion />
       <CouponPopup />
       <InstallPrompt />
       <UpdatePrompt />
+      <ConnectivityBanner />
       <Analytics />
       <SpeedInsights />
 

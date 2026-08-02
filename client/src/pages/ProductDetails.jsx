@@ -7,6 +7,8 @@ import FetchError from '../components/FetchError';
 import VideoModal from '../components/shop/VideoModal';
 import ProductCard from '../components/shop/ProductCard';
 import { MAX_DELIVERY_RANGE_KM, MAX_TAKEAWAY_RANGE_KM, MIN_CART_VALUE } from '../config/constants';
+import { notify } from '../lib/feedbackStore';
+import { logger } from '../utils/logger';
 
 import { useCart } from '../context/cart-context';
 import { useProduct } from '../hooks/useProduct';
@@ -176,6 +178,30 @@ export default function ProductDetails() {
     commit();
   };
 
+  const shareProduct = async () => {
+    const url = `https://frioo.in/product/${product.id}`;
+    const text = product.description
+      ? `${product.description.slice(0, 120)}`
+      : `Fresh ${product.category} from Frioo, Visakhapatnam.`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: product.title, text, url });
+        return;
+      } catch (err) {
+        if (err?.name === 'AbortError') return;
+        logger.warn('Native share unavailable, falling back to clipboard', err);
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      notify.success('Link copied');
+    } catch {
+      notify.info(`Copy this link to share: ${url}`);
+    }
+  };
+
   const stepImage = (direction) => {
     if (images.length < 2) return;
     setSelectedImage(prev => (prev + direction + images.length) % images.length);
@@ -278,7 +304,16 @@ export default function ProductDetails() {
           </div>
 
           <div className="pd-details">
-            <p className="pd-cat">{product.category}</p>
+            <div className="pd-headrow">
+              <p className="pd-cat">{product.category}</p>
+              <button type="button" className="pd-share" onClick={shareProduct} aria-label={`Share ${product.title}`}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+                <span>Share</span>
+              </button>
+            </div>
             <h1 className="pd-title">{product.title}</h1>
 
             <div className="pd-price-block">
@@ -441,6 +476,10 @@ export default function ProductDetails() {
         .pd-watch-text span { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); }
 
         .pd-details { display: flex; flex-direction: column; }
+        .pd-headrow { display: flex; align-items: center; justify-content: space-between; gap: var(--fr-s4); }
+        .pd-share { display: inline-flex; align-items: center; gap: var(--fr-s2); min-height: 44px; padding: 0 var(--fr-s4); background: none; border: 1px solid var(--fr-line-strong); border-radius: var(--fr-r-pill); font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-control); color: var(--fr-text-2); cursor: pointer; flex-shrink: 0; transition: border-color var(--fr-dur-quick) var(--fr-ease-standard), color var(--fr-dur-quick) var(--fr-ease-standard); }
+        .pd-share:hover { border-color: var(--fr-brand); color: var(--fr-brand); }
+        .pd-share:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: 3px; }
         .pd-cat { font-family: var(--fr-font-mono); font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-eyebrow); text-transform: uppercase; color: var(--fr-brand); margin: 0 0 var(--fr-s2); }
         .pd-title { font-family: var(--fr-font-display); font-size: var(--fr-fs-headline); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-tight); letter-spacing: var(--fr-track-headline); color: var(--fr-text); margin: 0 0 var(--fr-s5); }
         .pd-price-block { display: flex; flex-direction: column; gap: var(--fr-s1); padding-bottom: var(--fr-s5); border-bottom: 1px solid var(--fr-line); margin-bottom: var(--fr-s5); }
@@ -505,7 +544,7 @@ export default function ProductDetails() {
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .pd-watch, .pd-pill, .pd-add { transition: none; }
+          .pd-watch, .pd-pill, .pd-add, .pd-share { transition: none; }
         }
       `}</style>
     </div>
