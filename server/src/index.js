@@ -4,7 +4,7 @@ const { validateEnvironment, describeEnvironment } = require('./config/env');
 
 const { warnings: envWarnings } = validateEnvironment();
 
-const { initSentry, setupSentryErrorHandler, tagRequest } = require('./config/sentry');
+const { initSentry, setupSentryErrorHandler, tagRequest, flushSentry } = require('./config/sentry');
 initSentry();
 
 const express = require('express');
@@ -163,7 +163,7 @@ app.use(compression({
 app.use(tagRequest);
 app.use(requestLogger(1000));
 
-const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS) || 25000;
+const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS) || 9000;
 
 app.use((req, res, next) => {
   req.setTimeout(REQUEST_TIMEOUT_MS, () => {
@@ -310,7 +310,7 @@ app.use((req, res) => {
   });
 });
 
-app.use((err, req, res, _next) => {
+app.use(async (err, req, res, _next) => {
   const status = err.status || err.statusCode || 500;
 
   logger.error('Unhandled error', {
@@ -320,6 +320,10 @@ app.use((err, req, res, _next) => {
     status,
     error: err
   });
+
+  if (status >= 500 && process.env.VERCEL) {
+    await flushSentry(2000);
+  }
 
   if (res.headersSent) return;
 

@@ -4,7 +4,7 @@ const { validateEnvironment } = require('./config/env');
 
 validateEnvironment();
 
-const DB_TIMEOUT_MS = Number(process.env.DB_TIMEOUT_MS) || 8000;
+const DB_TIMEOUT_MS = Number(process.env.DB_TIMEOUT_MS) || 5000;
 
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,

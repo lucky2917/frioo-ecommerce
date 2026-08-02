@@ -69,6 +69,15 @@ const tagRequest = (req, _res, next) => {
     next();
 };
 
+const flushSentry = async (timeoutMs = 2000) => {
+    if (!sentryInitialized) return false;
+    try {
+        return await Sentry.flush(timeoutMs);
+    } catch {
+        return false;
+    }
+};
+
 const captureError = (error, context = {}) => {
     if (!sentryInitialized) return;
     Sentry.captureException(error, {
@@ -83,6 +92,7 @@ module.exports = {
     initSentry,
     setupSentryErrorHandler,
     tagRequest,
+    flushSentry,
     captureError,
     Sentry,
 };

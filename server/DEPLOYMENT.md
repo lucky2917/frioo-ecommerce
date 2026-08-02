@@ -31,8 +31,8 @@ Recommended in production, warned at startup if missing:
 Optional:
 
 - `LOG_LEVEL` (default `info`)
-- `DB_TIMEOUT_MS` (default `8000`)
-- `REQUEST_TIMEOUT_MS` (default `25000`, keep under the Vercel `maxDuration`)
+- `DB_TIMEOUT_MS` (default `5000`)
+- `REQUEST_TIMEOUT_MS` (default `9000`, must stay under the platform limit)
 - `EXTRA_ALLOWED_ORIGINS` (comma separated)
 - `ENABLE_API_DOCS` (`true` re-enables Swagger in production)
 
@@ -60,6 +60,54 @@ curl -s -o /dev/null -w "%{http_code}\n" https://api.frioo.in/api/admin/system #
 Expected: `/health` returns `status: ok` with live metrics, `/health/ready`
 confirms the database, the admin origin is echoed back, Swagger is off and the
 admin metrics endpoint refuses anonymous callers.
+
+## Vercel Hobby
+
+The backend is configured for the Hobby (free) plan. `vercel.json` sets no
+`maxDuration`, so the platform default applies and nothing in the config
+requires Pro.
+
+Timeout budget, smallest wins:
+
+| Layer                | Limit    | Behaviour on hit                          |
+| -------------------- | -------- | ----------------------------------------- |
+| Platform (Hobby)     | 10s      | function killed, no application log       |
+| App request timeout  | 9s       | clean 504 with a request id               |
+| Single database call | 5s       | query aborts, route returns its own error |
+
+The app timeout is deliberately below the platform limit so a stuck request
+returns a readable error instead of being killed silently. Raising
+`REQUEST_TIMEOUT_MS` above the platform limit removes that safety net, do not
+set it to 10000 or higher on Hobby.
+
+Measured cost of the heaviest endpoint, order placement, against the production
+database: eight sequential round trips totalling roughly 2.8s, about a third of
+the app timeout. No endpoint is close to the limit.
+
+Hobby limitations worth knowing:
+
+- Function execution is capped and cannot be extended
+- Instances go cold, so first request after idle pays a start cost
+- Metrics counters live in instance memory and reset on every cold start
+- Concurrent instances each keep their own counters
+
+Consider Pro when any of these become true:
+
+- Sustained traffic makes cold starts a common experience rather than a rare one
+- An endpoint needs longer than the Hobby execution window
+- You want the metrics to reflect the whole service rather than one instance
+- Error volume needs longer log retention than Hobby provides
+
+## Background work
+
+Nothing runs after the response. Metrics recording and request logging happen in
+a `finish` listener and are synchronous, so they complete before the function can
+be frozen.
+
+Sentry is the one exception. Its transport batches events, and a serverless
+function can freeze before that batch is sent, so 5xx responses flush Sentry with
+a 2s cap before replying. Without that, crashes would be lost precisely when they
+matter most.
 
 ## Health endpoints
 
