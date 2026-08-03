@@ -61,6 +61,10 @@
             "destination": "/manifest-admin.json"
         },
         {
+            "source": "/manifest.json",
+            "destination": "/manifest-customer.json"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
