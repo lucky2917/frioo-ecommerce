@@ -4,9 +4,19 @@ import { notify } from '../../lib/feedbackStore';
 import { logger } from '../../utils/logger';
 import { API_BASE_URL, PRODUCT_CATEGORIES } from '../../config/constants';
 import { AdminPage, MetricCard, AdminModal, ConfirmDialog, SearchInput, AdminErrorState } from '../../components/admin/ui';
+import ProductNutritionProfile from '../../components/admin/ProductNutritionProfile';
+import {
+    EMPTY_PROFILE, toProfileForm, splitUnmanagedNutrition,
+    buildNutritionPayload, isProfileFilled
+} from '../../utils/productProfile';
 
 const DB_CATEGORIES = PRODUCT_CATEGORIES.filter(c => c.dbValue !== null).map(c => c.dbValue);
 const CATEGORIES = ['All', ...DB_CATEGORIES];
+
+const FORM_TABS = [
+    { id: 'details', label: 'Product details' },
+    { id: 'profile', label: 'Nutrition profile' }
+];
 
 const INITIAL_FORM = {
     id: null,
@@ -22,7 +32,9 @@ const INITIAL_FORM = {
     perfect_for: '',
     video_url: '',
     uploadMethod: 'url',
-    nutrition: { calories: '', protein: '', carbs: '', fat: '' }
+    nutrition: { calories: '', protein: '', carbs: '', fat: '' },
+    nutritionExtra: {},
+    profile: EMPTY_PROFILE
 };
 
 const NUTRITION_FIELDS = [
@@ -44,6 +56,7 @@ export default function AdminProducts() {
     const [submitting, setSubmitting] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
     const [deleting, setDeleting] = useState(false);
+    const [activeFormTab, setActiveFormTab] = useState('details');
 
     const uploadInFlightRef = useRef(false);
 
@@ -86,6 +99,7 @@ export default function AdminProducts() {
 
     const handleAddNew = () => {
         setFormData(INITIAL_FORM);
+        setActiveFormTab('details');
         setIsModalOpen(true);
     };
 
@@ -113,8 +127,11 @@ export default function AdminProducts() {
                 protein: product.nutrition?.protein?.toString() || '',
                 carbs: product.nutrition?.carbs?.toString() || '',
                 fat: product.nutrition?.fat?.toString() || ''
-            }
+            },
+            nutritionExtra: splitUnmanagedNutrition(product.nutrition),
+            profile: toProfileForm(product.nutrition)
         });
+        setActiveFormTab('details');
         setIsModalOpen(true);
     };
 
@@ -175,12 +192,13 @@ export default function AdminProducts() {
                 discount: formData.discount !== '' ? parseInt(formData.discount, 10) : 0,
                 perfect_for: formData.perfect_for || '',
                 video_url: formData.video_url || '',
-                nutrition: {
-                    calories: parseFloat(formData.nutrition?.calories) || 0,
-                    protein: parseFloat(formData.nutrition?.protein) || 0,
-                    carbs: parseFloat(formData.nutrition?.carbs) || 0,
-                    fat: parseFloat(formData.nutrition?.fat) || 0
-                }
+                nutrition: buildNutritionPayload({
+                    profile: formData.profile,
+                    manual: formData.nutrition,
+                    unmanaged: formData.nutritionExtra,
+                    title: formData.title,
+                    description: formData.description
+                })
             };
 
             const url = formData.id
@@ -385,7 +403,31 @@ export default function AdminProducts() {
                 size="lg"
             >
                 <form onSubmit={handleSave} className="ap-form">
-                    <div className="ap-form-grid">
+                    <div className="ap-tabs" role="tablist" aria-label="Product form sections">
+                        {FORM_TABS.map(({ id, label }) => (
+                            <button
+                                key={id}
+                                type="button"
+                                role="tab"
+                                id={`ap-tab-${id}`}
+                                aria-selected={activeFormTab === id}
+                                aria-controls={`ap-panel-${id}`}
+                                className={`ap-tab${activeFormTab === id ? ' ap-tab-on' : ''}`}
+                                onClick={() => setActiveFormTab(id)}
+                            >
+                                {label}
+                                {id === 'profile' && isProfileFilled(formData.profile) && <span className="ap-tab-dot" aria-hidden="true" />}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div
+                        id="ap-panel-details"
+                        role="tabpanel"
+                        aria-labelledby="ap-tab-details"
+                        hidden={activeFormTab !== 'details'}
+                        className="ap-form-grid"
+                    >
                         <div className="adm-field ap-full">
                             <label className="adm-label" htmlFor="ap-title">Product name</label>
                             <input id="ap-title" className="adm-input" type="text" value={formData.title} onChange={e => setField('title', e.target.value)} placeholder="e.g. Fresh Alphonso Mango" required />
@@ -497,14 +539,20 @@ export default function AdminProducts() {
 
                         <div className="adm-field ap-full">
                             <span className="adm-label">Nutrition (per 100g/ml)</span>
-                            <div className="ap-nutrition">
-                                {NUTRITION_FIELDS.map(({ key, label, placeholder }) => (
-                                    <div key={key} className="adm-field">
-                                        <label className="ap-nutrition-label" htmlFor={`nut-${key}`}>{label}</label>
-                                        <input id={`nut-${key}`} className="adm-input" type="number" step="0.01" value={formData.nutrition?.[key] || ''} onChange={e => setNutrition(key, e.target.value)} placeholder={placeholder} />
-                                    </div>
-                                ))}
-                            </div>
+                            {isProfileFilled(formData.profile) ? (
+                                <p className="ap-nutrition-linked">
+                                    Taken from the nutrition profile. Edit the per 100g values there and these follow automatically.
+                                </p>
+                            ) : (
+                                <div className="ap-nutrition">
+                                    {NUTRITION_FIELDS.map(({ key, label, placeholder }) => (
+                                        <div key={key} className="adm-field">
+                                            <label className="ap-nutrition-label" htmlFor={`nut-${key}`}>{label}</label>
+                                            <input id={`nut-${key}`} className="adm-input" type="number" step="0.01" value={formData.nutrition?.[key] || ''} onChange={e => setNutrition(key, e.target.value)} placeholder={placeholder} />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         <div className="adm-field ap-full">
@@ -513,6 +561,18 @@ export default function AdminProducts() {
                                 <span>Mark as featured product</span>
                             </label>
                         </div>
+                    </div>
+
+                    <div
+                        id="ap-panel-profile"
+                        role="tabpanel"
+                        aria-labelledby="ap-tab-profile"
+                        hidden={activeFormTab !== 'profile'}
+                    >
+                        <ProductNutritionProfile
+                            value={formData.profile}
+                            onChange={profile => setFormData(prev => ({ ...prev, profile }))}
+                        />
                     </div>
 
                     <div className="ap-form-actions">
@@ -565,6 +625,13 @@ export default function AdminProducts() {
                 .ap-actions .adm-btn { flex: 1; }
 
                 .ap-form { display: flex; flex-direction: column; }
+                .ap-tabs { display: flex; gap: var(--fr-s2); margin-bottom: var(--fr-s5); border-bottom: 1px solid var(--adm-line); }
+                .ap-tab { position: relative; display: inline-flex; align-items: center; gap: var(--fr-s2); min-height: 44px; padding: 0 var(--fr-s4); background: none; border: none; border-bottom: 2px solid transparent; font-family: inherit; font-size: var(--fr-fs-body); font-weight: var(--fr-fw-semibold); color: var(--adm-text-2); cursor: pointer; }
+                .ap-tab:hover { color: var(--adm-text); }
+                .ap-tab:focus-visible { outline: 2px solid var(--fr-brand); outline-offset: -2px; }
+                .ap-tab-on { color: var(--fr-brand); border-bottom-color: var(--fr-brand); }
+                .ap-tab-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--fr-brand); }
+                .ap-nutrition-linked { margin: 0; padding: var(--fr-s3) var(--fr-s4); background: var(--adm-surface-2); border: 1px solid var(--adm-line); border-radius: 6px; font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); line-height: 1.5; color: var(--adm-text-2); }
                 .ap-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--fr-s4); }
                 .ap-full { grid-column: 1 / -1; }
 
