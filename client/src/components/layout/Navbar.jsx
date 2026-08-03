@@ -389,8 +389,8 @@ export default function Navbar() {
         .fr-modal-total { display: flex; align-items: center; justify-content: space-between; gap: var(--fr-s3); padding-top: var(--fr-s3); border-top: 1px solid var(--fr-line); font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-normal); color: var(--fr-text); font-variant-numeric: tabular-nums; }
         @media (prefers-reduced-motion: reduce) { .fr-modal-fill { transition: none; } }
 
-        @media (max-width: 900px) {
-          .fr-bar-inner { height: 52px; gap: var(--fr-s3); padding: 0 var(--fr-s4); }
+        @media (max-width: 900px), (pointer: coarse) and (max-width: 1100px) {
+          .fr-bar-inner { height: 52px; gap: var(--fr-s3); padding-left: max(var(--fr-s4), env(safe-area-inset-left)); padding-right: max(var(--fr-s4), env(safe-area-inset-right)); }
           .fr-hamburger { display: inline-flex; }
           .fr-bar-center { display: none; }
           .fr-bar-right { flex: 1; justify-content: flex-end; }
