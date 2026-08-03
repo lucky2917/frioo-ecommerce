@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import NotificationInbox from './NotificationInbox';
 import { useAuth } from '../../context/auth-context';
 import { logger } from '../../utils/logger';
 
@@ -63,6 +64,9 @@ export default function AdminLayout() {
         <div className="admin-layout">
             <header className="mobile-header">
                 <div className="mobile-brand">Frioo Admin</div>
+                <div className="mobile-header-actions">
+                    <NotificationInbox />
+                </div>
                 <button className="menu-toggle" onClick={() => setIsMobileOpen(v => !v)} aria-label="Toggle menu" aria-expanded={isMobileOpen}>
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         {isMobileOpen
@@ -129,6 +133,7 @@ export default function AdminLayout() {
             </aside>
 
             <main className={`admin-main ${isCollapsed ? 'main-expanded' : ''}`}>
+                <div className="admin-toolbar"><NotificationInbox /></div>
                 <button
                     className="collapse-btn"
                     onClick={() => setIsCollapsed(v => !v)}
@@ -402,6 +407,9 @@ export default function AdminLayout() {
                 .collapse-btn svg { width: 15px; height: 15px; color: var(--adm-text-2); }
 
                 .mobile-header { display: none; }
+                .mobile-header-actions { margin-left: auto; margin-right: 12px; }
+                .admin-toolbar { position: absolute; top: 18px; right: 24px; z-index: 60; }
+                @media (max-width: 1024px) { .admin-toolbar { display: none; } }
 
                 @media (max-width: 1024px) {
                     .collapse-btn { display: none; }

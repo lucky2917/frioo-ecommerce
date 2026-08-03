@@ -17,13 +17,15 @@ export default defineConfig({
       manifest: false,
       includeAssets: [],
       workbox: {
+        importScripts: ['/push-sw.js'],
         globPatterns: ['**/*.{js,css,html}', 'favicon.svg'],
         globIgnores: [
           '**/Admin*.js',
           'screenshots/**',
           'og-image.png',
           'logo.png',
-          'offline.html'
+          'offline.html',
+          'push-sw.js'
         ],
         additionalManifestEntries: [
           { url: '/offline.html', revision: commitSha || String(Date.now()) }

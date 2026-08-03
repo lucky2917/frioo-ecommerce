@@ -870,4 +870,32 @@ router.get('/system', async (_req, res) => {
     });
 });
 
+/**
+ * @swagger
+ * /api/admin/notifications:
+ *   get:
+ *     summary: Recent notification events
+ *     description: Most recent notification events for the admin inbox.
+ *     tags: [Admin]
+ *     security: [{ bearerAuth: [] }]
+ */
+router.get('/notifications', async (req, res) => {
+    const limit = Math.min(Number(req.query.limit) || 30, 100);
+
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('notification_events')
+            .select('id, notification_type, payload, status, created_at')
+            .eq('recipient_type', 'admin')
+            .order('created_at', { ascending: false })
+            .limit(limit);
+
+        if (error) throw error;
+        return sendSuccess(res, { notifications: data || [] });
+    } catch (err) {
+        logger.error('Admin notifications fetch failed', { requestId: req.id, error: err });
+        return sendError(res, 'Could not load notifications', 500);
+    }
+});
+
 module.exports = router;

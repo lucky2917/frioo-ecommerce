@@ -6,12 +6,24 @@ import { API_BASE_URL, PRODUCT_CATEGORIES } from '../../config/constants';
 import { fetchWithTimeout } from '../../lib/http';
 import { AdminPage, AdminErrorState } from '../../components/admin/ui';
 import { formatHour } from '../../utils/storeHours';
+import { useAdminPush } from '../../hooks/useAdminPush';
+import { relativeTime } from '../../utils/relativeTime';
 
 const SECTIONS = PRODUCT_CATEGORIES.filter((category) => category.dbValue !== null);
 
 const HOURS = Array.from({ length: 25 }, (_, hour) => hour);
 
+const describeDevice = (agent) => {
+    if (!agent) return 'Unknown device';
+    if (/iphone|ipad/i.test(agent)) return 'iPhone or iPad';
+    if (/android/i.test(agent)) return 'Android device';
+    if (/macintosh/i.test(agent)) return 'Mac';
+    if (/windows/i.test(agent)) return 'Windows PC';
+    return 'Browser';
+};
+
 export default function AdminSettings() {
+    const push = useAdminPush();
     const [settings, setSettings] = useState(null);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(null);
@@ -94,6 +106,57 @@ export default function AdminSettings() {
     return (
         <AdminPage title="Store settings" subtitle="Availability, opening hours and delivery pricing">
             <div className="adm-settings">
+                <section className="adm-card">
+                    <div className="adm-card-head">
+                        <h2 className="adm-card-title">Order notifications</h2>
+                        <p className="adm-card-sub">Get an alert on this device the moment a customer places an order, even when the admin app is closed.</p>
+                    </div>
+
+                    {!push.supported && (
+                        <p className="adm-push-note">This browser cannot receive push notifications. Install the admin app to your home screen, or use Chrome, Edge or Safari 16.4 and later.</p>
+                    )}
+
+                    {push.supported && (
+                        <>
+                            <div className="adm-push-row">
+                                <span className={`adm-push-state adm-push-state--${push.subscribed ? 'on' : 'off'}`}>
+                                    {push.subscribed ? 'On for this device' : 'Off for this device'}
+                                </span>
+                                {push.subscribed ? (
+                                    <button type="button" className="adm-pill adm-pill-off" onClick={push.disable} disabled={push.busy}>
+                                        {push.busy ? 'Working…' : 'Turn off'}
+                                    </button>
+                                ) : (
+                                    <button type="button" className="adm-pill" onClick={push.enable} disabled={push.busy}>
+                                        {push.busy ? 'Working…' : 'Turn on'}
+                                    </button>
+                                )}
+                            </div>
+
+                            {push.permission === 'denied' && (
+                                <p className="adm-push-note">Notifications are blocked for this site in your browser settings. Allow them there first, then turn this on.</p>
+                            )}
+                            {push.error && <p className="adm-push-error" role="alert">{push.error}</p>}
+
+                            {push.devices.length > 0 && (
+                                <ul className="adm-devices">
+                                    {push.devices.map((device) => (
+                                        <li className="adm-device" key={device.endpoint}>
+                                            <span className="adm-device-copy">
+                                                <span className="adm-device-name">{describeDevice(device.user_agent)}</span>
+                                                <span className="adm-device-meta">Last active {relativeTime(device.last_seen_at)}</span>
+                                            </span>
+                                            <button type="button" className="adm-device-remove" onClick={() => push.removeDevice(device.endpoint)} disabled={push.busy}>
+                                                Remove
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </>
+                    )}
+                </section>
+
                 <section className="adm-card">
                     <div className="adm-card-head">
                         <h2 className="adm-card-title">Whole store</h2>
@@ -255,6 +318,21 @@ export default function AdminSettings() {
                 .adm-pill-off { background: #F6E2D8; border-color: #B23A2E; color: #B23A2E; }
                 .adm-pill:disabled { opacity: 0.6; cursor: default; }
                 .adm-pill:focus-visible { outline: 2px solid #1B4D3E; outline-offset: 3px; }
+                .adm-push-row { display: flex; align-items: center; justify-content: space-between; gap: var(--fr-s4); }
+                .adm-push-state { font-family: var(--fr-font-sans); font-size: 0.875rem; font-weight: 600; }
+                .adm-push-state--on { color: #1B4D3E; }
+                .adm-push-state--off { color: var(--adm-text-2, #55635c); }
+                .adm-push-note { font-family: var(--fr-font-sans); font-size: 0.8125rem; font-weight: 500; line-height: 1.55; color: var(--adm-text-2, #55635c); margin: 0; }
+                .adm-push-error { font-family: var(--fr-font-sans); font-size: 0.8125rem; font-weight: 600; line-height: 1.55; color: #B23A2E; margin: 0; }
+                .adm-devices { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+                .adm-device { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: var(--adm-surface-2, #f4f8f5); border-radius: 10px; }
+                .adm-device-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+                .adm-device-name { font-family: var(--fr-font-sans); font-size: 0.875rem; font-weight: 600; color: var(--adm-text, #16211b); }
+                .adm-device-meta { font-family: var(--fr-font-sans); font-size: 0.75rem; font-weight: 500; color: var(--adm-text-2, #55635c); }
+                .adm-device-remove { background: none; border: none; padding: 6px; font-family: var(--fr-font-sans); font-size: 0.75rem; font-weight: 600; color: #B23A2E; cursor: pointer; }
+                .adm-device-remove:hover:not(:disabled) { text-decoration: underline; }
+                .adm-device-remove:disabled { opacity: 0.5; cursor: default; }
+                .adm-device-remove:focus-visible { outline: 2px solid #1B4D3E; outline-offset: 2px; border-radius: 4px; }
                 @media (max-width: 640px) { .adm-hours { grid-template-columns: 1fr; } }
             `}</style>
         </AdminPage>
