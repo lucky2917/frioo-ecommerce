@@ -37,6 +37,7 @@ const Returns = lazy(() => import('./pages/info/Returns'));
 
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
+import AdminHostGate from './components/admin/AdminHostGate';
 import InstallPrompt from './components/pwa/InstallPrompt';
 import UpdatePrompt from './components/pwa/UpdatePrompt';
 import ConnectivityBanner from './components/pwa/ConnectivityBanner';
@@ -51,6 +52,7 @@ const AppInner = () => {
 
   return (
     <>
+      <AdminHostGate />
       <FeedbackRegion />
       <CouponPopup />
       <InstallPrompt />

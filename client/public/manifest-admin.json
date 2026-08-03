@@ -1,0 +1,79 @@
+{
+  "name": "Frioo Admin",
+  "short_name": "Frioo Admin",
+  "description": "Manage orders, products, coupons and store settings for Frioo.",
+  "id": "/admin",
+  "start_url": "/admin",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#F4F6F5",
+  "theme_color": "#16211B",
+  "orientation": "portrait-primary",
+  "lang": "en-IN",
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/admin-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/admin-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/admin-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Orders",
+      "short_name": "Orders",
+      "url": "/admin/orders",
+      "icons": [
+        {
+          "src": "/admin-icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "short_name": "Products",
+      "url": "/admin/products",
+      "icons": [
+        {
+          "src": "/admin-icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "short_name": "Settings",
+      "url": "/admin/settings",
+      "icons": [
+        {
+          "src": "/admin-icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
