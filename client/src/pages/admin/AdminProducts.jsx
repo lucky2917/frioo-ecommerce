@@ -543,7 +543,7 @@ export default function AdminProducts() {
                 .ap-tab.active { background: var(--fr-brand); border-color: var(--fr-brand); color: var(--fr-on-brand); }
                 .ap-tab-count { font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); opacity: 0.85; }
 
-                .ap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--fr-s4); }
+                .ap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--fr-s4); }
                 .ap-card { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--fr-r-card); overflow: hidden; display: flex; flex-direction: column; }
                 .ap-img { position: relative; aspect-ratio: 4 / 3; background: var(--adm-surface-2); }
                 .ap-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -552,7 +552,7 @@ export default function AdminProducts() {
                 .ap-tag-discount { right: var(--fr-s2); background: var(--fr-warm); color: #fff; }
                 .ap-body { padding: var(--fr-s3) var(--fr-s4); flex: 1; }
                 .ap-cat { font-size: var(--fr-fs-eyebrow); font-weight: var(--fr-fw-medium); text-transform: uppercase; letter-spacing: var(--fr-track-eyebrow); color: var(--adm-text-3); margin-bottom: var(--fr-s1); }
-                .ap-name { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-normal); letter-spacing: var(--fr-track-headline); color: var(--adm-text); margin: 0 0 var(--fr-s2); }
+                .ap-name { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-medium); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-headline); color: var(--adm-text); margin: 0 0 var(--fr-s2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
                 .ap-meta { display: flex; align-items: center; gap: var(--fr-s2); margin-bottom: var(--fr-s2); }
                 .ap-unit { font-size: var(--fr-fs-label); color: var(--adm-text-2); }
                 .ap-stock { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fr-fs-label); font-weight: var(--fr-fw-medium); padding: 1px var(--fr-s2); border-radius: var(--fr-r-pill); font-variant-numeric: tabular-nums; }
@@ -591,14 +591,27 @@ export default function AdminProducts() {
                 .ap-checkbox { display: flex; align-items: center; gap: var(--fr-s2); font-size: var(--fr-fs-caption); color: var(--adm-text); cursor: pointer; }
                 .ap-checkbox input { width: 16px; height: 16px; accent-color: var(--fr-brand); }
 
-                .ap-form-actions { display: flex; justify-content: flex-end; gap: var(--fr-s3); margin-top: var(--fr-s5); padding-top: var(--fr-s4); border-top: 1px solid var(--adm-border); }
+                .ap-form-actions { position: sticky; bottom: calc(var(--fr-s5) * -1); z-index: 2; display: flex; justify-content: flex-end; gap: var(--fr-s3); margin: var(--fr-s5) calc(var(--fr-s5) * -1) calc(var(--fr-s5) * -1); padding: var(--fr-s4) var(--fr-s5); padding-bottom: max(var(--fr-s4), env(safe-area-inset-bottom)); background: var(--adm-surface); border-top: 1px solid var(--adm-border); }
 
                 @media (prefers-reduced-motion: reduce) {
                     .ap-tab, .ap-toggle-btn, .ap-upload-tab, .ap-dropzone { transition: none; }
                 }
 
+                @media (max-width: 720px) {
+                    .ap-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--fr-s3); }
+                    .ap-body { padding: var(--fr-s2) var(--fr-s3); }
+                    .ap-cat { font-size: 0.625rem; margin-bottom: 2px; }
+                    .ap-name { font-size: var(--fr-fs-label); margin-bottom: var(--fr-s1); }
+                    .ap-meta { flex-wrap: wrap; gap: 4px; margin-bottom: var(--fr-s1); }
+                    .ap-price { font-size: var(--fr-fs-body); }
+                    .ap-actions { padding: var(--fr-s2) var(--fr-s3); gap: var(--fr-s2); }
+                    .ap-tag { font-size: 0.625rem; }
+                }
+
                 @media (max-width: 560px) {
                     .ap-form-grid { grid-template-columns: 1fr; }
+                    .ap-form-actions { flex-direction: row; }
+                    .ap-form-actions .adm-btn { flex: 1; justify-content: center; }
                 }
             `}</style>
         </AdminPage>

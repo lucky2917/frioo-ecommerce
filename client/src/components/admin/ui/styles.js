@@ -212,6 +212,7 @@ const CSS = `
   border-radius: var(--fr-r-surface);
   box-shadow: var(--fr-elev-3);
   max-height: 90vh;
+  max-height: 90dvh;
   display: flex;
   flex-direction: column;
 }
@@ -237,7 +238,16 @@ const CSS = `
 
 .adm-dialog-title { font-family: var(--fr-font-sans); font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); letter-spacing: var(--fr-track-headline); color: var(--adm-text); margin: 0; }
 .adm-dialog-body { padding: var(--fr-s5); overflow-y: auto; }
-.adm-dialog-foot { display: flex; justify-content: flex-end; gap: var(--fr-s3); padding: var(--fr-s4) var(--fr-s5); border-top: 1px solid var(--adm-border); }
+.adm-dialog-foot { display: flex; justify-content: flex-end; gap: var(--fr-s3); padding: var(--fr-s4) var(--fr-s5); padding-bottom: max(var(--fr-s4), env(safe-area-inset-bottom)); border-top: 1px solid var(--adm-border); }
+
+@media (max-width: 560px) {
+  .adm-overlay { padding: 0; align-items: flex-end; }
+  .adm-dialog { max-width: none; max-height: 94dvh; border-radius: var(--fr-r-surface) var(--fr-r-surface) 0 0; }
+  .adm-dialog-head { position: sticky; top: 0; z-index: 2; background: var(--adm-surface); padding: var(--fr-s4); border-radius: var(--fr-r-surface) var(--fr-r-surface) 0 0; }
+  .adm-dialog-body { padding: var(--fr-s4); }
+  .adm-dialog-foot { padding: var(--fr-s3) var(--fr-s4); padding-bottom: max(var(--fr-s3), env(safe-area-inset-bottom)); }
+  .adm-dialog-foot .adm-btn { flex: 1; justify-content: center; }
+}
 .adm-confirm-msg { margin: 0; color: var(--adm-text-2); font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); }
 
 .adm-spin {
