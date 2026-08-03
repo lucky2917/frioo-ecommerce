@@ -28,6 +28,7 @@ const adminRouter = require('./routes/admin');
 const uploadRoutes = require('./routes/upload');
 const healthRouter = require('./routes/health');
 const settingsRouter = require('./routes/settings');
+const notificationsRouter = require('./routes/notifications');
 
 app.use(requestContext);
 
@@ -274,6 +275,7 @@ const couponLimiter = rateLimit({
 });
 
 app.use('/api/settings', settingsRouter);
+app.use('/api/notifications', notificationsRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/coupons/validate', couponLimiter);
 app.use('/api/coupons', couponsRouter);
