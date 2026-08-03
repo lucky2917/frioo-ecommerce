@@ -137,7 +137,7 @@ const orderValidators = () => [
 
 const productValidators = () => [
     body('title').trim().isLength({ min: 3, max: 200 }).withMessage('Product title must be 3-200 characters'),
-    priceValidator('price_cents', 1, 100000000),
+    priceValidator('price_cents', 0, 100000000),
     body('category').trim().isLength({ min: 2, max: 50 }).withMessage('Category must be 2-50 characters'),
     body('description').optional().trim().isLength({ max: 2000 }).withMessage('Description too long (max 2000 characters)'),
     body('images').optional().isArray({ max: 10 }).withMessage('Maximum 10 images allowed'),

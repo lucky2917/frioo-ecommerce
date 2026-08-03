@@ -6,6 +6,7 @@ const { requireAdmin } = require('../middleware/auth');
 const { phoneValidator } = require('../utils/validators');
 const { sendError, sendValidationError, sendSuccess } = require('../utils/responses');
 const { fetchStoreSettings, invalidateStoreSettings } = require('../services/storeSettings');
+const { discardReplacedImages } = require('../services/productImages');
 const metrics = require('../services/metrics');
 const { getBuildInfo } = require('../config/version');
 const logger = require('../utils/logger');
@@ -471,7 +472,7 @@ const generateSlug = (title) => {
 router.post('/products',
     [
         body('title').notEmpty().withMessage('Title is required'),
-        body('price_cents').isInt({ min: 1 }).withMessage('Price must be a positive integer'),
+        body('price_cents').isInt({ min: 0 }).withMessage('Price must be zero or a positive integer'),
         body('category').notEmpty().withMessage('Category is required')
     ],
     async (req, res) => {
@@ -562,7 +563,7 @@ router.post('/products',
 router.patch('/products/:id',
     [
         body('title').optional().notEmpty().withMessage('Title cannot be empty'),
-        body('price_cents').optional().isInt({ min: 1 }).withMessage('Price must be positive'),
+        body('price_cents').optional().isInt({ min: 0 }).withMessage('Price must be zero or a positive integer'),
     ],
     async (req, res) => {
         const errors = validationResult(req);
@@ -577,6 +578,16 @@ router.patch('/products/:id',
                 if (req.body[field] !== undefined) {
                     updates[field] = req.body[field];
                 }
+            }
+
+            let previousImages = null;
+            if (updates.images !== undefined) {
+                const { data: current } = await supabaseAdmin
+                    .from('products')
+                    .select('images')
+                    .eq('id', id)
+                    .maybeSingle();
+                previousImages = current?.images ?? null;
             }
 
             if (updates.title) {
@@ -599,6 +610,19 @@ router.patch('/products/:id',
                 .single();
 
             if (error) throw error;
+
+            if (previousImages !== null) {
+                try {
+                    await discardReplacedImages({
+                        previousImages,
+                        nextImages: data.images,
+                        productId: data.id
+                    });
+                } catch (cleanupErr) {
+                    logger.warn('Image cleanup failed after product update:', cleanupErr);
+                }
+            }
+
             return sendSuccess(res, { product: data });
         } catch (err) {
             logger.error('Admin update product error:', err);
