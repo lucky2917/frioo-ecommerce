@@ -1,5 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/auth-context';
+import { isAdminHost } from '../../utils/adminHost';
+import AdminSignIn from './AdminSignIn';
 
 export default function AdminRoute({ children }) {
   const { user, profile, loading } = useAuth();
@@ -39,6 +41,11 @@ export default function AdminRoute({ children }) {
   }
 
   if (!user || profile?.role !== 'admin') {
+    // On the admin domain there is no storefront to fall back to, and
+    // redirecting to "/" is what created the loop with AdminHostGate.
+    if (isAdminHost()) {
+      return <AdminSignIn reason={user ? 'not-admin' : 'signed-out'} />;
+    }
     return <Navigate to="/" replace />;
   }
 

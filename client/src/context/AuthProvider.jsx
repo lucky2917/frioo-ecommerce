@@ -210,10 +210,10 @@ export const AuthProvider = ({ children }) => {
     }
   }, [fetchProfile]);
 
-  const signInWithGoogle = useCallback(async () => {
+  const signInWithGoogle = useCallback(async (redirectPath = '/onboarding') => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/onboarding` }
+      options: { redirectTo: `${window.location.origin}${redirectPath}` }
     });
     if (error) logger.error('Google sign in failed:', error);
     return !error;
