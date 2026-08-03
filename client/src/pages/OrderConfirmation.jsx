@@ -1,5 +1,6 @@
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import SEO from '../components/SEO';
+import OrderNutrition from '../components/orders/OrderNutrition';
 import { getStatusPresentation } from '../utils/orderStatus';
 
 const formatPlacedAt = (value) => {
@@ -78,6 +79,12 @@ export default function OrderConfirmation() {
           </div>
         )}
 
+        {order.nutrition_summary && (
+          <div className="oc-nutrition">
+            <OrderNutrition summary={order.nutrition_summary} />
+          </div>
+        )}
+
         <p className="oc-next">
           We&apos;ll update the status as your order moves. You can follow it from your orders page.
         </p>
@@ -112,6 +119,7 @@ export default function OrderConfirmation() {
         .oc-total { display: flex; align-items: baseline; justify-content: space-between; gap: var(--fr-s4); padding-top: var(--fr-s4); border-top: 1px solid var(--fr-line); font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-regular); color: var(--fr-text-2); }
         .oc-total strong { font-size: var(--fr-fs-title); font-weight: var(--fr-fw-bold); line-height: var(--fr-lh-snug); color: var(--fr-text); font-variant-numeric: tabular-nums; }
 
+        .oc-nutrition { margin-top: var(--fr-s6); }
         .oc-next { font-family: var(--fr-font-sans); font-size: var(--fr-fs-caption); font-weight: var(--fr-fw-regular); line-height: var(--fr-lh-normal); color: var(--fr-text-2); margin: var(--fr-s6) 0 var(--fr-s5); }
 
         .oc-actions { display: flex; gap: var(--fr-s3); flex-wrap: wrap; }

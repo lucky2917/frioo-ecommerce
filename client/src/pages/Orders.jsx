@@ -6,6 +6,7 @@ import { logger } from '../utils/logger';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import OrderNutrition from '../components/orders/OrderNutrition';
 import {
   ORDER_STATUS_FLOW,
   getStatusPresentation,
@@ -216,6 +217,11 @@ export default function Orders() {
           {order.notes && (
             <div className="fr-ord-note">
               <strong>Note</strong> {order.notes}
+            </div>
+          )}
+          {order.nutrition_summary && (
+            <div className="fr-ord-nutrition">
+              <OrderNutrition summary={order.nutrition_summary} />
             </div>
           )}
         </div>
@@ -597,6 +603,7 @@ export default function Orders() {
         .fr-ord-detail-val { color: var(--fr-text); text-align: right; }
         .fr-ord-discount { color: var(--fr-success); font-weight: var(--fr-fw-medium); }
 
+        .fr-ord-nutrition { margin-top: var(--fr-s4); }
         .fr-ord-note {
           margin-top: var(--fr-s4);
           padding: var(--fr-s3) var(--fr-s4);

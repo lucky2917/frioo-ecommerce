@@ -16,6 +16,9 @@ import {
   MIN_CART_VALUE
 } from '../config/constants';
 import SEO from '../components/SEO';
+import CartNutrition from '../components/cart/CartNutrition';
+import { useCartNutrition } from '../hooks/useCartNutrition';
+import { toOrderNutritionSnapshot } from '../utils/nutritionMath';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
@@ -41,6 +44,8 @@ export default function Cart() {
     ...value,
     originalKey: key
   }));
+
+  const nutritionSummary = useCartNutrition(cartItems);
 
   const subTotal = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
 
@@ -244,6 +249,9 @@ export default function Cart() {
 
       const orderPayload = {
         items: cleanedItems,
+        nutrition_summary: nutritionSummary.included.length > 0
+          ? toOrderNutritionSnapshot(nutritionSummary)
+          : null,
         total_amount: finalTotal,
         order_type: orderType,
         delivery_address: orderType === 'delivery' ? sanitizeText(profile?.address?.trim() || '') : null,
@@ -426,6 +434,8 @@ export default function Cart() {
                   </div>
                 );
               })}
+
+              <CartNutrition {...nutritionSummary} />
 
               <Link to="/shop" className="cart-continue" ref={continueRef}>&larr; Continue shopping</Link>
             </section>

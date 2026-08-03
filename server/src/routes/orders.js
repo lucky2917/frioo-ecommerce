@@ -20,6 +20,9 @@ const formatHour = (hour) => {
     return `${display}${period}`;
 };
 
+const isPlainObject = (value) =>
+    typeof value === 'object' && value !== null && !Array.isArray(value);
+
 const SHOP_LAT = 17.721086639920603;
 const SHOP_LNG = 83.29694119604164;
 const MAX_DELIVERY_KM = 6;
@@ -175,7 +178,8 @@ router.post('/',
                 distance_km,
                 customer_lat,
                 customer_lng,
-                coupon_code
+                coupon_code,
+                nutrition_summary
             } = req.body;
 
             const user_id = req.user.id;
@@ -306,6 +310,7 @@ router.post('/',
                     customer_lat: customer_lat || null,
                     customer_lng: customer_lng || null,
                     coupon_code: coupon_code || null,
+                    nutrition_summary: isPlainObject(nutrition_summary) ? nutrition_summary : null,
                     discount: serverCalculatedDiscount,
                     delivery_fee: deliveryFee,
                     status: 'pending',
