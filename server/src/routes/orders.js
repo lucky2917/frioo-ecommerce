@@ -23,6 +23,8 @@ const formatHour = (hour) => {
 const isPlainObject = (value) =>
     typeof value === 'object' && value !== null && !Array.isArray(value);
 
+const toPaise = (rupees) => Math.round(Number(rupees) * 100);
+
 const WEIGHT_VARIANT_MULTIPLIERS = { '250g': 0.25, '500g': 0.5, '1kg': 1 };
 
 const supportsWeightVariants = (product) =>
@@ -313,6 +315,7 @@ router.post('/',
             }
 
             const safeAddress = sanitizeAddress(delivery_address);
+            const totalAmountPaise = toPaise(serverCalculatedTotal);
 
             const { data, error } = await supabaseAdmin
                 .from('orders')
@@ -320,6 +323,11 @@ router.post('/',
                     user_id,
                     items: items,
                     total_amount: serverCalculatedTotal,
+                    total_amount_paise: totalAmountPaise,
+                    credits_applied_paise: 0,
+                    amount_due_paise: totalAmountPaise,
+                    payment_status: 'pending',
+                    channel: 'online',
                     order_type,
                     address: safeAddress,
                     distance: distance_km || 0,
