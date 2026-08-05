@@ -25,6 +25,10 @@ const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
 const AdminCoupons = lazy(() => import('./pages/admin/AdminCoupons'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
+const CreditsDashboard = lazy(() => import('./pages/admin/credits/CreditsDashboard'));
+const CreditsPlans = lazy(() => import('./pages/admin/credits/CreditsPlans'));
+const CreditsAccounts = lazy(() => import('./pages/admin/credits/CreditsAccounts'));
+const CreditsTransactions = lazy(() => import('./pages/admin/credits/CreditsTransactions'));
 
 const AboutUs = lazy(() => import('./pages/info/AboutUs'));
 const Contact = lazy(() => import('./pages/info/Contact'));
@@ -86,6 +90,11 @@ const AppInner = () => {
               <Route path="products" element={<AdminProducts />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="coupons" element={<AdminCoupons />} />
+              <Route path="credits" element={<Navigate to="/admin/credits/dashboard" replace />} />
+              <Route path="credits/dashboard" element={<CreditsDashboard />} />
+              <Route path="credits/plans" element={<CreditsPlans />} />
+              <Route path="credits/accounts" element={<CreditsAccounts />} />
+              <Route path="credits/transactions" element={<CreditsTransactions />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
 

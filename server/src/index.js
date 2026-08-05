@@ -25,6 +25,7 @@ const productsRouter = require('./routes/products');
 const couponsRouter = require('./routes/coupons');
 const ordersRouter = require('./routes/orders');
 const adminRouter = require('./routes/admin');
+const creditsRouter = require('./routes/credits');
 const uploadRoutes = require('./routes/upload');
 const healthRouter = require('./routes/health');
 const settingsRouter = require('./routes/settings');
@@ -280,6 +281,7 @@ app.use('/api/products', productsRouter);
 app.use('/api/coupons/validate', couponLimiter);
 app.use('/api/coupons', couponsRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/admin/credits', authLimiter, creditsRouter);
 app.use('/api/admin', authLimiter, adminRouter);
 app.use('/api/upload', authLimiter, uploadRoutes);
 
