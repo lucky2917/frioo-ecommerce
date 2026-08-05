@@ -1,6 +1,7 @@
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import SEO from '../components/SEO';
 import OrderNutrition from '../components/orders/OrderNutrition';
+import OrderPaymentBreakdown from '../components/orders/OrderPaymentBreakdown';
 import { getStatusPresentation } from '../utils/orderStatus';
 
 const formatPlacedAt = (value) => {
@@ -76,6 +77,12 @@ export default function OrderConfirmation() {
               <span>Total paid on {isDelivery ? 'delivery' : 'pickup'}</span>
               <strong>&#8377;{Number(order.total_amount).toFixed(0)}</strong>
             </div>
+          </div>
+        )}
+
+        {order.credits_applied_paise > 0 && (
+          <div className="oc-nutrition">
+            <OrderPaymentBreakdown order={order} />
           </div>
         )}
 

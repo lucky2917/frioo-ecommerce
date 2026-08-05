@@ -345,6 +345,28 @@ router.post('/',
 
             if (error) throw error;
 
+            let orderRecord = data;
+
+            try {
+                const { data: creditResult, error: creditError } = await supabaseAdmin.rpc('credit_apply_to_order', {
+                    p_user_id: user_id,
+                    p_order_id: data.id,
+                    p_max_paise: null,
+                    p_actor_id: null,
+                    p_idempotency_key: `order-${data.id}`
+                });
+
+                if (creditError) {
+                    logger.warn('Credit application skipped for order', { orderId: data.id, error: creditError.message });
+                } else if (creditResult?.status === 'applied') {
+                    const { data: refreshed } = await supabaseAdmin
+                        .from('orders').select('*').eq('id', data.id).single();
+                    if (refreshed) orderRecord = refreshed;
+                }
+            } catch (creditErr) {
+                logger.warn('Credit application threw for order', { orderId: data.id, creditErr });
+            }
+
             const stockUpdateResults = await Promise.all(items.map(async ({ id, qty }) => {
                 const { data: decremented, error: stockErr } = await supabaseAdmin
                     .rpc('decrement_product_stock', { p_id: id, p_qty: qty });
@@ -385,7 +407,7 @@ router.post('/',
                 }
             }
 
-            return sendSuccess(res, { order: data, message: 'Order placed successfully' }, 201);
+            return sendSuccess(res, { order: orderRecord, message: 'Order placed successfully' }, 201);
         } catch (err) {
             logger.error('Order placement error:', err);
             return sendError(res, 'Failed to place order. Please try again.', 500);

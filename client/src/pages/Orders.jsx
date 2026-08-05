@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import OrderNutrition from '../components/orders/OrderNutrition';
+import OrderPaymentBreakdown from '../components/orders/OrderPaymentBreakdown';
 import {
   ORDER_STATUS_FLOW,
   getStatusPresentation,
@@ -217,6 +218,11 @@ export default function Orders() {
           {order.notes && (
             <div className="fr-ord-note">
               <strong>Note</strong> {order.notes}
+            </div>
+          )}
+          {order.credits_applied_paise > 0 && (
+            <div className="fr-ord-nutrition">
+              <OrderPaymentBreakdown order={order} compact />
             </div>
           )}
           {order.nutrition_summary && (

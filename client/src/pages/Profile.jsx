@@ -6,6 +6,7 @@ import { notify } from '../lib/feedbackStore';
 import { logger } from '../utils/logger';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import ProfileCreditsCard from '../components/profile/ProfileCreditsCard';
 
 const getInitials = (name, email) => {
   const source = (name || '').trim();
@@ -258,6 +259,7 @@ export default function Profile() {
       <SEO title="My Account" description="Manage your Frioo account details and delivery address." />
 
       <div className="fr-pf-container">
+        {user && <ProfileCreditsCard />}
         {renderBody()}
       </div>
 

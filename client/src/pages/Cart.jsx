@@ -17,8 +17,10 @@ import {
 } from '../config/constants';
 import SEO from '../components/SEO';
 import CartNutrition from '../components/cart/CartNutrition';
+import CartCredits from '../components/cart/CartCredits';
 import { useCartNutrition } from '../hooks/useCartNutrition';
 import { toOrderNutritionSnapshot } from '../utils/nutritionMath';
+import { fetchCreditPreview } from '../hooks/useMyCredits';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
@@ -91,6 +93,23 @@ export default function Cart() {
 
   const deliveryFee = deliveryFeeFor ? deliveryFeeFor(goodsTotal, orderType) : 0;
   const finalTotal = goodsTotal + deliveryFee;
+
+  const [creditPreview, setCreditPreview] = useState(null);
+  const [creditLoading, setCreditLoading] = useState(false);
+
+  useEffect(() => {
+    if (!user || cartItems.length === 0) { setCreditPreview(null); return; }
+
+    let cancelled = false;
+    setCreditLoading(true);
+
+    const timer = setTimeout(async () => {
+      const preview = await fetchCreditPreview(Math.round(finalTotal * 100));
+      if (!cancelled) { setCreditPreview(preview); setCreditLoading(false); }
+    }, 250);
+
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [user, finalTotal, cartItems.length]);
   const amountToFreeDelivery = Math.max(0, (storeSettings?.freeDeliveryThreshold ?? 0) - goodsTotal);
   const blockedItems = isCategoryUnavailable ? cartItems.filter((item) => isCategoryUnavailable(item.category)) : [];
 
@@ -474,6 +493,8 @@ export default function Cart() {
                   )}
                   <div className="cart-row cart-row-total"><span>Total</span><span>&#8377;{finalTotal.toFixed(0)}</span></div>
                 </div>
+
+                <CartCredits preview={creditPreview} loading={creditLoading} />
 
                 {!appliedCoupon ? (
                   <div className="cart-coupon">

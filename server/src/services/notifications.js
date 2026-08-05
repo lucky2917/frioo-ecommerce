@@ -24,6 +24,9 @@ const configure = () => {
     return true;
 };
 
+const rupeesOf = (paise) =>
+    (Number(paise || 0) / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+
 const NOTIFICATION_BUILDERS = {
     NEW_ORDER: (payload) => ({
         title: 'New order received',
@@ -39,6 +42,46 @@ const NOTIFICATION_BUILDERS = {
             { action: 'view', title: 'View order' },
             { action: 'dismiss', title: 'Dismiss' }
         ]
+    }),
+
+    PLAN_ACTIVATED: (payload) => ({
+        title: 'Frioo Credits added',
+        body: `₹${rupeesOf(payload.creditPaise)} is ready to use${payload.expiresOn ? `, valid until ${payload.expiresOn}` : ''}.`,
+        tag: 'frioo-credits-activated',
+        url: '/credits',
+        actions: [{ action: 'view', title: 'View credits' }]
+    }),
+
+    CREDITS_ADDED: (payload) => ({
+        title: 'Credits added to your account',
+        body: `₹${rupeesOf(payload.creditPaise)} has been added${payload.reason ? `. ${payload.reason}` : '.'}`,
+        tag: 'frioo-credits-added',
+        url: '/credits',
+        actions: [{ action: 'view', title: 'View credits' }]
+    }),
+
+    CREDITS_EXPIRING: (payload) => ({
+        title: payload.days === 1 ? 'Your credits expire tomorrow' : `Your credits expire in ${payload.days} days`,
+        body: `₹${rupeesOf(payload.creditPaise)} is still unused. Order before it runs out.`,
+        tag: 'frioo-credits-expiring',
+        url: '/credits',
+        actions: [{ action: 'view', title: 'Shop now' }]
+    }),
+
+    CREDITS_EXPIRED: (payload) => ({
+        title: 'Some credits have expired',
+        body: `₹${rupeesOf(payload.creditPaise)} expired on ${payload.expiredOn || 'today'}.`,
+        tag: 'frioo-credits-expired',
+        url: '/credits',
+        actions: [{ action: 'view', title: 'View credits' }]
+    }),
+
+    CREDIT_REFUND: (payload) => ({
+        title: 'Refund credited back',
+        body: `₹${rupeesOf(payload.creditPaise)} has returned to your Frioo Credits${payload.grace ? ', valid for 7 days' : ''}.`,
+        tag: `frioo-credit-refund-${payload.orderId || 'x'}`,
+        url: '/credits',
+        actions: [{ action: 'view', title: 'View credits' }]
     })
 };
 

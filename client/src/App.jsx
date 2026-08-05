@@ -13,6 +13,7 @@ const Cart = lazy(loadCart);
 const ProductDetails = lazy(loadProductDetails);
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Profile = lazy(() => import('./pages/Profile'));
+const MyCredits = lazy(() => import('./pages/MyCredits'));
 const Orders = lazy(() => import('./pages/Orders'));
 const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -75,6 +76,7 @@ const AppInner = () => {
               <Route path="/product/:id" element={<ProductDetails />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/credits" element={<MyCredits />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/order-confirmation" element={<OrderConfirmation />} />
             </Route>

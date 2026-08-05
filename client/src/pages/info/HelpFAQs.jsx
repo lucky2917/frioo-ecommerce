@@ -44,6 +44,39 @@ export default function HelpFAQs() {
             ]
         },
         {
+            category: 'Frioo Credits',
+            questions: [
+                {
+                    q: 'How do Frioo Credits work?',
+                    a: 'Frioo Credits are prepaid balance. You buy a plan once at our store, we add the credits to your account, and every order after that takes the amount straight from your balance. Credits closest to expiry are always used first.'
+                },
+                {
+                    q: 'Where can I buy a credit plan?',
+                    a: 'At the Frioo store in Visakhapatnam, or by calling us. Plans cannot be bought online. Our team activates your plan once payment is collected, and the credits appear in your account straight away.'
+                },
+                {
+                    q: 'Do Frioo Credits expire?',
+                    a: 'Yes. Each plan carries its own validity period and the exact date is shown against every credit on your credits page. We send you a reminder before anything is due to expire.'
+                },
+                {
+                    q: 'Can I transfer my credits to someone else?',
+                    a: 'No. Credits stay with the account they were issued to and cannot be moved, shared or gifted.'
+                },
+                {
+                    q: 'Can I withdraw my credits as cash?',
+                    a: 'No. Frioo Credits can only be spent on Frioo orders and are never converted back to cash.'
+                },
+                {
+                    q: 'What happens to my credits if an order is refunded?',
+                    a: 'Whatever you paid in credits comes back as credits, in proportion to how you paid. If those credits had already expired we return them as fresh credits valid for 7 days, so nothing is lost.'
+                },
+                {
+                    q: 'What if my credits do not cover the whole order?',
+                    a: 'Your full available balance is applied automatically and you pay the remaining amount the usual way. The split is always shown in your cart before you place the order.'
+                }
+            ]
+        },
+        {
             category: 'Payments',
             questions: [
                 {

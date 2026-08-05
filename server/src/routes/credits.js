@@ -31,6 +31,19 @@ const rupeesToPaise = (value) => {
 
 const requireText = (value) => typeof value === 'string' && value.trim().length > 0;
 
+const notifyCustomer = async (userId, notificationType, payload) => {
+    try {
+        await supabaseAdmin.from('notification_events').insert([{
+            recipient_type: 'customer',
+            recipient_id: userId,
+            notification_type: notificationType,
+            payload
+        }]);
+    } catch (err) {
+        logger.warn('Could not queue customer credit notification', { notificationType, err });
+    }
+};
+
 router.get('/metrics', async (req, res) => {
     const { data, error } = await supabaseAdmin.rpc('credit_dashboard_metrics');
     if (error) {
@@ -123,14 +136,31 @@ router.post('/customers/:userId/activate', async (req, res) => {
     if (!requireText(receipt_reference)) return sendError(res, 'Receipt reference is required', 400);
     if (!requireText(idempotency_key)) return sendError(res, 'Missing idempotency key', 400);
 
-    return callRpc(res, 'credit_activate_plan', {
+    const { data, error } = await supabaseAdmin.rpc('credit_activate_plan', {
         p_user_id: req.params.userId,
         p_plan_id: planId,
         p_receipt_reference: receipt_reference.trim(),
         p_actor_id: req.user.id,
         p_idempotency_key: idempotency_key.trim(),
         p_note: requireText(note) ? note.trim() : null
-    }, 'Activation failed');
+    });
+
+    if (error) {
+        if (BUSINESS_RULE_CODES.includes(error.code)) return sendError(res, error.message, 400);
+        logger.error('Activation failed:', error);
+        return sendError(res, 'Activation failed', 500);
+    }
+
+    if (data?.status === 'activated') {
+        await notifyCustomer(req.params.userId, 'PLAN_ACTIVATED', {
+            creditPaise: data.issued_paise,
+            expiresOn: data.expires_at
+                ? new Date(data.expires_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                : null
+        });
+    }
+
+    return sendSuccess(res, { result: data });
 });
 
 router.post('/customers/:userId/adjust', async (req, res) => {
@@ -144,14 +174,29 @@ router.post('/customers/:userId/adjust', async (req, res) => {
 
     const signed = direction === 'debit' ? -magnitude : magnitude;
 
-    return callRpc(res, 'credit_adjust', {
+    const { data, error } = await supabaseAdmin.rpc('credit_adjust', {
         p_user_id: req.params.userId,
         p_amount_paise: signed,
         p_validity_days: parseInt(validity_days, 10) || 30,
         p_reason: reason.trim(),
         p_actor_id: req.user.id,
         p_idempotency_key: idempotency_key.trim()
-    }, 'Adjustment failed');
+    });
+
+    if (error) {
+        if (BUSINESS_RULE_CODES.includes(error.code)) return sendError(res, error.message, 400);
+        logger.error('Adjustment failed:', error);
+        return sendError(res, 'Adjustment failed', 500);
+    }
+
+    if (data?.status === 'credited') {
+        await notifyCustomer(req.params.userId, 'CREDITS_ADDED', {
+            creditPaise: magnitude,
+            reason: reason.trim()
+        });
+    }
+
+    return sendSuccess(res, { result: data });
 });
 
 router.post('/customers/:userId/status', async (req, res) => {
@@ -197,13 +242,34 @@ router.post('/orders/:orderId/refund', async (req, res) => {
     if (!requireText(reason)) return sendError(res, 'A reason is required for every refund', 400);
     if (!requireText(idempotency_key)) return sendError(res, 'Missing idempotency key', 400);
 
-    return callRpc(res, 'credit_refund_order', {
+    const { data, error } = await supabaseAdmin.rpc('credit_refund_order', {
         p_order_id: orderId,
         p_refund_total_paise: refund,
         p_reason: reason.trim(),
         p_actor_id: req.user.id,
         p_idempotency_key: idempotency_key.trim()
-    }, 'Refund failed');
+    });
+
+    if (error) {
+        if (BUSINESS_RULE_CODES.includes(error.code)) return sendError(res, error.message, 400);
+        logger.error('Refund failed:', error);
+        return sendError(res, 'Refund failed', 500);
+    }
+
+    if (data?.status === 'refunded' && data.credit_refund_paise > 0) {
+        const { data: order } = await supabaseAdmin
+            .from('orders').select('user_id').eq('id', orderId).maybeSingle();
+
+        if (order?.user_id) {
+            await notifyCustomer(order.user_id, 'CREDIT_REFUND', {
+                creditPaise: data.credit_refund_paise,
+                orderId,
+                grace: (data.entries || []).some(entry => entry.grace)
+            });
+        }
+    }
+
+    return sendSuccess(res, { result: data });
 });
 
 router.post('/entries/:entryId/reverse', async (req, res) => {
