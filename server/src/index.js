@@ -264,6 +264,22 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'Frioo API is running' });
 });
 
+const adminApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 600,
+  message: {
+    success: false,
+    error: {
+      message: 'Too many admin requests. Please slow down and try again shortly.',
+      code: 429,
+      retryAfter: '15 minutes'
+    }
+  },
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  skip: (req) => req.method === 'OPTIONS'
+});
+
 const couponLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 30,
@@ -283,8 +299,8 @@ app.use('/api/coupons/validate', couponLimiter);
 app.use('/api/coupons', couponsRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/credits', myCreditsRouter);
-app.use('/api/admin/credits', authLimiter, creditsRouter);
-app.use('/api/admin', authLimiter, adminRouter);
+app.use('/api/admin/credits', adminApiLimiter, creditsRouter);
+app.use('/api/admin', adminApiLimiter, adminRouter);
 app.use('/api/upload', authLimiter, uploadRoutes);
 
 setupSentryErrorHandler(app);
