@@ -31,3 +31,19 @@ then smallest remaining, then lowest id.
 
 `credit_reconcile()` returns any account where the cached balance, the ledger
 sum, and the lot remaining sum disagree. It should always return zero rows.
+
+## Reconstructed files
+
+`011`, `012` and `014` were applied to production before their files were
+committed. They were reconstructed from the authored SQL and verified against
+the live database. Two deliberate differences from the original run:
+
+- `credit_adjust` was first created in `012` and replaced by `015`. It now
+  lives only in `015`, so a clean replay creates it once with the fixed
+  exact-match idempotency check.
+- `credit_available_paise` and `credit_account_summary` appear in `011` in
+  their pre-hardening form and are replaced by `013`, matching the real order
+  of events.
+
+Replaying `001` through `017` in order on an empty database reproduces the
+current production schema.
