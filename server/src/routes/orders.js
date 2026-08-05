@@ -23,6 +23,21 @@ const formatHour = (hour) => {
 const isPlainObject = (value) =>
     typeof value === 'object' && value !== null && !Array.isArray(value);
 
+const WEIGHT_VARIANT_MULTIPLIERS = { '250g': 0.25, '500g': 0.5, '1kg': 1 };
+
+const supportsWeightVariants = (product) =>
+    product.category === 'Fresh Fruit' && product.unit === 'kg';
+
+const resolveVariantMultiplier = (variant, product) => {
+    const label = typeof variant === 'string' ? variant.trim() : '';
+    const multiplier = WEIGHT_VARIANT_MULTIPLIERS[label];
+
+    if (multiplier === undefined) return 1;
+    if (!supportsWeightVariants(product)) return 1;
+
+    return multiplier;
+};
+
 const SHOP_LAT = 17.721086639920603;
 const SHOP_LNG = 83.29694119604164;
 const MAX_DELIVERY_KM = 6;
@@ -210,7 +225,7 @@ router.post('/',
             const productIds = items.map(item => item.id);
             const { data: products, error: productsError } = await supabaseAdmin
                 .from('products')
-                .select('id, price_cents, stock, category')
+                .select('id, price_cents, stock, category, unit')
                 .in('id', productIds);
 
             if (productsError) {
@@ -230,7 +245,8 @@ router.post('/',
                 if (isCategoryUnavailable(settings, product.category)) {
                     return sendError(res, `"${item.title}" is not available right now. Please remove it and try again.`, 409);
                 }
-                serverCalculatedSubtotal += (product.price_cents / 100) * item.qty;
+                const variantMultiplier = resolveVariantMultiplier(item.variant, product);
+                serverCalculatedSubtotal += (product.price_cents / 100) * variantMultiplier * item.qty;
             }
 
             let serverCalculatedDiscount = 0;
