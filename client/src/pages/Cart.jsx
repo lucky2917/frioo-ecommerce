@@ -21,6 +21,7 @@ import CartCredits from '../components/cart/CartCredits';
 import { useCartNutrition } from '../hooks/useCartNutrition';
 import { toOrderNutritionSnapshot } from '../utils/nutritionMath';
 import { fetchCreditPreview } from '../hooks/useMyCredits';
+import { useCartSync } from '../hooks/useCartSync';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
@@ -40,7 +41,7 @@ const CloseIcon = () => (
 );
 
 export default function Cart() {
-  const { cart, addToCart, removeFromCart, deleteFromCart, updateCartItem, clearCart, appliedCoupon, verifyCoupon, removeCoupon, availableCoupons } = useCart();
+  const { cart, addToCart, removeFromCart, deleteFromCart, updateCartItem, applyPriceUpdates, clearCart, appliedCoupon, verifyCoupon, removeCoupon, availableCoupons } = useCart();
 
   const cartItems = Object.entries(cart || {}).map(([key, value]) => ({
     ...value,
@@ -48,6 +49,7 @@ export default function Cart() {
   }));
 
   const nutritionSummary = useCartNutrition(cartItems);
+  const cartSync = useCartSync(cartItems);
 
   const subTotal = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
 
@@ -328,6 +330,16 @@ export default function Cart() {
       setCheckoutError('Remove the unavailable items from your bag before placing the order.');
       return;
     }
+
+    if (cartSync.hasPriceChanges) {
+      setCheckoutError('Prices changed while you were shopping. Review the new prices and confirm to continue.');
+      return;
+    }
+
+    if (cartSync.hasBlocking) {
+      setCheckoutError('Some items are no longer available. Remove them to continue.');
+      return;
+    }
     modalTriggerRef.current = document.activeElement;
     if (cartItems.length === 0) return;
 
@@ -391,7 +403,8 @@ export default function Cart() {
 
   const submitting = isChecking || isPlacingOrder;
   const placeOrderLabel = isChecking ? 'Confirming your location…' : isPlacingOrder ? 'Placing order…' : `Place order · ₹${finalTotal.toFixed(0)}`;
-  const placeOrderDisabled = isBelowMin || isChecking || isPlacingOrder || !accepting || blockedItems.length > 0;
+  const placeOrderDisabled = isBelowMin || isChecking || isPlacingOrder || !accepting
+    || blockedItems.length > 0 || cartSync.hasPriceChanges || cartSync.hasBlocking;
   const placeOrderStatus = isChecking ? 'Confirming your location' : isPlacingOrder ? 'Placing your order' : '';
 
   return (
@@ -413,8 +426,57 @@ export default function Cart() {
         ) : (
           <div className="cart-split">
             <section className="cart-review" aria-label="Items in your bag">
+              {cartSync.hasPriceChanges && (
+                <div className="cart-changed" role="alert">
+                  <div className="cart-changed-head">
+                    <strong>
+                      {cartSync.priceChanges.length === 1
+                        ? 'A price changed while this was in your bag'
+                        : `${cartSync.priceChanges.length} prices changed while these were in your bag`}
+                    </strong>
+                    <span>We have not changed anything yet. Review and confirm to continue.</span>
+                  </div>
+                  <ul className="cart-changed-list">
+                    {cartSync.priceChanges.map((change) => (
+                      <li key={change.key}>
+                        <span className="cart-changed-name">{change.title}</span>
+                        <span className="cart-changed-move">
+                          <s>&#8377;{change.from.toFixed(0)}</s>
+                          <span aria-hidden="true"> &rarr; </span>
+                          <strong>&#8377;{change.to.toFixed(0)}</strong>
+                          <span className={`cart-changed-tag cart-changed-${change.direction}`}>
+                            {change.direction === 'up' ? 'increased' : 'reduced'}
+                          </span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    className="cart-changed-btn"
+                    onClick={() => applyPriceUpdates(cartSync.priceUpdates)}
+                  >
+                    Update to current prices
+                  </button>
+                </div>
+              )}
+
+              {cartSync.hasBlocking && (
+                <div className="cart-changed cart-changed-block" role="alert">
+                  <div className="cart-changed-head">
+                    <strong>Some items are no longer available</strong>
+                    <span>
+                      {cartSync.blocked.map((change) =>
+                        `${change.title}${change.type === 'removed' ? ' (removed from the menu)' : ' (out of stock)'}`
+                      ).join(', ')}. Remove them to continue.
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {cartItems.map((item) => {
                 const itemKey = item.originalKey;
+                const priceChange = cartSync.changeByKey.get(itemKey);
                 const prefs = item.preferences;
                 const hasPrefs = prefs && (prefs.exclusions?.length > 0 || prefs.removedIngredients?.length > 0 || prefs.note);
                 return (
@@ -426,6 +488,12 @@ export default function Cart() {
                         <span className="fr-ci-total">&#8377;{(item.price * item.qty).toFixed(0)}</span>
                       </div>
                       <p className="fr-ci-variant">{item.variant && item.variant !== 'Standard' ? `${item.variant} · ` : ''}&#8377;{item.price.toFixed(0)} each</p>
+                      {priceChange && (
+                        <p className="fr-ci-changed">
+                          Price {priceChange.direction === 'up' ? 'increased' : 'reduced'} to
+                          {' '}&#8377;{priceChange.to.toFixed(0)} each
+                        </p>
+                      )}
                       {hasPrefs && (
                         <div className="fr-ci-prefs">
                           {prefs.exclusions?.map(e => <span key={e} className="fr-ci-chip">No {e}</span>)}
@@ -677,6 +745,26 @@ const cartBaseStyles = `
   .cart-split { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--fr-s8); align-items: start; }
 
   .cart-review { display: flex; flex-direction: column; }
+  .cart-changed { padding: var(--fr-s4) var(--fr-s5); margin-bottom: var(--fr-s4); background: #FDF3F2; border: 1px solid #E8B4AE; border-left: 3px solid #B23A2E; border-radius: var(--fr-r-card); }
+  .cart-changed-head { display: flex; flex-direction: column; gap: 2px; margin-bottom: var(--fr-s3); }
+  .cart-changed-head strong { font-family: var(--fr-font-sans); font-size: var(--fr-fs-body); font-weight: var(--fr-fw-bold); color: #7A2E25; }
+  .cart-changed-head span { font-size: var(--fr-fs-caption); line-height: 1.5; color: #8A4A42; }
+  .cart-changed-list { list-style: none; margin: 0 0 var(--fr-s3); padding: 0; display: flex; flex-direction: column; gap: var(--fr-s2); }
+  .cart-changed-list li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--fr-s3); font-size: var(--fr-fs-caption); }
+  .cart-changed-name { font-weight: var(--fr-fw-semibold); color: #7A2E25; }
+  .cart-changed-move { display: inline-flex; align-items: baseline; gap: 6px; color: #8A4A42; font-variant-numeric: tabular-nums; }
+  .cart-changed-move s { opacity: 0.7; }
+  .cart-changed-move strong { color: #B23A2E; font-weight: var(--fr-fw-bold); }
+  .cart-changed-tag { padding: 1px 7px; border-radius: var(--fr-r-pill); font-size: var(--fr-fs-label); font-weight: var(--fr-fw-semibold); }
+  .cart-changed-up { background: #F6D9D5; color: #8A2C22; }
+  .cart-changed-down { background: #DCEEE1; color: #1B7A4B; }
+  .cart-changed-btn { min-height: 44px; width: 100%; background: #B23A2E; color: #FFFFFF; border: none; border-radius: var(--fr-r-control); font-family: inherit; font-size: var(--fr-fs-control); font-weight: var(--fr-fw-semibold); cursor: pointer; }
+  .cart-changed-btn:hover { background: #962F25; }
+  .cart-changed-btn:focus-visible { outline: 2px solid #B23A2E; outline-offset: 2px; }
+  .cart-changed-block { background: #FFF8E6; border-color: #E8D9A8; border-left-color: #B8860B; }
+  .cart-changed-block .cart-changed-head strong { color: #6B5518; }
+  .cart-changed-block .cart-changed-head span { color: #7A6320; }
+  .fr-ci-changed { margin: 2px 0 0; font-size: var(--fr-fs-label); font-weight: var(--fr-fw-semibold); color: #B23A2E; }
   .fr-ci { display: flex; gap: var(--fr-s4); padding: var(--fr-s5) 0; border-bottom: 1px solid var(--fr-line); }
   .fr-ci-media { flex-shrink: 0; width: 96px; height: 120px; border-radius: var(--fr-r-card); overflow: hidden; background: var(--fr-surface-2); }
   .fr-ci-media:hover { opacity: 0.88; }

@@ -169,6 +169,28 @@ export const CartProvider = ({ children }) => {
         });
     }, [makeCartKey]);
 
+    const applyPriceUpdates = useCallback((updates) => {
+        const entries = Object.entries(updates || {});
+        if (entries.length === 0) return;
+
+        setCart((prev) => {
+            const next = { ...prev };
+            let changed = false;
+
+            for (const [cartKey, newPrice] of entries) {
+                const existing = next[cartKey];
+                const price = Number(newPrice);
+                if (!existing || !Number.isFinite(price) || price < 0) continue;
+                if (existing.price === price) continue;
+
+                next[cartKey] = { ...existing, price };
+                changed = true;
+            }
+
+            return changed ? next : prev;
+        });
+    }, []);
+
     const clearCart = useCallback(() => {
         setCart({});
         setAppliedCoupon(null);
@@ -213,6 +235,7 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         deleteFromCart,
         updateCartItem,
+        applyPriceUpdates,
         clearCart,
         appliedCoupon,
         verifyCoupon,
@@ -221,7 +244,7 @@ export const CartProvider = ({ children }) => {
         refreshCoupons: fetchCoupons
     }), [
         cart, cartCount, cartTotal, addToCart, removeFromCart, deleteFromCart,
-        updateCartItem, clearCart, appliedCoupon, verifyCoupon, removeCoupon,
+        updateCartItem, applyPriceUpdates, clearCart, appliedCoupon, verifyCoupon, removeCoupon,
         availableCoupons, fetchCoupons
     ]);
 
