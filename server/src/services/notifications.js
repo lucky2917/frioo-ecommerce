@@ -76,6 +76,32 @@ const NOTIFICATION_BUILDERS = {
         actions: [{ action: 'view', title: 'View credits' }]
     }),
 
+    PLAN_REQUEST_NEW: (payload) => ({
+        title: 'New credit plan request',
+        body: [
+            payload.customerName || 'A customer',
+            payload.planName,
+            payload.pricePaise !== undefined ? `₹${rupeesOf(payload.pricePaise)} to collect` : null,
+            payload.phone
+        ].filter(Boolean).join(' · '),
+        tag: `frioo-plan-request-${payload.requestId}`,
+        url: '/admin/credits/requests',
+        actions: [
+            { action: 'view', title: 'Open request' },
+            { action: 'dismiss', title: 'Dismiss' }
+        ]
+    }),
+
+    PLAN_REQUEST_REJECTED: (payload) => ({
+        title: 'About your credit plan request',
+        body: payload.reason
+            ? `${payload.planName || 'Your request'} could not be activated. ${payload.reason}`
+            : `${payload.planName || 'Your request'} could not be activated. Please contact the store.`,
+        tag: `frioo-plan-request-${payload.requestId}`,
+        url: '/credits',
+        actions: [{ action: 'view', title: 'View credits' }]
+    }),
+
     CREDIT_REFUND: (payload) => ({
         title: 'Refund credited back',
         body: `₹${rupeesOf(payload.creditPaise)} has returned to your Frioo Credits${payload.grace ? ', valid for 7 days' : ''}.`,

@@ -17,6 +17,7 @@ import CategoryNavigation from './nav/CategoryNavigation';
 import SearchBar from './nav/SearchBar';
 import UserMenu from './nav/UserMenu';
 import CartButton from './nav/CartButton';
+import CreditsButton from './nav/CreditsButton';
 import MobileDrawer from './nav/MobileDrawer';
 
 export default function Navbar() {
@@ -259,6 +260,7 @@ export default function Navbar() {
               />
             </div>
 
+            <CreditsButton signedIn={Boolean(user)} />
             <CartButton count={cartCount} />
           </div>
         </div>

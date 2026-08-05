@@ -25,6 +25,35 @@ export const fetchCreditPreview = async (totalPaise) => {
     return data?.preview ?? null;
 };
 
+const authedPost = async (path, body) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Sign in to continue.');
+
+    const res = await fetchWithTimeout(`${BASE}${path}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(body || {})
+    });
+
+    const payload = await res.json().catch(() => null);
+    if (!res.ok || payload?.success === false) {
+        throw new Error(payload?.error?.message || 'Request failed');
+    }
+    return payload?.data ?? null;
+};
+
+export const fetchMyRequests = async () => {
+    const data = await authedGet('/requests');
+    return data?.requests ?? [];
+};
+
+export const createPlanRequest = (body) => authedPost('/requests', body);
+
+export const cancelPlanRequest = (requestId) => authedPost(`/requests/${requestId}/cancel`);
+
 export const fetchPublicPlans = async () => {
     try {
         const res = await fetchWithTimeout(`${BASE}/plans`);

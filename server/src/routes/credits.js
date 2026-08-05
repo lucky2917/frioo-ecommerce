@@ -288,6 +288,85 @@ router.post('/entries/:entryId/reverse', async (req, res) => {
     }, 'Reversal failed');
 });
 
+router.get('/requests', async (req, res) => {
+    return callRpc(res, 'credit_request_queue', {
+        p_status: req.query.status || null,
+        p_limit: Math.min(parseInt(req.query.limit, 10) || 50, 200),
+        p_offset: Math.max(parseInt(req.query.offset, 10) || 0, 0)
+    }, 'Failed to load requests');
+});
+
+router.post('/requests/:requestId/status', async (req, res) => {
+    const requestId = parseInt(req.params.requestId, 10);
+    const { status, admin_note } = req.body;
+
+    if (!Number.isInteger(requestId)) return sendError(res, 'Invalid request id', 400);
+    if (!['contacted', 'rejected'].includes(status)) return sendError(res, 'Invalid status', 400);
+    if (status === 'rejected' && !requireText(admin_note)) {
+        return sendError(res, 'A reason is required to reject a request', 400);
+    }
+
+    const { data, error } = await supabaseAdmin.rpc('credit_request_set_status', {
+        p_request_id: requestId,
+        p_status: status,
+        p_admin_note: requireText(admin_note) ? admin_note.trim() : null,
+        p_actor_id: req.user.id
+    });
+
+    if (error) {
+        if (BUSINESS_RULE_CODES.includes(error.code)) return sendError(res, error.message, 400);
+        logger.error('Request status update failed:', error);
+        return sendError(res, 'Could not update the request', 500);
+    }
+
+    if (status === 'rejected') {
+        const { data: row } = await supabaseAdmin
+            .from('credit_plan_requests').select('user_id, plan_name').eq('id', requestId).maybeSingle();
+
+        if (row?.user_id) {
+            await notifyCustomer(row.user_id, 'PLAN_REQUEST_REJECTED', {
+                requestId, planName: row.plan_name, reason: admin_note?.trim() || null
+            });
+        }
+    }
+
+    return sendSuccess(res, { result: data });
+});
+
+router.post('/requests/:requestId/approve', async (req, res) => {
+    const requestId = parseInt(req.params.requestId, 10);
+    const { receipt_reference, admin_note, idempotency_key } = req.body;
+
+    if (!Number.isInteger(requestId)) return sendError(res, 'Invalid request id', 400);
+    if (!requireText(receipt_reference)) return sendError(res, 'Receipt reference is required', 400);
+    if (!requireText(idempotency_key)) return sendError(res, 'Missing idempotency key', 400);
+
+    const { data, error } = await supabaseAdmin.rpc('credit_request_approve', {
+        p_request_id: requestId,
+        p_receipt_reference: receipt_reference.trim(),
+        p_admin_note: requireText(admin_note) ? admin_note.trim() : null,
+        p_actor_id: req.user.id,
+        p_idempotency_key: idempotency_key.trim()
+    });
+
+    if (error) {
+        if (BUSINESS_RULE_CODES.includes(error.code)) return sendError(res, error.message, 400);
+        logger.error('Request approval failed:', error);
+        return sendError(res, 'Approval failed', 500);
+    }
+
+    if (data?.status === 'approved' && data.user_id) {
+        await notifyCustomer(data.user_id, 'PLAN_ACTIVATED', {
+            creditPaise: data.issued_paise,
+            expiresOn: data.expires_at
+                ? new Date(data.expires_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+                : null
+        });
+    }
+
+    return sendSuccess(res, { result: data });
+});
+
 const parseLedgerFilters = (query) => ({
     p_user_id: query.user_id || null,
     p_entry_type: query.entry_type || null,

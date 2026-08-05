@@ -99,4 +99,82 @@ router.get('/preview', async (req, res) => {
     });
 });
 
+router.get('/requests', async (req, res) => {
+    const { data, error } = await supabaseAdmin.rpc('credit_request_mine', {
+        p_user_id: req.user.id
+    });
+
+    if (error) {
+        logger.error('Own requests fetch failed:', error);
+        return sendError(res, 'Could not load your requests', 500);
+    }
+
+    return sendSuccess(res, { requests: data || [] });
+});
+
+router.post('/requests', async (req, res) => {
+    const { plan_id, contact_phone, note } = req.body;
+
+    const planId = parseInt(plan_id, 10);
+    if (!Number.isInteger(planId)) return sendError(res, 'Choose a plan', 400);
+
+    const { data, error } = await supabaseAdmin.rpc('credit_request_create', {
+        p_user_id: req.user.id,
+        p_plan_id: planId,
+        p_contact_phone: typeof contact_phone === 'string' ? contact_phone.slice(0, 20) : null,
+        p_customer_note: typeof note === 'string' ? note.slice(0, 500) : null
+    });
+
+    if (error) {
+        if (['P0001', '23514', '23505', 'P0002'].includes(error.code)) {
+            return sendError(res, error.message, 400);
+        }
+        logger.error('Request create failed:', error);
+        return sendError(res, 'Could not send your request', 500);
+    }
+
+    if (data?.status === 'created') {
+        const { data: profile } = await supabaseAdmin
+            .from('profiles').select('full_name, phone_number').eq('id', req.user.id).maybeSingle();
+
+        try {
+            await supabaseAdmin.from('notification_events').insert([{
+                recipient_type: 'admin',
+                notification_type: 'PLAN_REQUEST_NEW',
+                payload: {
+                    requestId: data.request_id,
+                    planName: data.plan_name,
+                    pricePaise: data.price_paise,
+                    customerName: profile?.full_name || null,
+                    phone: contact_phone || profile?.phone_number || null
+                }
+            }]);
+        } catch (notifyErr) {
+            logger.warn('Could not queue plan request notification', notifyErr);
+        }
+    }
+
+    return sendSuccess(res, { result: data });
+});
+
+router.post('/requests/:requestId/cancel', async (req, res) => {
+    const requestId = parseInt(req.params.requestId, 10);
+    if (!Number.isInteger(requestId)) return sendError(res, 'Invalid request', 400);
+
+    const { data, error } = await supabaseAdmin.rpc('credit_request_cancel', {
+        p_request_id: requestId,
+        p_user_id: req.user.id
+    });
+
+    if (error) {
+        if (['P0001', '23514', '42501', 'P0002'].includes(error.code)) {
+            return sendError(res, error.message, 400);
+        }
+        logger.error('Request cancel failed:', error);
+        return sendError(res, 'Could not cancel the request', 500);
+    }
+
+    return sendSuccess(res, { result: data });
+});
+
 module.exports = router;

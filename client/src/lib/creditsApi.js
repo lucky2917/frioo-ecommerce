@@ -125,6 +125,26 @@ export const creditsApi = {
         return res.blob();
     },
 
+    async listRequests(status) {
+        const query = status ? `?status=${encodeURIComponent(status)}` : '';
+        const res = await fetch(`${BASE}/requests${query}`, { headers: await authHeaders() });
+        return (await unwrap(res)).result;
+    },
+
+    async setRequestStatus(requestId, body) {
+        const res = await fetch(`${BASE}/requests/${requestId}/status`, {
+            method: 'POST', headers: await authHeaders(), body: JSON.stringify(body)
+        });
+        return (await unwrap(res)).result;
+    },
+
+    async approveRequest(requestId, body) {
+        const res = await fetch(`${BASE}/requests/${requestId}/approve`, {
+            method: 'POST', headers: await authHeaders(), body: JSON.stringify(body)
+        });
+        return (await unwrap(res)).result;
+    },
+
     async reconcile() {
         const res = await fetch(`${BASE}/reconcile`, { headers: await authHeaders() });
         return (await unwrap(res)).drift;

@@ -1,60 +1,67 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import { notify } from '../lib/feedbackStore';
 import { useAuth } from '../context/auth-context';
-import { useMyCredits, fetchPublicPlans } from '../hooks/useMyCredits';
+import PlanCatalogue from '../components/credits/PlanCatalogue';
+import {
+    useMyCredits, fetchPublicPlans, fetchMyRequests, createPlanRequest, cancelPlanRequest
+} from '../hooks/useMyCredits';
 import { rupees, formatDate, formatDateTime, signedRupees } from '../utils/creditFormat';
 import { expiryNotice, groupByMonth, entryCopy, originLabel } from '../utils/creditExpiry';
 
-const CreditsEmptyState = () => {
-    const [plans, setPlans] = useState([]);
-
-    useEffect(() => { fetchPublicPlans().then(setPlans); }, []);
-
-    return (
-        <section className="mc-empty">
-            <h2 className="mc-empty-title">You do not have any Frioo Credits yet</h2>
-            <p className="mc-empty-text">
-                Frioo Credits are prepaid balance you buy once and spend across your orders.
-                You pay at our store, we add the credits to this account, and every order after
-                that takes the amount straight from your balance.
-            </p>
-
-            {plans.length > 0 && (
-                <div className="mc-plans">
-                    {plans.map(plan => (
-                        <article key={plan.id} className="mc-plan">
-                            <h3 className="mc-plan-name">{plan.name}</h3>
-                            <p className="mc-plan-value">
-                                Pay <strong>₹{rupees(plan.price_paise)}</strong>, get <strong>₹{rupees(plan.credit_paise)}</strong>
-                            </p>
-                            <p className="mc-plan-meta">
-                                ₹{rupees(plan.credit_paise - plan.price_paise)} extra · valid {plan.validity_days} days
-                            </p>
-                        </article>
-                    ))}
-                </div>
-            )}
-
-            <div className="mc-empty-how">
-                <h3 className="mc-how-title">How to get credits</h3>
-                <p>Visit the Frioo store in Visakhapatnam, or call us and we will set it up.</p>
-                <p className="mc-how-note">
-                    Credits cannot be bought online. Our team activates your plan once payment is collected.
-                </p>
-            </div>
-
-            <div className="mc-empty-actions">
-                <Link to="/contact" className="mc-btn mc-btn-primary">Contact the store</Link>
-                <Link to="/shop" className="mc-btn mc-btn-ghost">Browse fruit</Link>
-            </div>
-        </section>
-    );
-};
-
 export default function MyCredits() {
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const { summary, history, loading, error, refresh } = useMyCredits({ withHistory: true });
+
+    const [plans, setPlans] = useState([]);
+    const [requests, setRequests] = useState([]);
+    const [requestBusy, setRequestBusy] = useState(false);
+
+    const loadRequests = useCallback(async () => {
+        try { setRequests(await fetchMyRequests()); }
+        catch { setRequests([]); }
+    }, []);
+
+    useEffect(() => {
+        fetchPublicPlans().then(setPlans);
+        if (user) void loadRequests();
+    }, [user, loadRequests]);
+
+    const openRequest = useMemo(
+        () => requests.find(r => r.status === 'pending' || r.status === 'contacted') ?? null,
+        [requests]
+    );
+
+    const submitRequest = async (body) => {
+        setRequestBusy(true);
+        try {
+            const result = await createPlanRequest(body);
+            if (result?.result?.status === 'already_open') {
+                notify.info('You already have a request waiting with our team.');
+            } else {
+                notify.success('Request sent. Our team will call you shortly.');
+            }
+            await loadRequests();
+        } catch (err) {
+            notify.error(err.message || 'Could not send your request');
+        } finally {
+            setRequestBusy(false);
+        }
+    };
+
+    const cancelRequest = async (requestId) => {
+        setRequestBusy(true);
+        try {
+            await cancelPlanRequest(requestId);
+            notify.success('Request cancelled');
+            await loadRequests();
+        } catch (err) {
+            notify.error(err.message || 'Could not cancel the request');
+        } finally {
+            setRequestBusy(false);
+        }
+    };
 
     const lots = useMemo(() => summary?.lots ?? [], [summary]);
 
@@ -98,8 +105,31 @@ export default function MyCredits() {
 
             {loading && !summary && <div className="mc-skeleton" aria-hidden="true" />}
 
-            {!loading && summary && available === 0 && lots.length === 0 && history.length === 0 && (
-                <CreditsEmptyState />
+            {!loading && summary && (
+                <PlanCatalogue
+                    plans={plans}
+                    openRequest={openRequest}
+                    phone={profile?.phone_number}
+                    busy={requestBusy}
+                    onRequest={submitRequest}
+                    onCancel={cancelRequest}
+                    heading={available > 0 ? 'Top up your credits' : 'Buy Frioo Credits'}
+                />
+            )}
+
+            {!loading && summary && available === 0 && lots.length === 0 && history.length === 0 && !openRequest && (
+                <section className="mc-empty">
+                    <h2 className="mc-empty-title">How Frioo Credits work</h2>
+                    <p className="mc-empty-text">
+                        Credits are prepaid balance. You pay once at our store, we add the credits here,
+                        and every order after that takes the amount straight from your balance.
+                        Credits closest to expiry are always used first.
+                    </p>
+                    <div className="mc-empty-actions">
+                        <Link to="/contact" className="mc-btn mc-btn-primary">Contact the store</Link>
+                        <Link to="/shop" className="mc-btn mc-btn-ghost">Browse fruit</Link>
+                    </div>
+                </section>
             )}
 
             {summary && (available > 0 || lots.length > 0 || history.length > 0) && (

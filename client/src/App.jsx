@@ -30,6 +30,7 @@ const CreditsDashboard = lazy(() => import('./pages/admin/credits/CreditsDashboa
 const CreditsPlans = lazy(() => import('./pages/admin/credits/CreditsPlans'));
 const CreditsAccounts = lazy(() => import('./pages/admin/credits/CreditsAccounts'));
 const CreditsTransactions = lazy(() => import('./pages/admin/credits/CreditsTransactions'));
+const CreditsRequests = lazy(() => import('./pages/admin/credits/CreditsRequests'));
 
 const AboutUs = lazy(() => import('./pages/info/AboutUs'));
 const Contact = lazy(() => import('./pages/info/Contact'));
@@ -97,6 +98,7 @@ const AppInner = () => {
               <Route path="credits/plans" element={<CreditsPlans />} />
               <Route path="credits/accounts" element={<CreditsAccounts />} />
               <Route path="credits/transactions" element={<CreditsTransactions />} />
+              <Route path="credits/requests" element={<CreditsRequests />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
 
