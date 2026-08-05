@@ -23,6 +23,8 @@ export default function OrderConfirmation() {
   const placedAt = formatPlacedAt(order.created_at);
   const isDelivery = order.order_type === 'delivery';
   const { label: statusLabel } = getStatusPresentation(order.status);
+  const creditsUsed = Number(order.credits_applied_paise || 0);
+  const amountDue = Number(order.amount_due_paise || 0);
 
   return (
     <div className="oc-page">
@@ -74,8 +76,14 @@ export default function OrderConfirmation() {
               ))}
             </ul>
             <div className="oc-total">
-              <span>Total paid on {isDelivery ? 'delivery' : 'pickup'}</span>
-              <strong>&#8377;{Number(order.total_amount).toFixed(0)}</strong>
+              <span>
+                {creditsUsed > 0 && amountDue === 0
+                  ? 'Nothing to pay, covered by Frioo Credits'
+                  : `Total paid on ${isDelivery ? 'delivery' : 'pickup'}`}
+              </span>
+              <strong>
+                &#8377;{creditsUsed > 0 ? (amountDue / 100).toFixed(0) : Number(order.total_amount).toFixed(0)}
+              </strong>
             </div>
           </div>
         )}

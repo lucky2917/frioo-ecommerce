@@ -222,7 +222,7 @@ router.patch('/orders/:orderId',
 
             const { data: existing, error: fetchError } = await supabaseAdmin
                 .from('orders')
-                .select('status')
+                .select('status, user_id, credits_applied_paise, total_amount_paise')
                 .eq('id', orderId)
                 .single();
 
@@ -247,6 +247,33 @@ router.patch('/orders/:orderId',
                 .single();
 
             if (error) throw error;
+
+            if (newStatus === 'cancelled' && Number(existing.credits_applied_paise || 0) > 0) {
+                const { data: refund, error: refundError } = await supabaseAdmin.rpc('credit_refund_order', {
+                    p_order_id: Number(orderId),
+                    p_refund_total_paise: Number(existing.total_amount_paise),
+                    p_reason: `Order #${orderId} cancelled`,
+                    p_actor_id: req.user.id,
+                    p_idempotency_key: `cancel-${orderId}`
+                });
+
+                if (refundError) {
+                    logger.error(`Credit refund failed for cancelled order ${orderId}:`, refundError);
+                } else if (refund?.credit_refund_paise > 0 && existing.user_id) {
+                    await supabaseAdmin.from('notification_events').insert([{
+                        recipient_type: 'customer',
+                        recipient_id: existing.user_id,
+                        notification_type: 'CREDIT_REFUND',
+                        payload: {
+                            creditPaise: refund.credit_refund_paise,
+                            orderId: Number(orderId),
+                            grace: (refund.entries || []).some(entry => entry.grace)
+                        }
+                    }]).then(({ error: notifyError }) => {
+                        if (notifyError) logger.warn('Could not queue refund notification', notifyError);
+                    });
+                }
+            }
 
             logger.info(`Admin ${req.user.id} transitioned order ${orderId}: ${existing.status} → ${newStatus}`);
             return sendSuccess(res, { order: data });

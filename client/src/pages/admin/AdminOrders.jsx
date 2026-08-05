@@ -263,6 +263,13 @@ export default function AdminOrders() {
                                     </div>
                                     <div className="ao-head-right">
                                         <div className="ao-total">₹{formatOrderAmount(order.total_amount)}</div>
+                                        {order.credits_applied_paise > 0 && (
+                                            <div className={`ao-collect${order.amount_due_paise === 0 ? ' ao-collect-nil' : ''}`}>
+                                                {order.amount_due_paise === 0
+                                                    ? 'Paid by credits, collect nothing'
+                                                    : `Collect ₹${(order.amount_due_paise / 100).toFixed(0)}`}
+                                            </div>
+                                        )}
                                         <button
                                             className="adm-btn adm-btn-secondary adm-btn-sm"
                                             onClick={() => toggleOrder(order.id)}
@@ -353,6 +360,18 @@ export default function AdminOrders() {
                                                         <span>&minus;₹{formatOrderAmount(order.discount)}</span>
                                                     </div>
                                                     <div className="ao-price-line ao-price-total"><span>Total</span><span>₹{formatOrderAmount(order.total_amount)}</span></div>
+                                                    {order.credits_applied_paise > 0 && (
+                                                        <>
+                                                            <div className="ao-price-line ao-discount">
+                                                                <span>Frioo Credits used</span>
+                                                                <span>&minus;₹{(order.credits_applied_paise / 100).toFixed(0)}</span>
+                                                            </div>
+                                                            <div className="ao-price-line ao-price-total">
+                                                                <span>To collect</span>
+                                                                <span>₹{(order.amount_due_paise / 100).toFixed(0)}</span>
+                                                            </div>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
@@ -411,6 +430,8 @@ export default function AdminOrders() {
 
                 .ao-head-right { display: flex; flex-direction: column; align-items: flex-end; gap: var(--fr-s2); flex-shrink: 0; }
                 .ao-total { font-size: var(--fr-fs-lead); font-weight: var(--fr-fw-bold); color: var(--adm-text);  font-variant-numeric: tabular-nums; }
+                .ao-collect { margin-top: 2px; padding: 2px 8px; border-radius: var(--fr-r-pill, 999px); background: #FFF4DA; font-size: var(--fr-fs-label); font-weight: var(--fr-fw-semibold); color: #7A5B14; white-space: nowrap; }
+                .ao-collect-nil { background: var(--fr-brand-tint, #E8F2EA); color: var(--fr-brand); }
                 .ao-chevron { transition: transform var(--fr-dur-quick) var(--fr-ease-standard); }
                 .ao-chevron.up { transform: rotate(180deg); }
 
